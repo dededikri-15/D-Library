@@ -116,8 +116,6 @@ tempat semua aturan ini dibaca dari:
 | --- | --- |
 | `pustakawan@perpustakaan.test` | Pustakawan |
 | `anggota1@perpustakaan.test` | Anggota |
-| `anggota2@perpustakaan.test` | Anggota |
-| `anggota3@perpustakaan.test` | Anggota |
 
 Kredensial ini sengaja weakened dan hanya untuk pengembangan. Jangan pernah
 membiarkannya di server yang bisa dijangkau publik.
@@ -282,18 +280,4 @@ diajaga test yang sama: jangan menulis glob `@source` di dalam komentar CSS
 utility di dalam komentar (CSS dan Blade sama-sama dipindai Tailwind, jadi class
 yang cuma disebut di komentar tetap masuk build).
 
-**AJAX selalu punya jalan keluar tanpa JavaScript.**
-Tiap form yang bisa disubmit via `fetch` tetap punya `action` dan `method` yang
-bisa bekerja. Fallback ke submit native hanya terjadi untuk error jaringan, atau
-kalau request sudah sempat sampai ke server tapi responsnya tidak terbaca —
-bukan untuk setiap error, supaya aksi yang sama tidak terkirim dua kali.
 
-**Modal dibangun di atas `<dialog>` asli, bukan overlay buatan.**
-Focus trap, Escape, `inert` di latar belakang, dan kembalinya fokus ke tombol
-pembuka semuanya ditangani browser, bukan ditulis manual.
-
----
-
-## Lisensi
-
-Proyek portofolio. Bebas dipakai sebagai bahan belajar.
