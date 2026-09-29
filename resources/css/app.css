@@ -1,0 +1,820 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+| Dua `@source` yang DIHAPUS dengan sengaja, keduanya diukur nol rupiah:
+| 1. View pagination BAWAAN Laravel. Sudah digantikan oleh
+|    `resources/views/vendor/pagination/tailwind.blade.php` (Task 14.9), dan
+|    folder `resources/views` sendiri sudah dipindai oleh `@source` di atas,
+|    jadi view override ikut ter-cover. Kalau override itu dihapus,
+|    kembalikan baris `@source` ke view bawaan di vendor — bukan karena CSS
+|    hilang, tapi karena warna STOCKNYA tidak cocok dengan palet proyek.
+| 2. Cache Blade di `storage/framework/views`. Folder itu gitignored, jadi
+|    berbeda isi antara mesin ini dan clone baru, dan output build bisa ikut
+|    berubah tergantung cache Blade sedang hangat atau tidak.
+|
+| Catatan: `@source` untuk cache Blade sempat dicurigai membuat dozens utility
+| dari `@class([...])` hilang dari build. Setelah build dengan dan tanpa baris
+| itu dibandingkan: HASILNYA IDENTIK, byte sama, jumlah selector sama, nol
+| selisih. Dugaan itu salah, tidak ada bug build di sini, dan daftar safelist
+| yang sempat dibuat untuk menambal kekhawatiran itu tidak diperlukan. Yang
+| tetap dijaga cuma satu aturan: jangan pernah menambahkan `@source` ke path
+| di luar repo yang dilacak git, karena itu satu-satunya cara output build
+| jadi tidak reproducible. `BuildIntegrityTest` menjaga aturan itu.
+|
+| PENTANG dua hal soal isi file ini:
+| 1. Jangan tulis glob `@source` di dalam komentar CSS. Glob itu memuat
+|    karakter `*` diikuti `/`, dan itu menutup blok komentar lebih awal
+|    sehingga seluruh sisa file jadi CSS hidup. Sebut foldernya saja.
+| 2. Jangan menyebut nama class utility di dalam komentar. File ini ikut
+|    dipindai Tailwind, jadi `text-[0.625rem]` yang ditulis di komentar akan
+|    benar-benar di-generate — panjang CSS membesar tanpa ada yang memakainya.
+*/
+
+/*
+| Dark mode berbasis class, bukan prefers-color-scheme.
+|
+| Bawaan Tailwind v4 memakai media query, artinya mengikuti setelan sistem
+| operasi. Kita butuh class `.dark` di elemen <html> supaya tombol toggle bisa
+| sengaja memaksa tema terang di HP yang sistemnya gelap.
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+| Token warna semantik.
+|
+| PENTING: nilai aslinya ada di sini (`:root` / `:root.dark`), BUKAN langsung
+| di blok `@theme`. Kalau hex ditulis langsung di `@theme`, setiap utility
+| seperti `bg-surface` akan mem-build nilai warna yang sudah jadi, dan tidak
+| ada yang bisa berubah saat tema dibalik.
+|
+| Dengan pola di bawah, `bg-surface` tetap satu class untuk semua view, tapi
+| isinya ikut berubah. Konsekuensinya jauh lebih sedikit: tidak ada satu pun
+| view yang perlu ditulis ulang hanya untuk tampilannya di dark mode, jadi tidak
+| ada yang bisa "lupa".
+|
+| Catatan: blok `@theme` sengaja TIDAK memakai kata kunci `inline`. Tanpa itu,
+| Tailwind menyalin nilainya ke `:root` sekali jalan — dan itu justru yang
+| kita mau. `--color-surface: var(--app-surface)` di `:root` tetap refers ke
+| `--app-surface`, yang nilainya berubah di `.dark`, karena CSS me-resolve
+| `var()` secara lazy di elemen yang memakainya.
+*/
+:root {
+    color-scheme: light;
+
+    /* Warna wajib dari .agents/design.md (bagian terang) */
+    --app-bg: #f8fafc;
+    --app-surface: #ffffff;
+    --app-border: rgb(100 116 139 / 0.18);
+    --app-border-strong: rgb(100 116 139 / 0.3);
+    --app-text: #1e293b;
+    --app-muted: #64748b;
+    --app-accent: #4f46e5;
+    --app-brand: #4f46e5;
+    --app-on-brand: #ffffff;
+    --action-blue: #0369a1;
+    --action-blue-hover: #075985;
+    --action-blue-on: #ffffff;
+    --action-blue-outline: #0369a1;
+    --action-blue-border: #0284c7;
+    --action-blue-soft: rgb(2 132 199 / 0.1);
+
+    /* Status: hijau = tersedia, kuning/oranye = dipinjam, merah = terlambat.
+     * Di tema terang warnanya sengaja digelapkan sampai lolos rasio kontras
+     * 4.5:1 di atas surface. Warna hijau muda yang "segar" seperti #16a34a
+     * hanya mencapai 3.3:1, dan badge status adalah teks kecil - bukan teks
+     * besar - jadi tidak boleh memakai kelonggaran aturan teks besar. */
+    --app-available: #15803d;
+    --app-borrowed: #b45309;
+    --app-overdue: #dc2626;
+
+    /* Hero: indigo/violet lembut */
+    --hero-from: #eef2ff;
+    --hero-via: #f5f3ff;
+    --hero-to: #ffffff;
+    --hero-glow: rgb(79 70 229 / 0.16);
+    --hero-ring: rgb(99 102 241 / 0.2);
+
+    /* Placeholder cover buku: gradasi cool-tone */
+    --cover-from: #c7d2fe;
+    --cover-via: #ddd6fe;
+    --cover-to: #e0e7ff;
+    --cover-ink: #4338ca;
+    --cover-spine: rgb(67 56 202 / 0.18);
+
+    --shadow-color: 15 23 42;
+    --glass-tint: 255 255 255;
+    --glass-alpha: 0.78;
+    --app-modal-backdrop: rgb(15 23 42 / 0.5);
+}
+
+/*
+| Pakai `:root.dark`, bukan `.dark`.
+
+| Keduanya menempel di elemen yang sama, tapi spesifisitasnya sama persis
+| (0,1,0) — pseudo-kelas `:root` setara dengan satu class. Kalau urutan
+| sumber berubah, blok mana yang menang ikut berubah dan tema bisa diam-diam
+| tidak berlaku. `:root.dark` (0,2,0) tidak punya masalah itu.
+*/
+:root.dark {
+    color-scheme: dark;
+
+    --app-bg: #020617;
+    --app-surface: #0f172a;
+    --app-border: rgb(148 163 184 / 0.16);
+    --app-border-strong: rgb(148 163 184 / 0.28);
+    --app-text: #f1f5f9;
+    --app-muted: #94a3b8;
+    --app-accent: #818cf8;
+    --app-brand: #4f46e5;
+    --app-on-brand: #ffffff;
+    --action-blue: #38bdf8;
+    --action-blue-hover: #7dd3fc;
+    --action-blue-on: #082f49;
+    --action-blue-outline: #7dd3fc;
+    --action-blue-border: #38bdf8;
+    --action-blue-soft: rgb(56 189 248 / 0.14);
+
+    --app-available: #4ade80;
+    --app-borrowed: #fbbf24;
+    --app-overdue: #f87171;
+
+    --hero-from: #1e1b4b;
+    --hero-via: #1e1a3d;
+    --hero-to: #0f172a;
+    --hero-glow: rgb(99 102 241 / 0.3);
+    --hero-ring: rgb(129 140 248 / 0.25);
+
+    --cover-from: #312e81;
+    --cover-via: #3730a3;
+    --cover-to: #1e1b4b;
+    --cover-ink: #c7d2fe;
+    --cover-spine: rgb(199 210 254 / 0.22);
+
+    --shadow-color: 0 0 0;
+    --glass-tint: 15 23 42;
+    --glass-alpha: 0.72;
+    --app-modal-backdrop: rgb(2 6 23 / 0.7);
+}
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /*
+    | Jembatan ke token di atas. Nama token memakai kosakata design.md
+    | (primary/secondary/tertiary/neutral/surface) supaya view dan spec
+    | membaca hal yang sama.
+    */
+    --color-primary: var(--app-text);
+    --color-secondary: var(--app-muted);
+    --color-tertiary: var(--app-accent);
+    --color-neutral: var(--app-bg);
+    --color-surface: var(--app-surface);
+    --color-brand: var(--app-brand);
+    --color-on-brand: var(--app-on-brand);
+    --color-hairline: var(--app-border);
+    --color-hairline-strong: var(--app-border-strong);
+
+    --color-available: var(--app-available);
+    --color-borrowed: var(--app-borrowed);
+    --color-overdue: var(--app-overdue);
+
+    --text-display: 3rem;
+    --text-h1: 1.875rem;
+    --text-h2: 1.5rem;
+    --text-body: 1rem;
+    --text-label: 0.75rem;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
+
+    --shadow-card: 0 1px 2px rgb(var(--shadow-color) / 0.05), 0 8px 24px -12px rgb(var(--shadow-color) / 0.15);
+    --shadow-lift: 0 2px 4px rgb(var(--shadow-color) / 0.06), 0 24px 48px -20px rgb(var(--shadow-color) / 0.28);
+    --shadow-glass: 0 8px 32px -12px rgb(var(--shadow-color) / 0.22);
+
+    --animate-fade-up: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    --animate-fade-in: fade-in 0.4s ease-out both;
+    --animate-pop: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    --animate-toast-in: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+    --animate-toast-out: toast-out 0.2s ease-in both;
+
+    @keyframes toast-in {
+        from {
+            opacity: 0;
+            transform: translateY(0.75rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes toast-out {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(0.5rem);
+        }
+    }
+
+    @keyframes fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes pop {
+        from {
+            opacity: 0;
+            transform: scale(0.92);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+}
+
+/*
+| Komponen dasar.
+|
+| Class di sini sengaja dibuat pendek supaya Blade tidak mengulang rantai
+| utility yang panjang di puluhan view. Warna tetap diambil dari token
+| semantik di atas — tidak ada hex yang ditulis ulang di sini.
+*/
+
+@layer components {
+    .card {
+        @apply rounded-lg border border-hairline bg-surface shadow-card;
+    }
+
+    /*
+    | Catatan: `@apply` hanya bisa memakai utility asli Tailwind, bukan class
+    | kustom lain. Jadi `.btn` memegang bentuk dasar, dan tiap variant hanya
+    | menambah warna. pemakaiannya: class="btn btn-primary".
+    */
+
+    .btn {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-5 py-2 text-sm font-medium
+            transition-all duration-200 focus-visible:ring-2 focus-visible:ring-tertiary/40 focus-visible:outline-none
+            active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 motion-reduce:active:scale-100;
+    }
+
+    .btn-primary {
+        @apply bg-brand text-on-brand shadow-card hover:bg-brand/90 hover:shadow-lift;
+    }
+
+    .btn-blue-primary {
+        @apply shadow-card hover:shadow-lift;
+        background-color: var(--action-blue);
+        color: var(--action-blue-on);
+    }
+
+    .btn-blue-primary:hover {
+        background-color: var(--action-blue-hover);
+    }
+
+    .btn-blue-outline {
+        border: 1px solid var(--action-blue-border);
+        background-color: transparent;
+        color: var(--action-blue-outline);
+    }
+
+    .btn-blue-outline:hover {
+        background-color: var(--action-blue-soft);
+        color: var(--action-blue-outline);
+    }
+
+    .btn-secondary {
+        @apply border border-hairline-strong bg-surface text-primary hover:border-tertiary/50 hover:bg-secondary/5;
+    }
+
+    .btn-danger {
+        @apply border border-overdue/40 text-overdue hover:bg-overdue/5;
+    }
+
+    .btn-ghost {
+        @apply text-secondary hover:bg-secondary/10 hover:text-primary;
+    }
+
+    .btn-sm {
+        @apply rounded-sm px-3 py-1 text-label;
+    }
+
+    .btn-lg {
+        @apply rounded-lg px-6 py-3 text-base;
+    }
+
+    /*
+    | Indikator halaman aktif + garis bawah yang tumbuh saat hover.
+    |
+    | Garis dibuat lewat `after:` supaya tidak perlu elemen tambahan di Blade.
+    | `after:inset-x-3` melakukan inset horizontal, yang butuh elemen ber-posisi
+    | relatif — karena itu `relative` ikut ditulis di sini, bukan hanya di view.
+    */
+    .nav-link {
+        @apply relative rounded-md px-3 py-2 text-sm font-medium text-secondary transition-colors
+            after:absolute after:inset-x-3 after:-bottom-0.5 after:h-0.5 after:origin-center after:scale-x-0
+            after:rounded-full after:bg-tertiary after:transition-transform after:duration-300
+            hover:bg-secondary/10 hover:text-primary hover:after:scale-x-100
+            dark:hover:bg-secondary/15;
+    }
+
+    .nav-link-block {
+        @apply block w-full;
+    }
+
+    .nav-link-active {
+        @apply bg-tertiary/10 text-tertiary after:scale-x-100 hover:bg-tertiary/10 hover:text-tertiary;
+    }
+
+    .sidebar-link {
+        @apply flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-secondary
+            transition-colors hover:bg-secondary/10 hover:text-primary dark:hover:bg-secondary/15;
+    }
+
+    .sidebar-link-active {
+        @apply bg-tertiary/10 text-tertiary hover:bg-tertiary/10 hover:text-tertiary;
+    }
+
+    /*
+    | Dropdown (menu akun, filter ringkas). Satu-satunya sumber kebenaran
+    | status buka/tutup adalah atribut `hidden`, karena JS tidak perlu
+    | tahu class apa yang dipakai view.
+    |
+    | Aturan `[hidden]` bawaan Tailwind ada di layer `base`, sedangkan class
+    | di bawah ada di layer `components` yang lebih kuat. Kalau `.dropdown-menu`
+    | memakai utility `flex`/`block`, atribut `hidden` kalah dan menu tidak
+    | pernah tertutup. Karena itu `.dropdown-menu[hidden]` ditulis eksplisit.
+    */
+    .dropdown-menu {
+        @apply absolute z-50 mt-2 min-w-56 overflow-hidden rounded-lg border border-hairline bg-surface p-1.5 shadow-lift;
+    }
+
+    .dropdown-menu[hidden] {
+        display: none;
+    }
+
+    /* Muncul cepat saat dibuka; keyframe `pop` sudah ada di blok @theme. */
+    .dropdown-menu:not([hidden]) {
+        animation: pop 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .dropdown-trigger {
+        @apply flex cursor-pointer items-center gap-2 rounded-md text-sm font-medium text-primary transition-colors
+            hover:bg-secondary/10 focus-visible:ring-2 focus-visible:ring-tertiary/40 focus-visible:outline-none
+            dark:hover:bg-secondary/15;
+    }
+
+    /* Panah pemicu berputar saat menu terbuka. */
+    .dropdown-trigger[aria-expanded="true"] [data-dropdown-icon] {
+        transform: rotate(180deg);
+    }
+
+    .dropdown-label {
+        @apply px-3 pt-2 pb-1 text-label font-semibold tracking-widest text-secondary uppercase;
+    }
+
+    .dropdown-item {
+        @apply flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm font-medium text-secondary
+            transition-colors hover:bg-secondary/10 hover:text-primary
+            focus-visible:bg-tertiary/10 focus-visible:text-tertiary focus-visible:outline-none
+            dark:hover:bg-secondary/15;
+    }
+
+    .dropdown-item-active {
+        @apply bg-tertiary/10 text-tertiary;
+    }
+
+    .dropdown-separator {
+        @apply my-1.5 h-px bg-hairline;
+    }
+
+    /*
+    | Modal (Task 14.3) memakai elemen `<dialog>` asli, bukan overlay buatan
+    | sendiri. Alasannya: browser sudah memberi focus trap, tombol Escape,
+    | `inert` untuk konten di belakang, dan pengembalian fokus ke tombol
+    | pembuka. Semua itu yang paling sering salah kalau ditulis manual.
+    |
+    | `opacity: 0` di status tertutup bukan styling yang sia-sia: browser
+    | modern memakai `transition-behavior: allow-discrete` supaya `display`
+    | ikut dianimasikan. Browser lama yang tidak paham `@starting-style`
+    | tetap menampilkan dialog dengan benar, hanya tanpa animasi.
+    */
+    .modal {
+        @apply m-auto max-h-[85dvh] w-[min(32rem,calc(100%-2rem))] overflow-y-auto rounded-lg border border-hairline
+            bg-surface p-0 text-primary shadow-lift;
+        opacity: 0;
+        transform: translateY(0.5rem) scale(0.98);
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease,
+            overlay 0.2s allow-discrete,
+            display 0.2s allow-discrete;
+    }
+
+    .modal[open] {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    @starting-style {
+        .modal[open] {
+            opacity: 0;
+            transform: translateY(0.5rem) scale(0.98);
+        }
+    }
+
+    /* Ditulis ulang, bukan mengandalkan aturan `dialog:not([open])` bawaan. */
+    .modal:not([open]) {
+        display: none;
+    }
+
+    .modal-sm {
+        width: min(26rem, calc(100% - 2rem));
+    }
+
+    .modal-lg {
+        width: min(48rem, calc(100% - 2rem));
+    }
+
+    .modal::backdrop {
+        background-color: var(--app-modal-backdrop);
+        transition:
+            background-color 0.2s ease,
+            overlay 0.2s allow-discrete,
+            display 0.2s allow-discrete;
+    }
+
+    @starting-style {
+        .modal[open]::backdrop {
+            background-color: transparent;
+        }
+    }
+
+    /* Kunci scroll halaman selama ada dialog terbuka. */
+    html.modal-open,
+    html.modal-open body {
+        overflow: hidden;
+    }
+
+    /*
+    | Toast (Task 14.5).
+    |
+    | Wilayahnya `pointer-events-none` supaya tidak memblokir klik di seluruh
+    | layar, padahal toast-nya menumpuk di pojok. `pointer-events` diwarisi,
+    | jadi tiap toast harus menuliskannya kembali lewat `.toast`.
+    */
+    .toast-region {
+        @apply pointer-events-none fixed inset-x-0 bottom-0 z-60 flex flex-col items-center gap-2 p-4
+            sm:inset-x-auto sm:right-0 sm:items-end sm:p-6;
+    }
+
+    /*
+ * Panel pratinjau pencarian (Task 14.6)
+ *
+ * Ditempel di bawah input, jadi posisinya absolut terhadap `.relative` pada
+ * pembungkus input di books/index. `z-30` cukup: panel ini hanya hidup
+ * sementara input difokuskan, dan tidak pernah muncul bersamaan dengan
+ * dialog yang buka di top layer.
+ */
+.search-panel {
+    @apply pointer-events-auto absolute inset-x-0 top-full z-30 mt-2 max-h-96 overflow-y-auto rounded-xl border border-hairline bg-surface shadow-lg;
+}
+
+.search-list {
+    @apply m-0 list-none p-1.5;
+}
+
+.search-item {
+    @apply flex items-center justify-between gap-3 rounded-lg px-3 py-2 no-underline transition-colors;
+}
+
+.search-item:hover,
+.search-item.is-active {
+    @apply bg-secondary/10 dark:bg-secondary/15;
+}
+
+.search-item-body {
+    @apply flex min-w-0 flex-col;
+}
+
+.search-item-title {
+    @apply truncate text-sm font-semibold text-primary;
+}
+
+.search-item-meta {
+    @apply truncate text-xs text-secondary;
+}
+
+/* Badge status di panel memakai warna status yang sudah ada, bukan warna
+   baru: kuning = dipinjam. Warna hijau sengaja tidak ditampilkan di sini
+   karena "tersedia" adalah kondisi default yang tidak perlu diberi sorotan.
+   Bentuk badge ditulis ulang di sini, bukan `@apply badge` — `badge` adalah
+   class milik proyek di layer components, sedangkan `@apply` hanya menerima
+   utility asli Tailwind (build gagal dengan "Cannot apply unknown utility"). */
+.search-item-status {
+    @apply inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-label font-medium
+        bg-borrowed/10 text-borrowed dark:bg-borrowed/15;
+}
+
+.search-message {
+    @apply px-3 py-4 text-center text-sm text-secondary;
+}
+
+/* Loading state (Task 14.8).
+   ---------------------------------------------------------------------------
+   Definisi visual skeleton hidup di sini, BUKAN di dalam JavaScript. Markup-nya
+   ada di `<x-loading-skeleton>`, dan JS hanya mengklon `<template>` yang sudah
+   dirender Blade — bukan menyusun ulang class-nya. Kalau bentuk skeleton diubah
+   di satu tempat, tempat keduanya ikut berubah; kalau class-nya ditulis ulang
+   di JS, cepat atau lambat keduanya berbeda dan tidak ada yang mengetahuinya. */
+.skeleton {
+    @apply flex items-center gap-4;
+}
+
+.skeleton-cover {
+    @apply h-12 w-9 shrink-0 rounded bg-secondary/10;
+}
+
+.skeleton-lines {
+    @apply flex-1 space-y-2;
+}
+
+.skeleton-line {
+    @apply h-3 w-full rounded bg-secondary/10;
+}
+
+.skeleton-line-half {
+    @apply w-1/2;
+}
+
+/* Caption yang MENYATAKAN sedang memuat. Bukan `sr-only`.
+
+   `@media (prefers-reduced-motion: reduce)` di bawah aplikasi ini mematikan
+   `animate-pulse` (durasi jadi 0.01ms), jadi skeleton yang hanya berdenyut akan
+   berubah menjadi blok abu-abu diam — yang oleh user dibaca sebagai "halaman
+   rusak", bukan "sedang memuat". Karena denyutnya hanya hiasan, kalimat yang
+   menyatakan keadaan itu harus selalu terlihat, dengan atau tanpa animasi. */
+.skeleton-caption {
+    @apply flex items-center gap-2 text-xs text-secondary;
+}
+
+/* Berputar lambat supaya tidak menyamar sebagai "halaman beku". Ukurannya
+   sengaja kecil: indikator di dalam panel kecil harus kalah dari isi panel. */
+.skeleton-spinner {
+    @apply h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-hairline-strong
+        border-t-tertiary;
+}
+
+
+.toast {
+        @apply pointer-events-auto w-full max-w-sm animate-toast-in shadow-lift;
+    }
+
+    /* Ditulis setelah `.toast` supaya shorthand-nya yang menang. */
+    .toast.toast-leaving {
+        animation: var(--animate-toast-out);
+    }
+
+    /* Panel kaca untuk navbar melayang. */
+    .glass {
+        @apply border border-hairline/80 shadow-glass;
+        background-color: rgb(var(--glass-tint) / var(--glass-alpha));
+    }
+
+    .field-label {
+        @apply block text-label font-medium tracking-wide text-secondary uppercase;
+    }
+
+    .field-input {
+        @apply mt-1.5 w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-body text-primary
+            transition-colors focus:border-tertiary focus:ring-2 focus:ring-tertiary/30 focus:outline-none;
+    }
+
+    .badge {
+        @apply inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-label font-medium;
+    }
+
+    /*
+    | Badge warna status. Opacity dinaikkan di dark mode karena warna dasar
+    | terang di atas latar gelap membuat `/10` nyaris tak terlihat.
+    */
+    .badge-available {
+        @apply bg-available/10 text-available dark:bg-available/15;
+    }
+
+    .badge-borrowed {
+        @apply bg-borrowed/10 text-borrowed dark:bg-borrowed/15;
+    }
+
+    .badge-overdue {
+        @apply bg-overdue/10 text-overdue dark:bg-overdue/15;
+    }
+
+    .badge-muted {
+        @apply bg-secondary/10 text-secondary dark:bg-secondary/15;
+    }
+
+    /* Judul seksi: garis aksen kecil di atas, teks rapat, tracking rapat. */
+    .section-title {
+        @apply text-h2 font-bold tracking-tight text-primary;
+    }
+
+    .section-eyebrow {
+        @apply text-label font-semibold tracking-widest text-tertiary uppercase;
+    }
+
+    /*
+    | Kartu statistik: naik sedikit + bayangan menguat saat hover.
+    |
+    | Bentuk dasarnya ditulis ulang di sini, bukan `@apply card`. `@apply` hanya
+    | bisa memakai utility asli Tailwind — kalau diisi `card`, build gagal
+    | dengan "Cannot apply unknown utility class". View yang butuh kartu
+    | sekaligus efek hover memakai kedua class itu, bukan satu.
+    */
+    .stat-card {
+        @apply relative overflow-hidden rounded-lg border border-hairline bg-surface p-5 shadow-card
+            transition-all duration-300 hover:-translate-y-0.5 hover:border-tertiary/40 hover:shadow-lift
+            motion-reduce:transform-none;
+    }
+
+    .stat-icon {
+        @apply grid h-10 w-10 place-items-center rounded-md;
+    }
+
+    /* Pill kategori / filter yang bisa diklik. */
+    .pill {
+        @apply inline-flex items-center gap-2 rounded-full border border-hairline-strong bg-surface px-4 py-2
+            text-sm font-medium text-primary transition-all duration-200
+            hover:-translate-y-px hover:border-tertiary hover:text-tertiary hover:shadow-card
+            motion-reduce:hover:transform-none;
+    }
+
+    .pill-active {
+        @apply border-tertiary bg-tertiary/10 text-tertiary;
+    }
+
+    .table-wrap {
+        @apply overflow-x-auto rounded-lg border border-hairline bg-surface shadow-card;
+    }
+
+    .table {
+        @apply min-w-full divide-y divide-secondary/10 text-sm;
+    }
+
+    .table thead {
+        @apply bg-secondary/5 text-left text-label tracking-wide text-secondary uppercase dark:bg-secondary/10;
+    }
+
+    .table th {
+        @apply px-4 py-3 font-medium;
+    }
+
+    .table td {
+        @apply px-4 py-3 align-middle;
+    }
+
+    .table tbody {
+        @apply divide-y divide-secondary/10 dark:divide-secondary/15;
+    }
+
+    .table tbody tr {
+        @apply transition-colors hover:bg-secondary/5 dark:hover:bg-secondary/10;
+    }
+
+    /* Link teks untuk navigasi sekunder (footer, "lihat semua"). */
+    .link-accent {
+        @apply font-medium text-tertiary underline-offset-4 transition-colors hover:underline;
+    }
+
+    /*
+    | Pagination (Task 14.9).
+    |
+    | View bawaan Laravel memakai abu-abu/biru stok yang tidak ada
+    | hubungannya dengan palet Slate/Indigo proyek ini. Karena dipakai di 7
+    | halaman daftar, satu-satunya komponen yang benar-benar terlihat "bukan
+    | bagian dari situs ini". Warna dan bentuknya sekarang di sini, bukan
+    | utility inline di view vendor — supaya tetap satu sumber kebenaran
+    | seperti komponen lain.
+    |
+    | Bentuk mobile-nya bukan "versi desktop yang disembunyikan": di bawah
+    | `sm`, nomor halaman tetap tampil (dipangkas), karena katalog buku punya
+    | puluhan halaman dan user di HP tidak punya cara lain untuk tahu dia di
+    | halaman berapa atau totalnya berapa.
+    */
+    .pagination {
+        @apply flex flex-wrap items-center gap-x-3 gap-y-2 text-sm;
+    }
+
+    .pagination-summary {
+        @apply order-last w-full text-xs text-secondary sm:order-first sm:w-auto;
+    }
+
+    .pagination-list {
+        @apply flex items-center gap-1;
+    }
+
+    .pagination-item {
+        @apply inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-md border border-hairline
+            bg-surface px-2.5 text-sm font-medium text-secondary
+            transition-colors hover:border-tertiary hover:text-tertiary
+            focus-visible:ring-2 focus-visible:ring-tertiary/40 focus-visible:outline-none
+            dark:hover:bg-secondary/10;
+    }
+
+    .pagination-item-current {
+        @apply border-tertiary bg-tertiary/10 text-tertiary;
+    }
+
+    .pagination-item-disabled {
+        @apply cursor-not-allowed text-secondary/40 hover:border-hairline hover:text-secondary/40
+            dark:hover:bg-transparent;
+    }
+
+    /* Ellipsis. Bukan tombol: diklik tidak ada yang terjadi, jadi hanya teks. */
+    .pagination-gap {
+        @apply inline-flex h-9 min-w-6 items-center justify-center px-1 text-secondary/60;
+    }
+}
+
+@layer utilities {
+    /* Latar hero bergradasi, token-nya ikut tema. */
+    .bg-hero {
+        background-image: linear-gradient(135deg, var(--hero-from) 0%, var(--hero-via) 48%, var(--hero-to) 100%);
+    }
+
+    /* Placeholder cover: gradasi buku, bukan kotak abu-abu polos. */
+    .bg-cover-placeholder {
+        background-image: linear-gradient(135deg, var(--cover-from) 0%, var(--cover-via) 52%, var(--cover-to) 100%);
+    }
+
+    /* Tepi kiri/kanan memudar, dipakai untuk baris kategori yang melebar. */
+    .mask-fade-x {
+        mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+}
+
+@media (min-width: 1024px) {
+    body.sidebar-collapsed [data-sidebar] {
+        width: 5rem;
+    }
+
+    body.sidebar-collapsed [data-sidebar-label] {
+        display: none;
+    }
+
+    body.sidebar-collapsed [data-sidebar-link] {
+        justify-content: center;
+        padding-inline: 0.75rem;
+    }
+
+    body.sidebar-collapsed .app-topbar,
+    body.sidebar-collapsed .app-content {
+        margin-left: 5rem;
+    }
+}
+
+/*
+| Hormati pengaturan "kurangi gerakan" di sistem operasi. Bukan sekadar
+| opsional — animasi yang tetap jalan untuk pengguna dengan gangguan
+| vestibular memang mengganggu.
+*/
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

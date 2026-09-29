@@ -1,0 +1,33 @@
+*.log
+.DS_Store
+
+# Rahasia. Daftarkan EKSPANSI, bukan beberapa nama yang kebetulan sering
+# dipakai: `.env.local`, `.env.staging`, `.env.testing`, `.env.dev` semuanya
+# berisi kredensial sungguhan, dan listing per-nama akan selalu kalah dari
+# varian berikutnya. `!.env.example` wajib ada karena file itu justru harus
+# ikut terlacak — dia satu-satunya sumber konfigurasi yang boleh dipublikasikan.
+.env
+.env.*
+!.env.example
+
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+.agents/
+AGENTS.md
