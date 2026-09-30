@@ -38,6 +38,17 @@ class LoanController extends Controller
         $filters = $this->validFilters($request, [
             'status' => ['nullable', Rule::in(Loan::statuses())],
             'user_id' => ['nullable', 'integer', 'min:1'],
+            /*
+             * Dipakai oleh kartu "Peminjaman Aktif" di dasbor. Filter `status`
+             * hanya menerima satu status, sedangkan "aktif" berarti borrowed +
+             * overdue sekaligus, jadi butuh parameter sendiri.
+             *
+             * Hanya `1` yang diterima: `?active=0` artinya "jangan filter",
+             * bukan "tampilkan yang tidak aktif". Nilai lain diabaikan oleh
+             * `validFilters()` — bukan halaman kosong, tapi angka di dasbor dan
+             * isi halaman jadi berbeda, dan itu lebih membingungkan.
+             */
+            'active' => ['nullable', Rule::in(['1'])],
         ]);
 
         /*
@@ -51,6 +62,10 @@ class LoanController extends Controller
         $loans = Loan::query()
             ->with(['user', 'book'])
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            // `scopeActive()` definisi yang sama dengan angka "Peminjaman
+            // Aktif" di dasbor, jadi kartu dan daftar ini tidak bisa
+            // menghitung dua hal berbeda.
+            ->when(($filters['active'] ?? null) === '1', fn ($query) => $query->active())
             ->when($filters['user_id'] ?? null, fn ($query, $userId) => $query->where('user_id', $userId))
             ->latest('borrowed_at')
             ->paginate(config('perpustakaan.pagination.per_page'))
@@ -59,9 +74,7 @@ class LoanController extends Controller
         return view('loans.index', [
             'loans' => $loans,
             'statuses' => Loan::statuses(),
-            'members' => User::where('role', User::ROLE_ANGGOTA)->orderBy('name')->get(),
-            // Hanya buku yang belum sedang dipinjam yang ditawarkan.
-            'availableBooks' => Book::available()->orderBy('title')->get(),
+            'onlyActive' => ($filters['active'] ?? null) === '1',
         ]);
     }
 

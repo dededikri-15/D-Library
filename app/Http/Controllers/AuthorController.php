@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\HandlesUploads;
 use App\Http\Requests\AuthorRequest;
 use App\Models\Author;
 use App\Support\Json;
@@ -13,8 +12,6 @@ use Illuminate\View\View;
 
 class AuthorController extends Controller
 {
-    use HandlesUploads;
-
     /** Foto penulis sama perlakuannya dengan cover buku: gambar publik. */
     protected static function photoDisk(): string
     {

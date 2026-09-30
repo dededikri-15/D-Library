@@ -96,7 +96,7 @@
 
         <div
             class="mt-10 flex flex-col gap-3 border-t border-hairline pt-6 text-sm text-secondary sm:flex-row sm:items-center sm:justify-between">
-            <p>&copy; {{ now()->year }} {{ config('app.name') }}. Proyek demo.</p>
+            <p>&copy; {{ now()->year }} {{ config('app.name') }}</p>
             <p class="text-label">Dibangun dengan Laravel {{ Illuminate\Foundation\Application::VERSION }}</p>
         </div>
     </div>

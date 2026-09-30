@@ -25,13 +25,15 @@
        letaknya berdampingan dengan tombol simpan akan membuat keduanya mudah
        tertukar.
 
-    3. Status "masih dipakai" ditampilkan SEBELUM tombol diklik. Server tetap
-       menolak hapus (lihat `Controller::destroyMasterData()`), tapi tampilannya
-       membuat orang tahu harus membereskan buku-bukunya dulu, bukan mengulang
-       aksi yang sama.
+    3. Jumlah buku yang IKUT terhapus ditulis di atas tombol, sebelum tombol
+       diklik. Hapus master data berarti menghapus isi dan riwayatnya juga
+       (`books.category_id` memakai `cascadeOnDelete()`), jadi orang berhak
+       tahu itu sebelum menekan, bukan setelah melihat katalognya berkurang.
 
-    Tombol yang dinonaktifkan tidak dapat dikirim sama sekali — form tanpa
-    tombol submit aktif tidak bisa disubmit, termasuk lewat tombol Enter.
+    Tanda kutip di `data-confirm` ditulis apa adanya (`"`), bukan `&quot;`:
+    nilai attribute ini sudah keluar dari `{{ }}` sehingga `e()` yang
+    meng-escape-nya, dan `&quot;` yang ditulis manual akan tampil apa adanya
+    di dalam dialog.
 --}}
 
 <div class="mt-6 max-w-xl rounded-lg border border-overdue/30 bg-overdue/5 p-5">
@@ -39,8 +41,8 @@
 
     @if ($isUsed)
         <p class="mt-1 text-sm text-secondary">
-            {{ ucfirst($label) }} ini masih dipakai {{ $booksCount }} buku, jadi belum bisa dihapus.
-            Pindahkan dulu buku-buku tersebut ke {{ $label }} lain.
+            Hapus {{ $label }} ini beserta <strong class="font-semibold text-overdue">{{ $booksCount }} buku</strong>
+            di dalamnya. Buku, file PDF, dan riwayat peminjamannya ikut terhapus permanen.
         </p>
     @else
         <p class="mt-1 text-sm text-secondary">
@@ -49,10 +51,13 @@
     @endif
 
     <form method="POST" action="{{ $action }}" class="mt-4"
-          data-confirm="Hapus {{ $label }} &quot;{{ $name }}&quot;? Tindakan ini tidak bisa dibatalkan."
+          data-confirm="{{ $isUsed
+              ? 'Hapus ' . $label . ' "' . $name . '"? ' . $booksCount . ' buku ikut terhapus permanen, beserta file dan riwayat peminjamannya.'
+              : 'Hapus ' . $label . ' "' . $name . '"? Tindakan ini tidak bisa dibatalkan.'
+          }}"
           data-confirm-title="Hapus {{ $label }}">
         @csrf
         @method('DELETE')
-        <button type="submit" class="btn btn-danger" @disabled($isUsed)>Hapus {{ $label }}</button>
+        <button type="submit" class="btn btn-danger">Hapus {{ $label }}</button>
     </form>
 </div>

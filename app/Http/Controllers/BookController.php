@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\RecordReading;
-use App\Http\Controllers\Concerns\HandlesUploads;
 use App\Http\Requests\BookRequest;
 use App\Models\Author;
 use App\Models\Book;
@@ -24,8 +23,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookController extends Controller
 {
-    use HandlesUploads;
-
     /**
      * Batas baris untuk endpoint pencarian hidup (Task 14.6).
      *

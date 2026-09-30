@@ -4,43 +4,42 @@
 
 @section('content')
     <h1 class="text-h1 font-semibold text-primary">Data Peminjaman</h1>
-    <p class="mt-1 text-sm text-secondary">Catat peminjaman baru dan lacak pengembalian buku.</p>
+    {{-- <p class="mt-1 text-sm text-secondary">Lacak pengembalian buku.</p> --}}
 
-    <form method="POST" action="{{ route('loans.store') }}" class="card mt-6 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4"
-          data-submit-once>
-        @csrf
+    {{--
+        Filter `active=1` datang dari kartu "Peminjaman Aktif" di dasbor, jadi
+        filter status biasa tidak bisa menampilkannya: "aktif" itu status
+        "dipinjam" + "terlambat" sekaligus, bukan satu status. Karena itu tidak
+        ada checkbox untuk mengaktifkannya — kalau ada, orang akan mengira
+        "aktif" itu status keempat di dropdown ini.
 
-        <x-form.select name="user_id" label="Anggota" required emptyLabel="Pilih anggota"
-                       :options="$members->pluck('name', 'id')->all()" />
-
-        <x-form.select name="book_id" label="Buku" required emptyLabel="Pilih buku tersedia"
-                       :options="$availableBooks->pluck('title', 'id')->all()" />
-
-        <x-form.input name="borrowed_at" label="Tanggal pinjam" type="date" required
-                      :value="now(config('perpustakaan.display_timezone'))->toDateString()" />
-
-        <div class="flex items-end">
-            <button type="submit" class="btn btn-primary w-full">Catat peminjaman</button>
-        </div>
-
-        <p class="text-label text-secondary sm:col-span-2 lg:col-span-4">
-            Jatuh tempo dihitung otomatis {{ config('perpustakaan.loan.duration_days') }} hari dari tanggal pinjam.
-            Buku yang sedang dipinjam tidak muncul di daftar di atas.
-        </p>
-    </form>
-
+        Filter itu muncul sebagai catatan kecil di bawah form, yang sekaligus
+        satu-satunya cara membuangnya lagi. Tanpa catatan itu, orang yang
+        menekan "Terapkan" justru ikut menghapus filternya, karena form-nya
+        tidak pernah mengirim `active`.
+    --}}
     <form method="GET" class="mt-6 flex max-w-xs items-end gap-2">
         <div class="flex-1">
             <label for="status" class="field-label">Filter status</label>
             <select id="status" name="status" class="field-input">
                 <option value="">Semua status</option>
                 @foreach ($statuses as $status)
-                    <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
+                    <option value="{{ $status }}" @selected(request('status') === $status)>
+                        {{ App\Models\Loan::statusOptions()[$status] ?? $status }}
+                    </option>
                 @endforeach
             </select>
         </div>
         <button type="submit" class="btn btn-secondary shrink-0">Terapkan</button>
     </form>
+
+    @if ($onlyActive)
+        <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-secondary">
+            <span class="badge badge-borrowed">Aktif</span>
+            Menampilkan peminjaman yang dipinjam dan terlambat saja.
+            <a href="{{ route('loans.index') }}" class="link-accent">Tampilkan semua</a>
+        </p>
+    @endif
 
     <div class="table-wrap mt-6">
         <table class="table">
@@ -93,7 +92,7 @@
                         <td colspan="6" class="p-0">
                             <x-empty-state class="border-0"
                                            title="Belum ada data peminjaman"
-                                           description="Catat peminjaman pertama lewat formulir di atas." />
+                                           description="Belum ada peminjaman yang tercatat." />
                         </td>
                     </tr>
                 @endforelse

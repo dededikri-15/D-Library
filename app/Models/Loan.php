@@ -71,6 +71,28 @@ class Loan extends Model
     }
 
     /**
+     * Label bahasa Indonesia untuk setiap status, siap dipakai `<select>`.
+     *
+     * Nilai di database sengaja bahasa Inggris (`borrowed`) supaya migration
+     * dan constraint-nya tidak bergantung pada bahasa. Tapi nilai itu tidak
+     * boleh sampai tampil ke pengguna — dropdown filter yang isinya
+     * "borrowed / returned / overdue" terlihat seperti bug, bukan fitur.
+     *
+     * Dipakai juga oleh `x-status-badge`, jadi label di dropdown dan label di
+     * badge tidak mungkin berbeda.
+     *
+     * @return array<string, string>
+     */
+    public static function statusOptions(): array
+    {
+        return [
+            self::STATUS_BORROWED => 'Dipinjam',
+            self::STATUS_RETURNED => 'Dikembalikan',
+            self::STATUS_OVERDUE => 'Terlambat',
+        ];
+    }
+
+    /**
      * Tanggal jatuh tempo dihitung dari tanggal pinjam.
      *
      * Sengaja method statis di model, bukan ditulis inline di controller:

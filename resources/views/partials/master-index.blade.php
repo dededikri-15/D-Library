@@ -64,34 +64,42 @@
                         </td>
                         <td class="text-right">
                             {{--
-                                Kalimat konfirmasi tidak boleh menjanjikan
-                                "buku ikut terhapus": `books` memakai
-                                cascadeOnDelete, jadi menekan Hapus pada
-                                baris yang masih dipakai bisa menghapus
-                                puluhan buku beserta riwayat pinjamannya.
-                                Server menolak aksi itu (lihat
-                                `Controller::destroyMasterData()`), dan
-                                tombolnya sudah dimatikan di sini supaya
-                                orang tidak/heran kenapa tidak terjadi apa-apa.
+                                Kalimat konfirmasi wajib menyebut berapa banyak
+                                buku yang ikut terhapus. `books.category_id` (dan
+                                dua kolom lain) memakai `cascadeOnDelete()`, jadi
+                                menghapus satu kategori berarti menghapus isi dan
+                                riwayat pinjamannya juga — irreversibel, dan
+                                tidak akan muncul di mana pun setelah selesai.
+                                Tombolnya sengaja tidak dimatikan: pustakawan
+                                harus tetap bisa membereskan data yang salah
+                                input, dan menahan hapus hanya karena masih ada
+                                buku di dalamnya memaksa dia membuka tiap buku
+                                satu per satu.
+
+                                Tanda kutip ditulis apa adanya (`"`), bukan
+                                `&quot;`. Nilai attribute ini sudah keluar dari
+                                `{{ }}`, jadi `e()` yang meng-escape-nya; kalau
+                                `&quot;` ikut ditulis di sini, yang tampil di
+                                dialog adalah teks `&quot;` itu sendiri.
                             --}}
                             <form method="POST" action="{{ route($routeBase.'.destroy', $row) }}"
-                                  data-confirm="Hapus {{ strtolower($title) }} &quot;{{ $row->name }}&quot;? Tindakan ini tidak bisa dibatalkan."
+                                  data-confirm="{{ $row->books_count > 0
+                                      ? 'Hapus ' . strtolower($title) . ' "' . $row->name . '"? ' . $row->books_count . ' buku ikut terhapus permanen, beserta file dan riwayat peminjamannya.'
+                                      : 'Hapus ' . strtolower($title) . ' "' . $row->name . '"? Tindakan ini tidak bisa dibatalkan.'
+                                  }}"
                                   data-confirm-title="Hapus {{ strtolower($title) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm"
-                                        @disabled($row->books_count > 0)
-                                        title="{{ $row->books_count > 0 ? 'Masih dipakai ' . $row->books_count . ' buku' : null }}">Hapus</button>
+                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
                             </form>
                             {{--
-                                Alasan kenapa tombolnya mati ditulis di bawah
-                                tombol, bukan cuma di atribut `title`. `title`
-                                cuma muncul saat kursor diarahkan ke elemen itu —
-                                di layar sentuh tidak pernah muncul sama sekali,
-                                jadi tanpa teks ini orang mengira tombolnya rusak.
+                                Jumlah buku yang ikut terhapus ditulis di bawah
+                                tombol, bukan cuma di dalam dialog. Dialog cuma
+                                muncul setelah tombol ditekan, padahal akibatnya
+                                harus terbaca dari melirik tabel saja.
                             --}}
                             @if ($row->books_count > 0)
-                                <p class="mt-1 text-xs text-secondary">Dipakai {{ $row->books_count }} buku</p>
+                                <p class="mt-1 text-xs text-overdue">{{ $row->books_count }} buku ikut terhapus</p>
                             @endif
                         </td>
                     @endif
