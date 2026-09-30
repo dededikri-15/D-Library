@@ -70,12 +70,22 @@
         wilayah ini supaya muncul melayang di pojok, bukan mendorong isi
         halaman. Alert galat validasi tetap inline di <main> di atas.
 
+        `session('error')` dipakai untuk aksi yang ditolak karena datanya masih
+        dipakai (mis. hapus kategori yang masih punya buku). Varian merahnya
+        penting: pesan "kategori tidak bisa dihapus" yang berwarna hijau akan
+        dibaca user sebagai "berhasil dihapus", padahal barisnya masih ada di
+        daftar.
+
         Tidak dibungkus `@auth` karena tamu pun butuh notifikasi: pendaftaran
         anggota dan hasil login sama-sama mem-flash `status`.
     --}}
     <x-toast-region>
         @if (session('status'))
             <x-alert variant="success" class="toast" auto-dismiss>{{ session('status') }}</x-alert>
+        @endif
+
+        @if (session('error'))
+            <x-alert variant="error" class="toast">{{ session('error') }}</x-alert>
         @endif
     </x-toast-region>
 

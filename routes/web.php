@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AnggotaDashboardController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoryController;
@@ -33,6 +35,15 @@ Route::middleware('guest')->group(function () {
     // Pengaman luar per IP. Batas per email+IP ada di dalam LoginRequest.
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
         ->middleware('throttle:login');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])
+        ->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
+        ->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'store'])
+        ->name('password.update');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -72,6 +83,10 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
         ->names('publishers')
         ->except('show')
         ->whereNumber('publisher');
+
+    Route::post('kategori/quick', [CategoryController::class, 'storeQuick'])->name('categories.quick');
+    Route::post('penulis/quick', [AuthorController::class, 'storeQuick'])->name('authors.quick');
+    Route::post('penerbit/quick', [PublisherController::class, 'storeQuick'])->name('publishers.quick');
 
     // Manajemen buku (PRD §6)
     Route::resource('buku', BookController::class)

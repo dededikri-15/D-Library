@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Book;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class BookRequest extends FormRequest
@@ -24,6 +26,14 @@ class BookRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'isbn' => [
                 'required', 'string', 'max:20',
+                // Rule `string` saja menerima apa saja, sehingga katalog bisa
+                // berisi "bukan isbn". ISBN ditulis sebagai 10 atau 13 digit;
+                // tanda hubung dan spasi hanya pemisah visual yang diabaikan.
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! self::isValidIsbn($value)) {
+                        $fail('ISBN harus terdiri dari 10 atau 13 digit (tanda hubung dan spasi diizinkan).');
+                    }
+                },
                 // Unik per buku, tapi saat edit ISBN miliknya sendiri tetap boleh.
                 Rule::unique('books', 'isbn')->ignore($bookId),
             ],
@@ -92,6 +102,7 @@ class BookRequest extends FormRequest
             'isbn' => 'ISBN',
             'publication_year' => 'tahun terbit',
             'pages' => 'jumlah halaman',
+            'status' => 'status buku',
             'category_id' => 'kategori',
             'author_id' => 'penulis',
             'publisher_id' => 'penerbit',
@@ -106,7 +117,27 @@ class BookRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if (is_string($this->isbn)) {
-            $this->merge(['isbn' => trim($this->isbn)]);
+            // Huruf X pada ISBN-10 dinormalkan ke huruf besar supaya "x" dan
+            // "X" tidak lolos sebagai dua buku berbeda pada aturan unique.
+            $this->merge(['isbn' => Str::upper(trim($this->isbn))]);
         }
+    }
+
+    /**
+     * ISBN-10 boleh diakhiri huruf X, ISBN-13 hanya boleh angka. Pemisah
+     * visual (tanda hubung, spasi) diabaikan saat pengecekan, sehingga
+     * "978-602-001-001-1" tetap dianggap ISBN yang benar.
+     *
+     * Yang disimpan tetap sesuai yang diketik pengguna (pemisah ikut
+     * disimpan), jadi aturan `unique` masih bisa diloloskan oleh varian
+     * pemisah yang berbeda, misalnya "9786020010011" vs
+     * "978-602-001-001-1". Mencegahnya butuh kolom ISBN ternormalkan
+     * sendiri, jadi dibiarkan untuk sekarang.
+     */
+    private static function isValidIsbn(mixed $value): bool
+    {
+        $compact = preg_replace('/[\s\-]+/', '', (string) $value);
+
+        return (bool) preg_match('/^(?:\d{9}[\dX]|\d{13})$/', (string) $compact);
     }
 }

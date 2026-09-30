@@ -1383,6 +1383,109 @@ window.ajax = function (url, options = {}) {
     return fetch(url, { ...defaults, ...options });
 };
 
+/**
+ * Quick add untuk kategori/penulis/penerbit di form buku.
+ *
+ * Alur: user klik tombol "+" di samping dropdown → modal muncul → isi nama →
+ * submit via AJAX → item baru dibuat di server → dropdown di-refresh → item
+ * baru otomatis terpilih.
+ *
+ * Kenapa AJAX bukan form biasa: user tidak perlu meninggalkan halaman form buku.
+ * Kalau redirect, semua isi form yang sudah diketik hilang.
+ *
+ * Dua hal yang harus benar di sini, dan keduanya soal "user tidak diberi
+ * tahu apa yang terjadi":
+ *
+ * 1. Response BELUM harus dicek dulu. `fetch` tidak melempar error untuk 422,
+ *    jadi `if (data.id && data.name)` yang dulu dipakai akan diam saja saat
+ *    validasi gagal — modal tetap terbuka, tidak ada pesan, tombol kembali
+ *    seperti semula. User mengira tombolnya tidak nyambung, lalu mengulang
+ *    percobaan dengan nama yang sama.
+ *
+ * 2. Pesan error ditulis INLINE di dalam modal, bukan lewat `window.toast`.
+ *    Toast hidup di aliran dokumen biasa, sedangkan `<dialog>` yang terbuka
+ *    ada di top layer — toast selalu tertutup backdrop dan tidak terlihat.
+ */
+function initQuickAdd() {
+    const forms = document.querySelectorAll('[data-quick-form]');
+    if (forms.length === 0) return;
+
+    forms.forEach((form) => {
+        const error = form.querySelector('[data-quick-error]');
+
+        // Pesan error dari server selalu di dalam modal, jadi `textContent`
+        // cukup: isinya berasal dari `$errors` Laravel, bukan dari markup.
+        const showError = (message) => {
+            if (!error) return;
+
+            error.textContent = message;
+            error.hidden = message === null || message === '';
+        };
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const targetId = form.dataset.quickTarget;
+            const select = document.getElementById(targetId);
+            if (!select) return;
+
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton?.textContent || '';
+
+            showError('');
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Menyimpan...';
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            })
+                .then(async (response) => {
+                    const data = await response.json().catch(() => null);
+
+                    if (!response.ok) {
+                        showError(
+                            firstErrorMessage(data?.errors)
+                                || data?.message
+                                || 'Gagal menyimpan. Coba lagi.',
+                        );
+                        return;
+                    }
+
+                    if (!data?.id || !data?.name) {
+                        showError('Respons server tidak lengkap. Coba lagi.');
+                        return;
+                    }
+
+                    const option = document.createElement('option');
+                    option.value = data.id;
+                    option.textContent = data.name;
+                    select.appendChild(option);
+                    select.value = data.id;
+
+                    form.reset();
+                    form.closest('dialog[data-modal]')?.close();
+                })
+                .catch(() => showError('Koneksi bermasalah. Form belum terkirim.'))
+                .finally(() => {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalText;
+                    }
+                });
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initNavToggle();
@@ -1399,4 +1502,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initModals();
     initSidebar();
     initSearch();
+    initQuickAdd();
 });

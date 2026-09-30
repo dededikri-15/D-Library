@@ -21,11 +21,10 @@
         </div>
     </form>
 
-    <form method="POST" action="{{ route('categories.destroy', $category) }}" class="mt-4"
-          data-confirm="Hapus kategori ini? Buku yang memakainya harus dipindah dulu."
-          data-confirm-title="Hapus kategori">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn btn-danger">Hapus kategori</button>
-    </form>
+    @include('partials.master-danger-delete', [
+        'label' => 'kategori',
+        'name' => $category->name,
+        'action' => route('categories.destroy', $category),
+        'booksCount' => $category->books_count,
+    ])
 @endsection

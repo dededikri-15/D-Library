@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HandlesUploads;
-use App\Http\Controllers\Concerns\RespondsWithFlash;
 use App\Http\Requests\AuthorRequest;
 use App\Models\Author;
+use App\Support\Json;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,6 @@ use Illuminate\View\View;
 class AuthorController extends Controller
 {
     use HandlesUploads;
-    use RespondsWithFlash;
 
     /** Foto penulis sama perlakuannya dengan cover buku: gambar publik. */
     protected static function photoDisk(): string
@@ -47,6 +47,10 @@ class AuthorController extends Controller
 
     public function edit(Author $author): View
     {
+        // `books_count` dipakai view untuk menonaktifkan tombol hapus, supaya
+        // user tahu sebelum menekan, bukan setelah ditolak.
+        $author->loadCount('books');
+
         return view('authors.edit', ['author' => $author]);
     }
 
@@ -71,10 +75,31 @@ class AuthorController extends Controller
 
     public function destroy(Author $author): RedirectResponse
     {
-        $this->deleteUpload($author->photo, static::photoDisk());
+        // Foto ikut terhapus, tapi hanya kalau penulisnya benar-benar dihapus.
+        return $this->destroyMasterData(
+            $author,
+            'penulis',
+            'authors.index',
+            fn () => $this->deleteUpload($author->photo, static::photoDisk()),
+        );
+    }
 
-        $author->delete();
+    public function storeQuick(Request $request): JsonResponse
+    {
+        // Validasi inline tetap perlu `attributes` sendiri: tanpa itu pesan
+        // errornya menyebut field mentah "name", bukan "nama penulis".
+        $validated = $request->validate(
+            [
+                'name' => ['required', 'string', 'max:150'],
+            ],
+            attributes: ['name' => 'nama penulis'],
+        );
 
-        return $this->success('authors.index', 'Penulis berhasil dihapus.');
+        $author = Author::create(['name' => $validated['name']]);
+
+        return Json::response([
+            'id' => $author->id,
+            'name' => $author->name,
+        ]);
     }
 }

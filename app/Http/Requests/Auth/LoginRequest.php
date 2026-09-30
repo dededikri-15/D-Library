@@ -49,6 +49,21 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Email disimpan lowercase (`UserRequest`idan `RegisterRequest` sama-sama
+     * menormalkannya), sedangkan perbandingan teks di PostgreSQL bersifat
+     * case-sensitive. Jadi "Anggota@Contoh.test" akan gagal mencari akun yang
+     * email-nya "anggota@contoh.test" — dan pengguna akan mengira kata
+     * sandinya yang salah. Karena itu input dinormalkan di sini, bukan
+     * ditolak, karena keyboard ponsel sering mengetik huruf besar sendiri.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->email)) {
+            $this->merge(['email' => Str::lower($this->email)]);
+        }
+    }
+
+    /**
      * Coba autentikasi kredensial, dengan pembatasan percobaan gagal.
      *
      * @throws ValidationException

@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RespondsWithFlash;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 abstract class Controller
 {
+    // Dipakai di sini, bukan di tiap controller anak, karena helper bersama
+    // (`masterIndex`, `destroyMasterData`) memanggil `success()`/`failure()`.
+    // Kalau trait-nya hanya menempel di kelas anak, pemanggilan dari kelas
+    // induk terlihat seperti method yang tidak ada.
+    use RespondsWithFlash;
+
     /**
      * Ambil nilai filter query yang valid, abaikan yang tidak valid.
      *
@@ -108,6 +117,56 @@ abstract class Controller
             ->withQueryString();
 
         return view($view, [$variable => $rows]);
+    }
+
+    /**
+     * Hapus satu baris master data, dengan pengaman jumlah buku.
+     *
+     * Kenapa books_category_id (dan dua kolom lain di tabel `books`) memakai
+     * `cascadeOnDelete()`: books dihapus dari katalog, dan ikutannya borrower
+     * yang punya loan/favorit untuk buku itu ikut hilang. Itu benar untuk
+     * hapus buku, tapi untuk hapus kategori/penulis/penerbit efeknya jauh
+     * lebih besar dari yang kelihatan di dialog konfirmasi — satu kategori
+     * bisa menghapus puluhan buku beserta riwayat pinjamannya.
+     *
+     * Karena itu hapus master data di sini DITOLAK selama masih ada buku yang
+     * memakainya, dan user diberi tahu berapa banyak. Pengaman di level
+     * aplikasi, bukan constraint: pesan yang muncul bisaittening dibaca,
+     * sedangkan `QueryException` dari foreign key hanya jadi 500.
+     *
+     * Sisanya: pengecekan jumlah buku dan penghapusan sengaja tidak
+     * di(transaction)-kan. Keduanya harus konsisten dengan apa yang dilihat
+     * user di form edit (yang menampilkan jumlah buku yang sama), dan selisih
+     * sesaat antara "dicek 0 buku" dan "dihapus" hanya bisa terjadi kalau ada
+     * dua pustakawan yang menekan hapus pada milidetik yang sama.
+     *
+     * `$beforeDelete` hanya dipanggil kalau data benar-benar dihapus. Penulis
+     * butuh itu untuk berkas fotonya: tanpa penjaga, tries yang ditolak
+     * tetap menghapus foto sementara penulisnya masih ada di database.
+     *
+     * @param  string  $label  nama jenis data dalam kalimat, mis. "kategori"
+     */
+    protected function destroyMasterData(
+        Model $row,
+        string $label,
+        string $indexRoute,
+        ?Closure $beforeDelete = null,
+    ): RedirectResponse {
+        $booksCount = $row->books()->count();
+
+        if ($booksCount > 0) {
+            return $this->failure(
+                $indexRoute,
+                "{$label} tidak bisa dihapus: masih dipakai {$booksCount} buku. "
+                ."Pindahkan dulu buku-buku itu ke {$label} lain.",
+            );
+        }
+
+        $beforeDelete?->__invoke();
+
+        $row->delete();
+
+        return $this->success($indexRoute, ucfirst($label).' berhasil dihapus.');
     }
 
     /**

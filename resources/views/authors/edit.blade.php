@@ -27,4 +27,11 @@
             <a href="{{ route('authors.index') }}" class="btn btn-secondary">Batal</a>
         </div>
     </form>
+
+    @include('partials.master-danger-delete', [
+        'label' => 'penulis',
+        'name' => $author->name,
+        'action' => route('authors.destroy', $author),
+        'booksCount' => $author->books_count,
+    ])
 @endsection

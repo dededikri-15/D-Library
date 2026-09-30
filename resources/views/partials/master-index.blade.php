@@ -36,7 +36,15 @@
                 <th>Nama</th>
                 <th class="w-28 text-right">Jumlah buku</th>
                 @if ($canManage)
-                    <th class="w-32 text-right">Aksi</th>
+                    {{--
+                        Edit dan Hapus dipisah jadi dua kolom, bukan digabung
+                        di satu kolom "Aksi". Alasannya tombolnya beda sifat:
+                        Edit reversible, Hapus permanen. Kalau berdempetan,
+                        orang bisa salah klik yang salah — dan yang salah klik
+                        biasanya Hapus.
+                    --}}
+                    <th class="w-24 text-right">Edit</th>
+                    <th class="w-40 text-right">Hapus</th>
                 @endif
             </tr>
         </thead>
@@ -51,23 +59,46 @@
                     </td>
                     <td class="text-right text-secondary">{{ $row->books_count }}</td>
                     @if ($canManage)
-                        <td>
-                            <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route($routeBase.'.edit', $row) }}" class="btn btn-ghost btn-sm">Edit</a>
-                                <form method="POST" action="{{ route($routeBase.'.destroy', $row) }}"
-                                      data-confirm="Hapus {{ $row->name }}? Buku yang terhubung juga ikut terhapus."
-                                      data-confirm-title="Hapus {{ strtolower($title) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                </form>
-                            </div>
+                        <td class="text-right">
+                            <a href="{{ route($routeBase.'.edit', $row) }}" class="btn btn-ghost btn-sm">Edit</a>
+                        </td>
+                        <td class="text-right">
+                            {{--
+                                Kalimat konfirmasi tidak boleh menjanjikan
+                                "buku ikut terhapus": `books` memakai
+                                cascadeOnDelete, jadi menekan Hapus pada
+                                baris yang masih dipakai bisa menghapus
+                                puluhan buku beserta riwayat pinjamannya.
+                                Server menolak aksi itu (lihat
+                                `Controller::destroyMasterData()`), dan
+                                tombolnya sudah dimatikan di sini supaya
+                                orang tidak/heran kenapa tidak terjadi apa-apa.
+                            --}}
+                            <form method="POST" action="{{ route($routeBase.'.destroy', $row) }}"
+                                  data-confirm="Hapus {{ strtolower($title) }} &quot;{{ $row->name }}&quot;? Tindakan ini tidak bisa dibatalkan."
+                                  data-confirm-title="Hapus {{ strtolower($title) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        @disabled($row->books_count > 0)
+                                        title="{{ $row->books_count > 0 ? 'Masih dipakai ' . $row->books_count . ' buku' : null }}">Hapus</button>
+                            </form>
+                            {{--
+                                Alasan kenapa tombolnya mati ditulis di bawah
+                                tombol, bukan cuma di atribut `title`. `title`
+                                cuma muncul saat kursor diarahkan ke elemen itu —
+                                di layar sentuh tidak pernah muncul sama sekali,
+                                jadi tanpa teks ini orang mengira tombolnya rusak.
+                            --}}
+                            @if ($row->books_count > 0)
+                                <p class="mt-1 text-xs text-secondary">Dipakai {{ $row->books_count }} buku</p>
+                            @endif
                         </td>
                     @endif
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $canManage ? 3 : 2 }}" class="p-0">
+                    <td colspan="{{ $canManage ? 4 : 2 }}" class="p-0">
                         <x-empty-state class="border-0"
                                        title="Belum ada {{ strtolower($title) }}"
                                        description="{{ $canManage ? 'Klik "Tambah ' . strtolower($title) . '" untuk menambahkan data pertama.' : 'Data belum tersedia.' }}" />

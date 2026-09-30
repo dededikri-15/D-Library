@@ -37,4 +37,18 @@ trait RespondsWithFlash
             ->route($route, $params)
             ->with('status', $message);
     }
+
+    /**
+     * Aksi ditolak karena datanya masih dipakai di tempat lain.
+     *
+     * Dipisah dari `warning()` karena ini bukan "berhasil, tapi cek dulu" —
+     * ini "tidak terjadi sama sekali", dan user perlu tahu apa yang harus
+     * dirapikan dulu. Gotanya merah, bukan hijau.
+     */
+    protected function failure(string $route, string $message, array $params = []): RedirectResponse
+    {
+        return redirect()
+            ->route($route, $params)
+            ->with('error', $message);
+    }
 }

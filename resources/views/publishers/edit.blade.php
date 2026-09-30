@@ -22,4 +22,11 @@
             <a href="{{ route('publishers.index') }}" class="btn btn-secondary">Batal</a>
         </div>
     </form>
+
+    @include('partials.master-danger-delete', [
+        'label' => 'penerbit',
+        'name' => $publisher->name,
+        'action' => route('publishers.destroy', $publisher),
+        'booksCount' => $publisher->books_count,
+    ])
 @endsection

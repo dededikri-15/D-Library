@@ -6,7 +6,16 @@
     'required' => false,
     'hint' => null,
     'autocomplete' => null,
+    // Override id elemen. Default-nya sama dengan `name`, tapi field yang
+    // namanya cuma "name" (form quick-add kategori/penulis/penerbit) butuh
+    // id sendiri: tiga form itu ada di satu halaman, dan id yang sama tiga
+    // kali itu merusak <label for> — klik label tidak akan memfokuskan input.
+    'id' => null,
 ])
+
+@php
+    $inputId = $id ?? $name;
+@endphp
 
 {{--
     Satu field form. Dipakai juga untuk menampilkan pesan error per-field,
@@ -15,11 +24,11 @@
 --}}
 
 <div>
-    <label for="{{ $name }}" class="field-label">
+    <label for="{{ $inputId }}" class="field-label">
         {{ $label }}{{ $required ? ' *' : '' }}
     </label>
 
-    <input id="{{ $name }}" name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $value) }}"
+    <input id="{{ $inputId }}" name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $value) }}"
            @required($required)
            @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
            @class([

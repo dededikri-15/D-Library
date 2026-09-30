@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
@@ -20,7 +21,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
@@ -35,5 +36,17 @@ class RegisterRequest extends FormRequest
             'email' => 'email',
             'password' => 'kata sandi',
         ];
+    }
+
+    /**
+     * Email dinormalkan ke huruf kecil, bukan ditolak kalau ada huruf besar:
+     * keyboard ponsel sering mengetik huruf besar sendiri, dan `users.email`
+     * punya unique constraint sehingga bentuk email harus seragam.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->email)) {
+            $this->merge(['email' => Str::lower($this->email)]);
+        }
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\RecordReading;
-use App\Http\Controllers\Concerns\RespondsWithFlash;
 use App\Http\Requests\ReadingHistoryRequest;
 use App\Models\Book;
 use App\Models\ReadingHistory;
@@ -13,8 +12,6 @@ use Illuminate\View\View;
 
 class ReadingHistoryController extends Controller
 {
-    use RespondsWithFlash;
-
     public function __construct(protected RecordReading $recordReading)
     {
         //

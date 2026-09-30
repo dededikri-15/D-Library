@@ -33,12 +33,12 @@ class AuthenticationTest extends TestCase
     public function test_pustakawan_is_redirected_to_dashboard(): void
     {
         User::factory()->pustakawan()->create([
-            'email' => 'pustakawan@perpustakaan.test',
+            'email' => 'pustakawan@perpustakaan',
             'password' => 'rahasia-kuat-123',
         ]);
 
         $this->post('/login', [
-            'email' => 'pustakawan@perpustakaan.test',
+            'email' => 'pustakawan@perpustakaan',
             'password' => 'rahasia-kuat-123',
         ])->assertRedirect(route('dashboard'));
     }

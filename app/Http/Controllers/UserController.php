@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\RespondsWithFlash;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -12,8 +11,6 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    use RespondsWithFlash;
-
     public function index(Request $request): View
     {
         $filters = $this->validFilters($request, [

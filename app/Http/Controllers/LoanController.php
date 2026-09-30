@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Actions\BorrowBook;
 use App\Actions\MarkOverdueLoans;
 use App\Exceptions\LoanNotPossibleException;
-use App\Http\Controllers\Concerns\RespondsWithFlash;
 use App\Http\Requests\LoanRequest;
 use App\Models\Book;
 use App\Models\Loan;
@@ -19,8 +18,6 @@ use Illuminate\View\View;
 
 class LoanController extends Controller
 {
-    use RespondsWithFlash;
-
     public function __construct(
         protected BorrowBook $borrowBook,
         protected MarkOverdueLoans $markOverdue,

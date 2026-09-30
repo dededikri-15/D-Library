@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
@@ -54,7 +54,7 @@ class CategoryRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if (blank($this->input('slug')) && is_string($this->input('name'))) {
-            $this->merge(['slug' => Str::slug($this->input('name'))]);
+            $this->merge(['slug' => Category::slugFor($this->input('name'))]);
         }
     }
 }

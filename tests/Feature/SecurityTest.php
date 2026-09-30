@@ -396,7 +396,7 @@ class SecurityTest extends TestCase
         // selalu gagal untuk tamu. Data yang dikembalikannya sudah dibatasi
         // sama seperti katalog: buku nonaktif tersembunyi kecuali pemanggilnya
         // staff.
-        $publicUris = ['/', '/login', '/register', '/buku', '/buku/pencarian', '/kategori-buku', '/up'];
+        $publicUris = ['/', '/login', '/register', '/buku', '/buku/pencarian', '/kategori-buku', '/up', '/forgot-password', '/reset-password'];
 
         $checked = 0;
 

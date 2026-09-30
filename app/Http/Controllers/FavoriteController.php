@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\RespondsToAjax;
-use App\Http\Controllers\Concerns\RespondsWithFlash;
 use App\Models\Book;
 use App\Models\Favorite;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +13,6 @@ use Illuminate\View\View;
 class FavoriteController extends Controller
 {
     use RespondsToAjax;
-    use RespondsWithFlash;
 
     public function index(Request $request): View
     {

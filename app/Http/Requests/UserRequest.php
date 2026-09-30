@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,7 +25,7 @@ class UserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required', 'string', 'lowercase', 'email', 'max:255',
+                'required', 'string', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             // Saat edit, kata sandi boleh dikosongkan (artinya tidak diubah).
@@ -44,5 +45,21 @@ class UserRequest extends FormRequest
             'password' => 'kata sandi',
             'role' => 'role',
         ];
+    }
+
+    /**
+     * Email dinormalkan ke huruf kecil, bukan ditolak kalau ada huruf besar.
+     *
+     * Alasannya dua. Pertama, `users.email` punya unique constraint, jadi dua
+     * akun dengan email yang hanya berbeda huruf besar akan lolos validasi lalu
+     * meledak jadi QueryException. Kedua, seluruh tempat lain membandingkan
+     * email secara case-sensitive, jadi email yang tersimpan harus selalu
+     * dalam satu bentuk.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->email)) {
+            $this->merge(['email' => Str::lower($this->email)]);
+        }
     }
 }

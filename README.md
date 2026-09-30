@@ -114,7 +114,7 @@ tempat semua aturan ini dibaca dari:
 
 | Email | Peran |
 | --- | --- |
-| `pustakawan@perpustakaan.test` | Pustakawan |
+| `pustakawan@perpustakaan` | Pustakawan |
 | `anggota1@perpustakaan.test` | Anggota |
 
 Kredensial ini sengaja weakened dan hanya untuk pengembangan. Jangan pernah
