@@ -41,12 +41,53 @@
                         'M4.5 5.25A2.25 2.25 0 0 1 6.75 3h12A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21h-12A2.25 2.25 0 0 1 4.5 18.75zM8 7.5h9m-9 4.5h9m-9 4.5h5',
                 ]
                 : null,
+            /*
+                Grup "Kelola Data".
+
+                Kenapa perlu: halaman /kategori, /penulis, dan /penerbit
+                sebelumnya tidak punya tautan dari menu mana pun — satu-satunya
+                cara menuju sana adalah mengetik URL-nya sendiri, padahal di
+                situ justru letak tombol hapus. Staff bisa menambah kategori
+                lewat form buku, tapi tidak bisa mengoreksinya lagi.
+
+                `pattern` ditulis sebagai daftar, bukan `categories.*`. Kalau
+                memakai `categories.*`, item ini ikut aktif di halaman publik
+                `categories.public` — sehingga dua menu menyala bersamaan.
+            */
+            $user?->isStaff()
+                ? [
+                    'heading' => 'Kelola Data',
+                    'route' => 'categories.index',
+                    'pattern' => ['categories.index', 'categories.create', 'categories.edit'],
+                    'label' => 'Kategori',
+                    'icon' =>
+                        'M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z',
+                ]
+                : null,
+            $user?->isStaff()
+                ? [
+                    'route' => 'authors.index',
+                    'pattern' => ['authors.index', 'authors.create', 'authors.edit'],
+                    'label' => 'Penulis',
+                    'icon' =>
+                        'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z',
+                ]
+                : null,
+            $user?->isStaff()
+                ? [
+                    'route' => 'publishers.index',
+                    'pattern' => ['publishers.index', 'publishers.create', 'publishers.edit'],
+                    'label' => 'Penerbit',
+                    'icon' =>
+                        'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21',
+                ]
+                : null,
             $user?->isStaff()
                 ? [
                     'route' => 'loans.index',
                     'pattern' => 'loans.*',
                     'label' => 'Peminjaman',
-                    'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+                    'icon' => 'M12 6v6l4 2m4-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
                 ]
                 : null,
             $user?->isStaff()
@@ -134,6 +175,19 @@
             <p data-sidebar-label class="mb-2 px-3 text-label font-semibold tracking-widest text-secondary uppercase">
                 Menu</p>
             @foreach ($links as $link)
+                {{--
+                    Judul kelompok (mis. "Kelola Data") hanya ditulis di item
+                    pertama grupnya. Spasi antarkelompok pakai `pt-*`, bukan
+                    `mt-*`, karena `nav` sudah pakai `space-y-1` yang memasang
+                    margin-top pada setiap anak — dua utility margin yang
+                    bertabrakan itu urutannya di CSS tidak bisa ditebak.
+                --}}
+                @if (! empty($link['heading']))
+                    <p data-sidebar-label
+                       class="px-3 pt-5 pb-1 text-label font-semibold tracking-widest text-secondary uppercase">
+                        {{ $link['heading'] }}
+                    </p>
+                @endif
                 <a href="{{ route($link['route']) }}" title="{{ $link['label'] }}" @class([
                     'sidebar-link',
                     'sidebar-link-active' => request()->routeIs($link['pattern']),
