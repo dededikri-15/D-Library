@@ -43,7 +43,7 @@ class UserController extends Controller
     {
         User::create($request->validated());
 
-        return $this->success('users.index', 'Pengguna berhasil ditambahkan.');
+        return $this->success('users.index', __('messages.user_created'));
     }
 
     public function edit(User $user): View
@@ -66,18 +66,18 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return $this->success('users.index', 'Pengguna berhasil diperbarui.');
+        return $this->success('users.index', __('messages.user_updated'));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
         // Cegah pustakawan menghapus akunnya sendiri (bisa mengunci sistem).
         if ($user->id === $request->user()?->id) {
-            return $this->backWithStatus('Anda tidak dapat menghapus akun sendiri.');
+            return $this->backWithStatus(__('messages.cannot_delete_self'));
         }
 
         $user->delete();
 
-        return $this->success('users.index', 'Pengguna berhasil dihapus.');
+        return $this->success('users.index', __('messages.user_deleted'));
     }
 }

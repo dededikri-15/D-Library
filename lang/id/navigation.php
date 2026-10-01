@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'menu' => 'Menu',
+    'primary_navigation' => 'Navigasi utama',
+    'home' => 'Beranda',
+    'catalog' => 'Katalog',
+    'categories' => 'Kategori',
+    'dashboard' => 'Dasbor',
+    'manage_books' => 'Kelola Buku',
+    'manage_data' => 'Kelola Data',
+    'authors' => 'Penulis',
+    'publishers' => 'Penerbit',
+    'loans' => 'Peminjaman',
+    'users' => 'Pengguna',
+    'loan_history' => 'Riwayat Pinjam',
+    'favorites' => 'Favorit',
+    'reading_history' => 'Riwayat Baca',
+    'mailbox' => 'Kotak Masuk',
+    'logout' => 'Keluar',
+    'login' => 'Masuk',
+    'register' => 'Daftar anggota',
+    'open_sidebar' => 'Buka sidebar',
+    'close_navigation' => 'Tutup menu navigasi',
+    'switch_to_english' => 'Ganti bahasa ke Inggris',
+    'switch_to_indonesian' => 'Ganti bahasa ke Indonesia',
+    'open_account_menu' => 'Buka menu akun',
+];

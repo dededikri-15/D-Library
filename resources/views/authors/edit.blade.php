@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Penulis - ' . config('app.name'))
+@section('title', __('master.edit').' '.ucfirst(__('master.author')).' - '.config('app.name'))
 
 @section('content')
-    <h1 class="text-h1 font-semibold text-primary">Edit Penulis</h1>
+    <h1 class="text-h1 font-semibold text-primary">{{ __('master.edit') }} {{ ucfirst(__('master.author')) }}</h1>
     <p class="mt-1 text-sm text-secondary">{{ $author->name }}</p>
 
     <form method="POST" action="{{ route('authors.update', $author) }}" enctype="multipart/form-data" data-submit-once
@@ -11,11 +11,11 @@
         @csrf
         @method('PUT')
 
-        <x-form.input name="name" label="Nama penulis" required :value="$author->name" />
+        <x-form.input name="name" :label="__('master.author_name')" required :value="$author->name" />
 
-        <x-form.textarea name="biography" label="Biografi" rows="4" :value="$author->biography" />
+        <x-form.textarea name="biography" :label="__('master.biography')" rows="4" :value="$author->biography" />
 
-        <x-form.file name="photo" label="Ganti foto" accept="image/jpeg,image/png,image/webp"
+        <x-form.file name="photo" :label="__('master.replace_photo')" accept="image/jpeg,image/png,image/webp"
                      :mimes="config('perpustakaan.uploads.cover_mimes')"
                      :maxKb="config('perpustakaan.uploads.cover_max_kb')"
                      :current="$author->photo"
@@ -23,13 +23,13 @@
                      removeName="remove_photo" />
 
         <div class="flex flex-wrap gap-3">
-            <button type="submit" class="btn btn-primary">Simpan perubahan</button>
-            <a href="{{ route('authors.index') }}" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="btn btn-primary">{{ __('master.save_changes') }}</button>
+            <a href="{{ route('authors.index') }}" class="btn btn-secondary">{{ __('master.cancel') }}</a>
         </div>
     </form>
 
     @include('partials.master-danger-delete', [
-        'label' => 'penulis',
+        'label' => __('master.author'),
         'name' => $author->name,
         'action' => route('authors.destroy', $author),
         'booksCount' => $author->books_count,

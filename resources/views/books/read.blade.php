@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Baca: ' . $book->title . ' - ' . config('app.name'))
+@section('title', __('reader.title', ['title' => $book->title]).' - '.config('app.name'))
 
 @section('content')
     {{--
@@ -19,11 +19,11 @@
     <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="min-w-0">
             <a href="{{ route('books.show', $book) }}" class="text-sm text-secondary transition-colors hover:text-tertiary">
-                &larr; Kembali ke detail buku
+                &larr; {{ __('reader.back_to_details') }}
             </a>
             <h1 class="mt-1 text-h1 font-semibold text-primary">{{ $book->title }}</h1>
             <p class="mt-1 text-sm text-secondary">
-                oleh {{ $book->author?->name ?? 'Penulis tidak diketahui' }}
+                {{ __('reader.by') }} {{ $book->author?->name ?? __('reader.unknown_author') }}
                 @if ($book->category)
                     &middot; {{ $book->category->name }}
                 @endif
@@ -36,7 +36,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
-                Tersimpan: halaman {{ $savedPage }}
+                {{ __('reader.saved_page', ['page' => $savedPage]) }}
             </p>
         @endif
     </div>
@@ -46,7 +46,7 @@
         <form method="GET" action="{{ route('books.read', $book) }}" class="card flex flex-wrap items-end gap-3 p-4"
               data-reader-jump>
             <div class="w-24">
-                <label for="page" class="field-label">Halaman</label>
+                <label for="page" class="field-label">{{ __('reader.page') }}</label>
                 {{-- min 1: clamp juga di server, tapi validasi di sisi user
                      lebih cepat umpan baliknya. --}}
                 <input id="page" name="page" type="number" inputmode="numeric" min="1"
@@ -57,11 +57,11 @@
             </div>
 
             @if ($totalPages)
-                <p class="pb-2.5 text-sm text-secondary">dari {{ number_format($totalPages, 0, ',', '.') }} halaman</p>
+                <p class="pb-2.5 text-sm text-secondary">{{ __('reader.of_pages', ['count' => number_format($totalPages, 0, ',', '.')]) }}</p>
             @endif
 
             <div class="ml-auto flex gap-2">
-                <button type="submit" class="btn btn-secondary">Buka halaman</button>
+                <button type="submit" class="btn btn-secondary">{{ __('reader.open_page') }}</button>
             </div>
         </form>
 
@@ -72,13 +72,13 @@
             <input type="hidden" name="last_page" value="{{ $page }}" data-reader-save>
 
             <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-primary">Simpan posisi baca</p>
+                <p class="text-sm font-medium text-primary">{{ __('reader.save_position') }}</p>
                 <p class="mt-0.5 text-label text-secondary">
-                    Simpan halaman {{ $page }} supaya bisa dilanjutkan nanti.
+                    {{ __('reader.save_page_hint', ['page' => $page]) }}
                 </p>
             </div>
 
-            <button type="submit" class="btn btn-primary">Simpan posisi</button>
+            <button type="submit" class="btn btn-primary">{{ __('reader.save_position_button') }}</button>
         </form>
     </div>
 
@@ -98,10 +98,10 @@
                 data-reader-file-url="{{ route('books.file', $book) }}">
             <div class="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
                 <p class="text-sm text-secondary">
-                    Browser ini tidak menampilkan PDF secara langsung.
+                    {{ __('reader.pdf_not_supported') }}
                 </p>
                 <a href="{{ route('books.file', $book) }}#page={{ $page }}" class="btn btn-primary">
-                    Buka file PDF
+                    {{ __('reader.open_pdf') }}
                 </a>
             </div>
         </object>
@@ -109,12 +109,12 @@
 
     <p class="mt-3 text-xs text-secondary">
         @if (auth()->user()?->isStaff())
-            Staff dapat membuka semua berkas buku untuk keperluan operasional.
+            {{ __('reader.staff_access') }}
         @else
-            Dokumen ini hanya dapat diakses selama kamu sedang meminjam buku ini.
+            {{ __('reader.member_access') }}
         @endif
         @if ($book->pages > 0)
-            &middot; Total {{ number_format($book->pages, 0, ',', '.') }} halaman.
+            &middot; {{ __('reader.total_pages', ['count' => number_format($book->pages, 0, ',', '.')]) }}
         @endif
     </p>
 @endsection

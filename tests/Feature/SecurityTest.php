@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 /**
@@ -183,6 +184,37 @@ class SecurityTest extends TestCase
         }
 
         $this->assertSame([], $offenders, 'Ditemukan output Blade tanpa escaping: '.implode(', ', $offenders));
+    }
+
+    public function test_security_headers_and_csp_nonce_are_applied(): void
+    {
+        $response = $this->get(route('home'))->assertOk()
+            ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+        $policy = $response->headers->get('Content-Security-Policy');
+        $nonce = Vite::cspNonce();
+
+        $this->assertNotEmpty($nonce);
+        $this->assertStringContainsString("script-src 'self' 'nonce-{$nonce}'", $policy);
+        $this->assertStringContainsString("frame-ancestors 'self'", $policy);
+        $this->assertStringContainsString('nonce="'.$nonce.'"', $response->getContent());
+        $this->assertStringNotContainsString("script-src 'self' 'unsafe-inline'", $policy);
+    }
+
+    public function test_login_endpoint_uses_configured_named_rate_limit(): void
+    {
+        RateLimiter::clear('198.51.100.77');
+        config(['perpustakaan.security.login_per_minute' => 1]);
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.77'])
+            ->post('/login', ['email' => 'rate@test.invalid', 'password' => 'wrong'])
+            ->assertRedirect();
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.77'])
+            ->post('/login', ['email' => 'rate@test.invalid', 'password' => 'wrong'])
+            ->assertStatus(429);
     }
 
     /* ------------------------------------------------------------------

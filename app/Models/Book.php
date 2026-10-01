@@ -26,6 +26,7 @@ class Book extends Model
         'description',
         'publication_year',
         'pages',
+        'total_copies',
         'cover',
         'file',
         'category_id',
@@ -39,7 +40,17 @@ class Book extends Model
         return [
             'publication_year' => 'integer',
             'pages' => 'integer',
+            'total_copies' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (self $book): void {
+            $book->copies()->create([
+                'status' => $book->status,
+            ]);
+        });
     }
 
     public static function statuses(): array
@@ -60,9 +71,9 @@ class Book extends Model
     public static function statusOptions(): array
     {
         return [
-            self::STATUS_AVAILABLE => 'Tersedia',
-            self::STATUS_BORROWED => 'Dipinjam',
-            self::STATUS_INACTIVE => 'Tidak aktif',
+            self::STATUS_AVAILABLE => __('status.available'),
+            self::STATUS_BORROWED => __('status.borrowed'),
+            self::STATUS_INACTIVE => __('status.inactive'),
         ];
     }
 
@@ -141,6 +152,16 @@ class Book extends Model
     public function loans(): HasMany
     {
         return $this->hasMany(Loan::class);
+    }
+
+    public function copies(): HasMany
+    {
+        return $this->hasMany(BookCopy::class);
+    }
+
+    public function availableCopies(): HasMany
+    {
+        return $this->copies()->where('status', BookCopy::STATUS_AVAILABLE);
     }
 
     public function favorites(): HasMany

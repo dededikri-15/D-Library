@@ -46,7 +46,7 @@ class FavoriteController extends Controller
 
         return $this->respond(
             $request,
-            'Buku ditambahkan ke favorit.',
+            __('messages.favorite_added'),
             ['is_favorite' => true],
         );
     }
@@ -72,8 +72,8 @@ class FavoriteController extends Controller
         return $this->respond(
             $request,
             $deleted > 0
-                ? 'Buku dihapus dari favorit.'
-                : 'Buku ini memang tidak ada di favorit.',
+                ? __('messages.favorite_removed')
+                : __('messages.favorite_missing'),
             ['is_favorite' => false],
         );
     }

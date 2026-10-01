@@ -6,6 +6,7 @@ use App\Actions\RecordReading;
 use App\Http\Requests\BookRequest;
 use App\Models\Author;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Category;
 use App\Models\Publisher;
 use App\Models\ReadingHistory;
@@ -236,7 +237,8 @@ class BookController extends Controller
      */
     public function show(Book $book): View
     {
-        $book->load(['category', 'author', 'publisher']);
+        $book->load(['category', 'author', 'publisher'])
+            ->loadCount(['copies', 'availableCopies']);
 
         $user = request()->user();
 
@@ -290,7 +292,7 @@ class BookController extends Controller
         }
 
         if ($book->status === Book::STATUS_INACTIVE) {
-            return ['can' => false, 'reason' => 'Buku ini sedang tidak aktif.'];
+            return ['can' => false, 'reason' => __('messages.book_inactive_reason')];
         }
 
         $activeLoan = $book->loans()
@@ -303,13 +305,13 @@ class BookController extends Controller
             return [
                 'can' => false,
                 'reason' => $activeLoan->isOverdue()
-                    ? 'Peminjamanmu sudah lewat jatuh tempo.'
-                    : 'Kamu sedang meminjam buku ini.',
+                    ? __('messages.loan_overdue_reason')
+                    : __('messages.already_borrowing_reason'),
             ];
         }
 
-        if (! $book->isAvailable()) {
-            return ['can' => false, 'reason' => 'Buku ini sedang dipinjam anggota lain.'];
+        if (! $book->availableCopies()->exists()) {
+            return ['can' => false, 'reason' => __('messages.copy_unavailable_reason')];
         }
 
         return ['can' => true, 'reason' => null];
@@ -330,7 +332,7 @@ class BookController extends Controller
     public function read(Request $request, Book $book): View|RedirectResponse
     {
         if (! $book->hasFile()) {
-            return $this->warning('books.show', 'File digital buku ini belum tersedia.', ['book' => $book]);
+            return $this->warning('books.show', __('messages.book_file_unavailable'), ['book' => $book]);
         }
 
         $user = $request->user();
@@ -414,23 +416,48 @@ class BookController extends Controller
     public function store(BookRequest $request): RedirectResponse
     {
         $book = Book::create($this->bookPayload($request));
+        $this->createCopies(
+            $book,
+            max(0, $request->integer('initial_copies', 1) - 1),
+            $book->status,
+        );
 
-        return $this->success('books.show', 'Buku berhasil ditambahkan.', ['book' => $book]);
+        return $this->success('books.show', __('messages.book_created'), ['book' => $book]);
     }
 
     public function edit(Book $book): View
     {
         return view('books.edit', [
             'book' => $book,
+            'copies' => $book->copies()->orderBy('inventory_code')->get(),
             ...$this->formOptions(),
         ]);
     }
 
     public function update(BookRequest $request, Book $book): RedirectResponse
     {
+        $wasInactive = $book->status === Book::STATUS_INACTIVE;
         $book->update($this->bookPayload($request, $book));
+        $status = $book->status;
 
-        return $this->success('books.show', 'Buku berhasil diperbarui.', ['book' => $book]);
+        if ($status === Book::STATUS_INACTIVE) {
+            $book->availableCopies()->update(['status' => BookCopy::STATUS_INACTIVE]);
+            $this->createCopies($book, $request->integer('add_copies'), BookCopy::STATUS_INACTIVE);
+        } else {
+            if ($wasInactive) {
+                $book->copies()->where('status', BookCopy::STATUS_INACTIVE)
+                    ->update(['status' => BookCopy::STATUS_AVAILABLE]);
+            }
+
+            $this->createCopies($book, $request->integer('add_copies'));
+            $book->update([
+                'status' => $book->availableCopies()->exists()
+                    ? Book::STATUS_AVAILABLE
+                    : Book::STATUS_BORROWED,
+            ]);
+        }
+
+        return $this->success('books.show', __('messages.book_updated'), ['book' => $book]);
     }
 
     /**
@@ -465,8 +492,26 @@ class BookController extends Controller
      */
     protected function bookPayload(BookRequest $request, ?Book $book = null): array
     {
-        return $request->safe()->except(['cover', 'file', 'remove_cover', 'remove_file'])
+        return $request->safe()->except([
+            'cover',
+            'file',
+            'remove_cover',
+            'remove_file',
+            'initial_copies',
+            'add_copies',
+        ])
             + $this->bookFilePayload($request, $book);
+    }
+
+    protected function createCopies(Book $book, int $count, string $status = BookCopy::STATUS_AVAILABLE): void
+    {
+        for ($index = 0; $index < $count; $index++) {
+            $book->copies()->create(['status' => $status]);
+        }
+
+        if ($count > 0) {
+            $book->increment('total_copies', $count);
+        }
     }
 
     public function destroy(Book $book): RedirectResponse
@@ -478,7 +523,7 @@ class BookController extends Controller
 
         $book->delete();
 
-        return $this->success('books.index', 'Buku berhasil dihapus.');
+        return $this->success('books.index', __('messages.book_deleted'));
     }
 
     /**

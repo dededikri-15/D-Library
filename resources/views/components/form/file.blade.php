@@ -36,7 +36,10 @@
 
     @if (filled($mimes) && filled($maxKb))
         <p class="mt-1 text-label text-secondary">
-            Format: {{ strtoupper(implode(', ', $mimes)) }} &middot; maksimal {{ number_format($maxKb / 1024, $maxKb % 1024 === 0 ? 0 : 1) }} MB
+            {{ __('book_form.format_limit', [
+                'formats' => strtoupper(implode(', ', $mimes)),
+                'size' => number_format($maxKb / 1024, $maxKb % 1024 === 0 ? 0 : 1),
+            ]) }}
         </p>
     @endif
 
@@ -51,7 +54,7 @@
     @if (filled($current))
         <div class="mt-3 flex items-center gap-3 rounded-lg border border-secondary/20 bg-secondary/5 p-3">
             @if ($isImage && filled($currentUrl))
-                <img src="{{ $currentUrl }}" alt="Pratinjau {{ $label }}"
+                <img src="{{ $currentUrl }}" alt="{{ __('book_form.preview', ['label' => $label]) }}"
                      class="h-16 w-12 shrink-0 rounded-sm border border-secondary/20 object-cover">
             @else
                 <span class="flex h-16 w-12 shrink-0 items-center justify-center rounded-sm border border-secondary/20 text-label text-secondary">
@@ -60,7 +63,7 @@
             @endif
 
             <div class="min-w-0 flex-1 text-sm">
-                <p class="text-primary">Berkas sudah diunggah</p>
+                <p class="text-primary">{{ __('book_form.uploaded') }}</p>
                 <p class="truncate text-label text-secondary">{{ $current }}</p>
             </div>
 
@@ -68,13 +71,13 @@
                 <label class="flex shrink-0 cursor-pointer items-center gap-2 text-sm text-secondary transition-colors hover:text-overdue">
                     <input type="checkbox" name="{{ $removeName }}" value="1"
                            class="rounded-sm border-secondary/30 text-overdue focus:ring-overdue/30">
-                    Hapus
+                    {{ __('book_form.remove_file') }}
                 </label>
             @endif
         </div>
 
         @if ($isImage)
-            <p class="mt-1 text-label text-secondary">Mengunggah gambar baru akan otomatis menggantikan berkas ini.</p>
+            <p class="mt-1 text-label text-secondary">{{ __('book_form.replace_image') }}</p>
         @endif
     @endif
 </div>

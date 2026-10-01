@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Exceptions\LoanNotPossibleException;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -16,27 +17,26 @@ use Illuminate\Support\Facades\DB;
  * Sekarang anggota juga bisa meminjam sendiri dari halaman detail buku, dan
  * dua jalur itu WAJIB tidak boleh berbeda aturan. Kalau masing-masing controller
  * menulis ceknya sendiri, cepat atau lambat satu jalur lupa `lockForUpdate()`
- * dan buku yang sama bisa dipinjam dua orang.
+ * dan satu eksemplar fisik bisa dipinjam dua orang.
  *
  * ## Kenapa harus atomik?
  *
- * Pemeriksaan "buku ini belum dipinjam" dan penulisan status buku tidak bisa
- * dipisah, karena di antara keduanya ada celah waktu. Dua orang menekan tombol
- * pada detik yang sama akan':
+ * Pemeriksaan stok dan penulisan status eksemplar tidak bisa dipisah, karena
+ * di antara keduanya ada celah waktu. Dua orang menekan tombol untuk salinan
+ * terakhir pada detik yang sama akan:
  *
- *     A: baca buku    -> status "available"  -> LANJUT
- *     B: baca buku    -> status "available"  -> LANJUT   (dua-duanya lolos!)
- *     A: tulis loan
- *     B: tulis loan   -> buku sekarang dipinjam oleh 2 orang
+ *     A: baca stok    -> salinan tersedia    -> LANJUT
+ *     B: baca stok    -> salinan tersedia    -> LANJUT   (dua-duanya lolos!)
+ *     A: kunci salinan, buat loan
+ *     B: menunggu     -> stok dibaca ulang setelah A commit
  *
  * `DB::transaction()` + `lockForUpdate()` menutup celah itu: B tidak bisa
- * membaca baris buku sampai A selesai menulis. Permintaan yang kedua lalu
- * membaca status yang SUDAH berubah, dan ditolak dengan pesan yang jelas.
+ * membaca baris buku sampai A selesai menulis. Permintaan kedua lalu memilih
+ * salinan berikutnya, atau ditolak bila semua salinan sudah dipinjam.
  *
  * Kenapa `lockForUpdate()` pada tabel `books` dan bukan pada `loans`? Karena
- * yang perlu diserialkan adalah "pengubahan status buku ini". Tabel `loans`
- * belum tentu punya baris untuk buku tersebut, dan baris yang tidak ada tidak
- * bisa dikunci.
+ * yang perlu diserialkan adalah pemilihan stok judul ini. Baris buku menjadi
+ * kunci bersama untuk pinjam, pengembalian, dan perubahan inventaris.
  */
 class BorrowBook
 {
@@ -55,27 +55,35 @@ class BorrowBook
                 throw LoanNotPossibleException::bookMissing();
             }
 
-            if (! $book->isAvailable() && $book->status !== Book::STATUS_BORROWED) {
+            if ($book->status === Book::STATUS_INACTIVE) {
                 throw LoanNotPossibleException::bookInactive();
             }
 
             $activeLoan = Loan::query()
                 ->where('book_id', $book->id)
+                ->where('user_id', $member->id)
                 ->active()
                 ->latest('id')
                 ->first();
 
-            // Buku sedang dipinjam. Bedakan "oleh saya sendiri" dari
-            // "oleh orang lain" supaya pesannya tepat sasaran.
             if ($activeLoan !== null) {
-                throw $activeLoan->user_id === $member->id
-                    ? LoanNotPossibleException::alreadyBorrowedByRequester()
-                    : LoanNotPossibleException::borrowedByOtherMember();
+                throw LoanNotPossibleException::alreadyBorrowedByRequester();
+            }
+
+            $copy = BookCopy::query()
+                ->where('book_id', $book->id)
+                ->where('status', BookCopy::STATUS_AVAILABLE)
+                ->lockForUpdate()
+                ->first();
+
+            if ($copy === null) {
+                throw LoanNotPossibleException::borrowedByOtherMember();
             }
 
             $loan = Loan::create([
                 'user_id' => $member->id,
                 'book_id' => $book->id,
+                'book_copy_id' => $copy->id,
                 'borrowed_at' => $borrowedAt,
                 // Jatuh tempo dihitung sistem dari config, bukan dari form,
                 // jadi anggota tidak bisa memilih tanggal sendiri.
@@ -84,7 +92,12 @@ class BorrowBook
                 'status' => Loan::STATUS_BORROWED,
             ]);
 
-            $book->update(['status' => Book::STATUS_BORROWED]);
+            $copy->update(['status' => BookCopy::STATUS_BORROWED]);
+            $book->update([
+                'status' => $book->availableCopies()->exists()
+                    ? Book::STATUS_AVAILABLE
+                    : Book::STATUS_BORROWED,
+            ]);
 
             return $loan;
         });

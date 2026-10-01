@@ -1,26 +1,26 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Baca - ' . config('app.name'))
+@section('title', __('member.reading_title').' - '.config('app.name'))
 
 @section('content')
-    <h1 class="text-h1 font-semibold text-primary">Riwayat Membaca</h1>
-    <p class="mt-1 text-sm text-secondary">{{ number_format($histories->total(), 0, ',', '.') }} buku pernah dibaca.</p>
+    <h1 class="text-h1 font-semibold text-primary">{{ __('member.reading_title') }}</h1>
+    <p class="mt-1 text-sm text-secondary">{{ __('member.reading_count', ['count' => number_format($histories->total(), 0, ',', '.')]) }}</p>
 
     @if ($histories->isEmpty())
         <x-empty-state class="mt-6"
-                       title="Belum ada riwayat membaca"
-                       description="Riwayat akan tersimpan otomatis saat Anda membuka buku digital.">
-            <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">Jelajahi katalog</a>
+                       :title="__('member.no_reading')"
+                       :description="__('member.reading_hint')">
+            <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">{{ __('member.explore_catalog') }}</a>
         </x-empty-state>
     @else
         <div class="table-wrap mt-6">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Buku</th>
-                        <th class="w-32">Halaman terakhir</th>
-                        <th class="w-44">Terakhir dibaca</th>
-                        <th class="w-56 text-right">Aksi</th>
+                        <th>{{ __('loans.book') }}</th>
+                        <th class="w-32">{{ __('member.last_page') }}</th>
+                        <th class="w-44">{{ __('member.last_read') }}</th>
+                        <th class="w-56 text-right">{{ __('member.action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,16 +44,16 @@
                                     @if ($history->book->hasFile() && $history->last_page > 0)
                                         <a href="{{ route('books.read', ['book' => $history->book, 'page' => $history->last_page]) }}"
                                            class="btn btn-secondary btn-sm">
-                                            Lanjut baca
+                                            {{ __('member.continue_reading') }}
                                         </a>
                                     @endif
 
                                     <form method="POST" action="{{ route('reading-histories.destroy', $history) }}"
-                                          data-confirm="Hapus riwayat baca {{ $history->book->title }}?"
-                                          data-confirm-title="Hapus riwayat baca">
+                                          data-confirm="{{ __('member.delete_reading_confirmation', ['title' => $history->book->title]) }}"
+                                          data-confirm-title="{{ __('member.delete_history') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">{{ __('member.delete') }}</button>
                                     </form>
                                 </div>
                             </td>

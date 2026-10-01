@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Mailbox - ' . config('app.name'))
+@section('title', __('mailbox.title').' - '.config('app.name'))
 
 @section('content')
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-h1 font-semibold text-primary">Mailbox</h1>
-            <p class="mt-1 text-sm text-secondary">Email notifikasi yang terkirim</p>
+            <h1 class="text-h1 font-semibold text-primary">{{ __('mailbox.title') }}</h1>
+            <p class="mt-1 text-sm text-secondary">{{ __('mailbox.description') }}</p>
         </div>
         <a href="{{ route('anggota.dashboard') }}" class="link-accent text-sm font-medium">
-            &larr; Kembali ke Dashboard
+            &larr; {{ __('mailbox.back_dashboard') }}
         </a>
     </div>
 
@@ -24,19 +24,19 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 5.625a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                 </svg>
             </div>
-            <h2 class="mt-4 text-lg font-semibold text-primary">Belum ada email</h2>
-            <p class="mt-2 text-sm text-secondary">Email notifikasi akan muncul di sini saat ada yang terkirim.</p>
+            <h2 class="mt-4 text-lg font-semibold text-primary">{{ __('mailbox.empty_title') }}</h2>
+            <p class="mt-2 text-sm text-secondary">{{ __('mailbox.empty_description') }}</p>
         </div>
     @else
         <div class="table-wrap mt-6">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Dari</th>
-                        <th>Kepada</th>
-                        <th>Subjek</th>
-                        <th>Waktu</th>
-                        <th class="text-right">Aksi</th>
+                        <th>{{ __('mailbox.from') }}</th>
+                        <th>{{ __('mailbox.to') }}</th>
+                        <th>{{ __('mailbox.subject') }}</th>
+                        <th>{{ __('mailbox.time') }}</th>
+                        <th class="text-right">{{ __('mailbox.action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,11 +53,11 @@
                             <td>
                                 <div class="flex items-center justify-end">
                                     <form method="POST" action="{{ route('mailbox.destroy', $msg->id) }}"
-                                          data-confirm="Hapus email ini?"
-                                          data-confirm-title="Hapus email">
+                                          data-confirm="{{ __('mailbox.delete_confirmation') }}"
+                                          data-confirm-title="{{ __('mailbox.delete_title') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">{{ __('member.delete') }}</button>
                                     </form>
                                 </div>
                             </td>

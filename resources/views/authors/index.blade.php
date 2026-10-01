@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Penulis - ' . config('app.name'))
+@section('title', __('master.authors').' - '.config('app.name'))
 
 @section('content')
     @include('partials.master-index', [
-        'title' => 'Penulis',
+        'title' => __('master.authors'),
         'routeBase' => 'authors',
         'rows' => $authors,
         'searchAction' => route('authors.index'),

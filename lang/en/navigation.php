@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'menu' => 'Menu',
+    'primary_navigation' => 'Primary navigation',
+    'home' => 'Home',
+    'catalog' => 'Catalog',
+    'categories' => 'Categories',
+    'dashboard' => 'Dashboard',
+    'manage_books' => 'Manage Books',
+    'manage_data' => 'Manage Data',
+    'authors' => 'Authors',
+    'publishers' => 'Publishers',
+    'loans' => 'Loans',
+    'users' => 'Users',
+    'loan_history' => 'Loan History',
+    'favorites' => 'Favorites',
+    'reading_history' => 'Reading History',
+    'mailbox' => 'Inbox',
+    'logout' => 'Log out',
+    'login' => 'Log in',
+    'register' => 'Join as a member',
+    'open_sidebar' => 'Open sidebar',
+    'close_navigation' => 'Close navigation menu',
+    'switch_to_english' => 'Switch language to English',
+    'switch_to_indonesian' => 'Switch language to Indonesian',
+    'open_account_menu' => 'Open account menu',
+];

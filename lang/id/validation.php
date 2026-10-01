@@ -190,6 +190,36 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'name' => 'nama',
+        'email' => 'email',
+        'password' => 'kata sandi',
+        'password_confirmation' => 'konfirmasi kata sandi',
+        'role' => 'role',
+        'title' => 'judul',
+        'isbn' => 'ISBN',
+        'description' => 'deskripsi',
+        'publication_year' => 'tahun terbit',
+        'pages' => 'jumlah halaman',
+        'initial_copies' => 'jumlah eksemplar',
+        'add_copies' => 'jumlah eksemplar tambahan',
+        'status' => 'status',
+        'category_id' => 'kategori',
+        'author_id' => 'penulis',
+        'publisher_id' => 'penerbit',
+        'cover' => 'cover',
+        'file' => 'file buku',
+        'photo' => 'foto',
+        'biography' => 'biografi',
+        'slug' => 'slug',
+        'address' => 'alamat',
+        'website' => 'situs web',
+        'phone' => 'telepon',
+        'user_id' => 'anggota',
+        'book_id' => 'buku',
+        'borrowed_at' => 'tanggal pinjam',
+        'last_page' => 'halaman terakhir',
+        'locale' => 'bahasa',
+    ],
 
 ];

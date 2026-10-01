@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'close_notice' => 'Tutup notifikasi',
+    'loading' => 'Memuat data...',
+    'quick_preview' => 'Pratinjau cepat',
+    'synopsis_unavailable' => 'Sinopsis untuk buku ini belum tersedia.',
+    'unknown_author' => 'Penulis tidak diketahui',
+    'publisher' => 'Penerbit',
+    'isbn' => 'ISBN',
+    'pages' => 'Halaman',
+    'published' => 'Diterbitkan',
+    'close' => 'Tutup',
+    'view_details' => 'Lihat halaman detail',
+    'toggle_dark' => 'Aktifkan mode gelap',
+    'toggle_light' => 'Aktifkan mode terang',
+    'pagination' => 'Navigasi halaman',
+    'showing_range' => 'Menampilkan :first–:last dari :total data',
+    'showing_count' => ':count data',
+    'previous' => 'Sebelumnya',
+    'next' => 'Berikutnya',
+    'go_to_page' => 'Ke halaman :page',
+    'confirm_heading' => 'Konfirmasi tindakan',
+    'confirm_cancel' => 'Batal',
+    'confirm_accept' => 'Ya, lanjutkan',
+];

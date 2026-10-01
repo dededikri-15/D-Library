@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Kategori - ' . config('app.name'))
+@section('title', __('master.categories').' - '.config('app.name'))
 
 @section('content')
     @include('partials.master-index', [
-        'title' => 'Kategori',
+        'title' => __('master.categories'),
         'routeBase' => 'categories',
         'rows' => $categories,
         'searchAction' => route('categories.index'),

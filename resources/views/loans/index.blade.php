@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Peminjaman - ' . config('app.name'))
+@section('title', __('loans.management_title').' - '.config('app.name'))
 
 @section('content')
-    <h1 class="text-h1 font-semibold text-primary">Data Peminjaman</h1>
+    <h1 class="text-h1 font-semibold text-primary">{{ __('loans.management_title') }}</h1>
     {{-- <p class="mt-1 text-sm text-secondary">Lacak pengembalian buku.</p> --}}
 
     {{--
@@ -20,9 +20,9 @@
     --}}
     <form method="GET" class="mt-6 flex max-w-xs items-end gap-2">
         <div class="flex-1">
-            <label for="status" class="field-label">Filter status</label>
+            <label for="status" class="field-label">{{ __('loans.filter_status') }}</label>
             <select id="status" name="status" class="field-input">
-                <option value="">Semua status</option>
+                <option value="">{{ __('loans.all_statuses') }}</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status }}" @selected(request('status') === $status)>
                         {{ App\Models\Loan::statusOptions()[$status] ?? $status }}
@@ -30,14 +30,14 @@
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="btn btn-secondary shrink-0">Terapkan</button>
+        <button type="submit" class="btn btn-secondary shrink-0">{{ __('loans.apply') }}</button>
     </form>
 
     @if ($onlyActive)
         <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-secondary">
-            <span class="badge badge-borrowed">Aktif</span>
-            Menampilkan peminjaman yang dipinjam dan terlambat saja.
-            <a href="{{ route('loans.index') }}" class="link-accent">Tampilkan semua</a>
+            <span class="badge badge-borrowed">{{ __('loans.active') }}</span>
+            {{ __('loans.active_description') }}
+            <a href="{{ route('loans.index') }}" class="link-accent">{{ __('loans.show_all') }}</a>
         </p>
     @endif
 
@@ -45,12 +45,13 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Anggota</th>
-                    <th>Buku</th>
-                    <th>Pinjam</th>
-                    <th>Jatuh tempo</th>
-                    <th>Status</th>
-                    <th class="text-right">Aksi</th>
+                    <th>{{ __('loans.member') }}</th>
+                    <th>{{ __('loans.book') }}</th>
+                    <th>{{ __('loans.copy') }}</th>
+                    <th>{{ __('loans.borrowed_at') }}</th>
+                    <th>{{ __('loans.due_at') }}</th>
+                    <th>{{ __('loans.status') }}</th>
+                    <th class="text-right">{{ __('loans.action') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -58,12 +59,13 @@
                     <tr>
                         <td class="font-medium text-primary">{{ $loan->user?->name ?? '-' }}</td>
                         <td class="text-secondary">{{ $loan->book?->title ?? '-' }}</td>
+                        <td class="font-mono text-secondary">{{ $loan->bookCopy?->inventory_code ?? '-' }}</td>
                         <td class="text-secondary">{{ $loan->displayDate($loan->borrowed_at)?->format('d M Y') }}</td>
                         <td class="text-secondary">{{ $loan->displayDate($loan->due_at)?->format('d M Y') }}</td>
                         <td>
                             <x-status-badge :status="$loan->isOverdue() ? 'overdue' : $loan->status" />
                             @if ($loan->hasReturnRequest() && $loan->isActive())
-                                <span class="mt-1 block text-label text-borrowed">Menunggu konfirmasi</span>
+                                <span class="mt-1 block text-label text-borrowed">{{ __('loans.return_pending') }}</span>
                             @endif
                         </td>
                         <td>
@@ -72,27 +74,27 @@
                                     <form method="POST" action="{{ route('loans.return', $loan) }}">
                                         @csrf
                                         <button type="submit" class="btn btn-ghost btn-sm text-available hover:bg-available/5">
-                                            {{ $loan->hasReturnRequest() ? 'Konfirmasi pengembalian' : 'Kembalikan' }}
+                                            {{ $loan->hasReturnRequest() ? __('loans.confirm_return') : __('loans.return_book') }}
                                         </button>
                                     </form>
                                 @endif
 
                                 <form method="POST" action="{{ route('loans.destroy', $loan) }}"
-                                      data-confirm="Hapus data peminjaman ini?"
-                                      data-confirm-title="Hapus data peminjaman">
+                                      data-confirm="{{ __('loans.delete_confirmation') }}"
+                                      data-confirm-title="{{ __('loans.delete') }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                    <button type="submit" class="btn btn-danger btn-sm">{{ __('loans.delete') }}</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-0">
+                        <td colspan="7" class="p-0">
                             <x-empty-state class="border-0"
-                                           title="Belum ada data peminjaman"
-                                           description="Belum ada peminjaman yang tercatat." />
+                                           :title="__('loans.empty_loans')"
+                                           :description="__('loans.empty_loans_description')" />
                         </td>
                     </tr>
                 @endforelse

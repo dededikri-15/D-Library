@@ -13,64 +13,64 @@
                 </a>
 
                 <p class="mt-4 text-sm text-secondary">
-                    Katalog digital untuk menelusuri koleksi, meminjam buku, dan memantau riwayat membaca.
+                    {{ __('footer.description') }}
                 </p>
             </div>
 
-            <nav aria-label="Tautan Jelajahi">
-                <p class="text-label font-semibold tracking-wide text-primary uppercase">Jelajahi</p>
+            <nav aria-label="{{ __('footer.explore') }}">
+                <p class="text-label font-semibold tracking-wide text-primary uppercase">{{ __('footer.explore') }}</p>
                 <ul class="mt-4 space-y-2.5 text-sm">
                     <li><a href="{{ route('home') }}"
-                            class="text-secondary transition-colors hover:text-tertiary">Beranda</a></li>
+                            class="text-secondary transition-colors hover:text-tertiary">{{ __('navigation.home') }}</a></li>
                     <li><a href="{{ route('books.index') }}"
-                            class="text-secondary transition-colors hover:text-tertiary">Katalog Buku</a></li>
+                            class="text-secondary transition-colors hover:text-tertiary">{{ __('footer.catalog') }}</a></li>
                     <li><a href="{{ route('categories.public') }}"
-                            class="text-secondary transition-colors hover:text-tertiary">Kategori</a></li>
+                            class="text-secondary transition-colors hover:text-tertiary">{{ __('navigation.categories') }}</a></li>
                     @guest
                         <li><a href="{{ route('login') }}"
-                                class="text-secondary transition-colors hover:text-tertiary">Masuk</a></li>
+                                class="text-secondary transition-colors hover:text-tertiary">{{ __('navigation.login') }}</a></li>
                     @else
                         <li>
                             <a href="{{ route(auth()->user()->isStaff() ? 'dashboard' : 'anggota.dashboard') }}"
-                                class="text-secondary transition-colors hover:text-tertiary">Dasbor Saya</a>
+                                class="text-secondary transition-colors hover:text-tertiary">{{ __('footer.my_dashboard') }}</a>
                         </li>
                     @endguest
                 </ul>
             </nav>
 
-            <nav aria-label="Tautan Akun">
-                <p class="text-label font-semibold tracking-wide text-primary uppercase">Akun</p>
+            <nav aria-label="{{ __('footer.account') }}">
+                <p class="text-label font-semibold tracking-wide text-primary uppercase">{{ __('footer.account') }}</p>
                 <ul class="mt-4 space-y-2.5 text-sm">
                     @guest
                         <li>
                             <a href="{{ route('login') }}"
-                                class="text-secondary transition-colors hover:text-tertiary">Masuk</a>
+                                class="text-secondary transition-colors hover:text-tertiary">{{ __('navigation.login') }}</a>
                         </li>
                         @if (config('perpustakaan.registration.enabled', true))
                             <li>
                                 <a href="{{ route('register') }}"
-                                    class="text-secondary transition-colors hover:text-tertiary">Daftar Anggota</a>
+                                    class="text-secondary transition-colors hover:text-tertiary">{{ __('footer.join_member') }}</a>
                             </li>
                         @endif
                     @else
                         @if (auth()->user()->isMember())
                             <li>
                                 <a href="{{ route('favorites.index') }}"
-                                    class="text-secondary transition-colors hover:text-tertiary">Favorit</a>
+                                    class="text-secondary transition-colors hover:text-tertiary">{{ __('navigation.favorites') }}</a>
                             </li>
                             <li>
                                 <a href="{{ route('reading-histories.index') }}"
-                                    class="text-secondary transition-colors hover:text-tertiary">Riwayat Baca</a>
+                                    class="text-secondary transition-colors hover:text-tertiary">{{ __('navigation.reading_history') }}</a>
                             </li>
                         @else
-                            <li><span class="text-secondary">Masuk sebagai {{ auth()->user()->roleLabel() }}</span></li>
+                            <li><span class="text-secondary">{{ __('footer.signed_in_as', ['role' => auth()->user()->roleLabel()]) }}</span></li>
                         @endif
                     @endguest
                 </ul>
             </nav>
 
             <div>
-                <p class="text-label font-semibold tracking-wide text-primary uppercase">Jam Layanan</p>
+                <p class="text-label font-semibold tracking-wide text-primary uppercase">{{ __('footer.service_hours') }}</p>
                 <ul class="mt-4 space-y-2.5 text-sm text-secondary">
                     <li class="flex items-center gap-2">
                         <svg class="h-4 w-4 shrink-0 text-tertiary" fill="none" viewBox="0 0 24 24"
@@ -78,7 +78,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
-                        Senin&ndash;Jumat, 08.00&ndash;16.00
+                        {{ __('footer.weekdays') }}
                     </li>
                     <li class="flex items-center gap-2">
                         <svg class="h-4 w-4 shrink-0 text-tertiary" fill="none" viewBox="0 0 24 24"
@@ -88,7 +88,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M19.5 10.5c0 7.14-7.5 11.25-7.5 11.25S4.5 17.64 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                         </svg>
-                        Kota Malang, Indonesia
+                        {{ __('footer.location') }}
                     </li>
                 </ul>
             </div>
@@ -97,7 +97,7 @@
         <div
             class="mt-10 flex flex-col gap-3 border-t border-hairline pt-6 text-sm text-secondary sm:flex-row sm:items-center sm:justify-between">
             <p>&copy; {{ now()->year }} {{ config('app.name') }}</p>
-            <p class="text-label">Dibangun dengan Laravel {{ Illuminate\Foundation\Application::VERSION }}</p>
+            <p class="text-label">{{ __('footer.built_with', ['version' => Illuminate\Foundation\Application::VERSION]) }}</p>
         </div>
     </div>
 </footer>

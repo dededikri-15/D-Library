@@ -1,5 +1,9 @@
 import './bootstrap';
 
+function uiMessage(key, fallback) {
+    return document.documentElement.dataset[`ui${key}`] || fallback;
+}
+
 /*
  * Frontend Vanilla JS.
  *
@@ -95,8 +99,14 @@ function syncThemeToggles(theme) {
     document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
         // Ikon ditulis lewat CSS, bukan JS, supaya tetap benar saat JS dimatikan.
         // Yang diubah di sini hanya nama tombol untuk pembaca layar.
-        button.setAttribute('aria-label', theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
-        button.setAttribute('title', theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
+        const label =
+            theme === "dark"
+                ? button.dataset.lightLabel
+                : button.dataset.darkLabel;
+        if (label) {
+            button.setAttribute("aria-label", label);
+            button.setAttribute("title", label);
+        }
         button.dataset.themeState = theme;
     });
 }
@@ -453,12 +463,22 @@ function initAjaxForms() {
                 // sama pasti gagal juga, jadi reload adalah satu-satunya
                 // penyelesainya.
                 if (response.status === 419) {
-                    window.toast?.error('Sesi kamu sudah berakhir. Muat ulang halaman.');
+                    window.toast?.error(
+                        uiMessage(
+                            "SessionExpired",
+                            "Your session expired. Reload the page.",
+                        ),
+                    );
                     return;
                 }
 
                 if (response.status === 401) {
-                    window.toast?.error('Kamu harus masuk dulu.');
+                    window.toast?.error(
+                        uiMessage(
+                            "LoginRequired",
+                            "You need to sign in first.",
+                        ),
+                    );
                     return;
                 }
 
@@ -468,14 +488,22 @@ function initAjaxForms() {
                         .then((body) => body.message || firstErrorMessage(body.errors))
                         .catch(() => null);
 
-                    window.toast?.error(detail || 'Aksi gagal. Coba lagi.');
+                    window.toast?.error(
+                        detail ||
+                            uiMessage(
+                                "ActionFailed",
+                                "The action failed. Please try again.",
+                            ),
+                    );
                     return;
                 }
 
                 const body = await response.json();
 
                 applyAjaxResult(form, body);
-                window.toast?.success(body.message ?? 'Perubahan tersimpan.');
+                window.toast?.success(
+                    body.message ?? uiMessage("Saved", "Changes saved."),
+                );
             })
             .catch(() => {
                 if (reachedServer) {
@@ -483,13 +511,21 @@ function initAjaxForms() {
                     // berisiko jadi aksi ganda. User hanya perlu diberi tahu dan
                     // diberi kesempatan mencoba lagi.
                     window.toast?.error(
-                        'Respons server tidak bisa dibaca. Coba lagi atau muat ulang halaman.',
+                        uiMessage(
+                            "ResponseUnreadable",
+                            "The server response could not be read. Try again or reload the page.",
+                        ),
                     );
                     return;
                 }
 
                 if (!form.hasAttribute('data-ajax-fallback')) {
-                    window.toast?.error('Koneksi bermasalah. Form belum terkirim.');
+                    window.toast?.error(
+                        uiMessage(
+                            "NetworkError",
+                            "Connection problem. The form was not submitted.",
+                        ),
+                    );
                     return;
                 }
 
@@ -502,7 +538,12 @@ function initAjaxForms() {
                 // fallback yang sedang berjalan. `submit()` melewati event,
                 // jadi browser mengirim form apa adanya.
                 form.dataset.ajaxFallback = '1';
-                window.toast?.warning('Koneksi bermasalah. Mengirim tanpa AJAX...');
+                window.toast?.warning(
+                    uiMessage(
+                        "NetworkFallback",
+                        "Connection problem. Submitting without AJAX...",
+                    ),
+                );
                 form.submit();
             })
             .finally(() => {
@@ -1302,8 +1343,14 @@ function initSearch() {
 
                 renderMessage(
                     error.throttled
-                        ? 'Pencarian terlalu sering. Coba lagi sebentar lagi.'
-                        : 'Gagal memuat hasil. Tekan Enter untuk mencari.',
+                        ? uiMessage(
+                              "SearchThrottled",
+                              "You are searching too quickly. Please try again shortly.",
+                          )
+                        : uiMessage(
+                              "SearchFailed",
+                              "Could not load results. Press Enter to search.",
+                          ),
                 );
             });
     }
@@ -1437,15 +1484,17 @@ function initQuickAdd() {
 
             if (submitButton) {
                 submitButton.disabled = true;
-                submitButton.textContent = 'Menyimpan...';
+                submitButton.textContent = uiMessage("Saving", "Saving...");
             }
 
             fetch(form.action, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    'Accept': 'application/json',
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRF-TOKEN":
+                        document.querySelector('meta[name="csrf-token"]')
+                            ?.content || "",
+                    Accept: "application/json",
                 },
                 body: formData,
             })
@@ -1454,28 +1503,43 @@ function initQuickAdd() {
 
                     if (!response.ok) {
                         showError(
-                            firstErrorMessage(data?.errors)
-                                || data?.message
-                                || 'Gagal menyimpan. Coba lagi.',
+                            firstErrorMessage(data?.errors) ||
+                                data?.message ||
+                                uiMessage(
+                                    "SaveFailed",
+                                    "Could not save. Please try again.",
+                                ),
                         );
                         return;
                     }
 
                     if (!data?.id || !data?.name) {
-                        showError('Respons server tidak lengkap. Coba lagi.');
+                        showError(
+                            uiMessage(
+                                "IncompleteResponse",
+                                "The server response is incomplete. Please try again.",
+                            ),
+                        );
                         return;
                     }
 
-                    const option = document.createElement('option');
+                    const option = document.createElement("option");
                     option.value = data.id;
                     option.textContent = data.name;
                     select.appendChild(option);
                     select.value = data.id;
 
                     form.reset();
-                    form.closest('dialog[data-modal]')?.close();
+                    form.closest("dialog[data-modal]")?.close();
                 })
-                .catch(() => showError('Koneksi bermasalah. Form belum terkirim.'))
+                .catch(() =>
+                    showError(
+                        uiMessage(
+                            "NetworkError",
+                            "Connection problem. The form was not submitted.",
+                        ),
+                    ),
+                )
                 .finally(() => {
                     if (submitButton) {
                         submitButton.disabled = false;
@@ -1484,6 +1548,117 @@ function initQuickAdd() {
                 });
         });
     });
+}
+
+function initGlobalStatusAndClock() {
+    document.querySelectorAll("[data-live-clock]").forEach((clock) => {
+        const timezone = clock.dataset.timezone || "Asia/Jakarta";
+        const locale =
+            clock.dataset.locale || document.documentElement.lang || "id";
+        const date = clock.querySelector("[data-clock-date]");
+        const time = clock.querySelector("[data-clock-time]");
+        const dateFormat = new Intl.DateTimeFormat(locale, {
+            weekday: "long",
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+            timeZone: timezone,
+        });
+        const timeFormat = new Intl.DateTimeFormat(locale, {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+            timeZone: timezone,
+        });
+
+        const update = () => {
+            const now = new Date();
+            if (date) date.textContent = dateFormat.format(now);
+            if (time) time.textContent = timeFormat.format(now);
+            clock.dateTime = now.toISOString();
+        };
+
+        update();
+        window.setInterval(update, 1000);
+    });
+
+    document
+        .querySelectorAll("[data-system-indicator]")
+        .forEach((indicator) => {
+            const dot = indicator.querySelector("[data-status-dot]");
+            const ping = indicator.querySelector("[data-status-ping]");
+            const label = indicator.querySelector("[data-status-label]");
+            const onlineLabel = indicator.dataset.onlineLabel || "Sistem Aktif";
+            const offlineLabel =
+                indicator.dataset.offlineLabel || "Sistem Offline";
+            let checking = false;
+
+            const update = (online) => {
+                indicator.dataset.state = online ? "online" : "offline";
+                indicator.classList.toggle("text-available", online);
+                indicator.classList.toggle("text-overdue", !online);
+                dot?.classList.remove(
+                    "bg-secondary",
+                    "bg-available",
+                    "bg-overdue",
+                );
+                dot?.classList.add(online ? "bg-available" : "bg-overdue");
+                ping?.toggleAttribute("hidden", !online);
+                if (label)
+                    label.textContent = online ? onlineLabel : offlineLabel;
+            };
+
+            const check = async () => {
+                if (checking) return;
+                checking = true;
+
+                try {
+                    const response = await fetch(indicator.dataset.healthUrl, {
+                        headers: { Accept: "application/json" },
+                        cache: "no-store",
+                        credentials: "same-origin",
+                    });
+                    update(response.ok);
+                } catch {
+                    update(false);
+                } finally {
+                    checking = false;
+                }
+            };
+
+            check();
+            window.setInterval(check, 30000);
+        });
+}
+
+function initBackToTop() {
+    const button = document.querySelector("[data-back-to-top]");
+    if (!button) return;
+
+    const threshold = Number(button.dataset.threshold) || 400;
+    let isVisible = false;
+
+    const updateVisibility = () => {
+        const shouldShow = window.scrollY > threshold;
+        if (shouldShow === isVisible) return;
+
+        isVisible = shouldShow;
+        button.hidden = !shouldShow;
+    };
+
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+
+    button.addEventListener("click", () => {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)")
+            .matches
+            ? "auto"
+            : "smooth";
+
+        window.scrollTo({ top: 0, behavior });
+    });
+
+    updateVisibility();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1503,4 +1678,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initSearch();
     initQuickAdd();
+    initGlobalStatusAndClock();
+    initBackToTop();
 });

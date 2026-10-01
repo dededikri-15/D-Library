@@ -8,7 +8,7 @@
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
             </svg>
-            Kembali ke katalog
+            {{ __('book.back_to_catalog') }}
         </a>
     </nav>
 
@@ -30,7 +30,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M19.5 14.25v-2.63c0-1.14-.46-2.23-1.28-3.03l-2.4-2.4a4.28 4.28 0 0 0-3.04-1.26H7.5m10.5 9.04v2.63c0 1.14-.46 2.23-1.28 3.03l-2.4 2.4a4.28 4.28 0 0 1-3.04 1.26H7.5m10.5-9.04H4.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5h3.09a1.5 1.5 0 0 0 1.06-.44l1.69-1.7a1.5 1.5 0 0 1 1.06-.44h3.6a1.5 1.5 0 0 1 1.5 1.5v3.09a1.5 1.5 0 0 0 .44 1.06l1.7 1.69a1.5 1.5 0 0 0 1.06.44h1.5a1.5 1.5 0 0 1 1.5 1.5Z"/>
                         </svg>
-                        Tersedia versi digital
+                        {{ __('book.digital_available') }}
                     </p>
                 @endif
             </div>
@@ -52,11 +52,11 @@
             <h1 class="mt-4 text-h1 font-bold tracking-tight text-balance text-primary">{{ $book->title }}</h1>
 
             <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-secondary">
-                <span>oleh</span>
+                <span>{{ __('book.by') }}</span>
                 @if ($book->author)
                     <span class="font-semibold text-primary">{{ $book->author->name }}</span>
                 @else
-                    <span class="text-secondary">Penulis tidak diketahui</span>
+                    <span class="text-secondary">{{ __('book.unknown_author') }}</span>
                 @endif
                 @if ($book->publication_year)
                     <span aria-hidden="true">&middot;</span>
@@ -67,14 +67,15 @@
             {{-- Metadata --}}
             <dl class="card mt-7 divide-y divide-hairline overflow-hidden">
                 @foreach ([
-                    'Penerbit' => $book->publisher?->name ?? '-',
-                    'ISBN' => $book->isbn,
-                    'Jumlah halaman' => $book->pages ?? '-',
-                    'Jumlah pembaca' => number_format($readerCount, 0, ',', '.'),
-                    'Status' => match ($book->status) {
-                        App\Models\Book::STATUS_AVAILABLE => 'Tersedia untuk dipinjam',
-                        App\Models\Book::STATUS_BORROWED => 'Sedang dipinjam',
-                        default => 'Tidak aktif',
+                    __('book.publisher') => $book->publisher?->name ?? '-',
+                    __('book.isbn') => $book->isbn,
+                    __('book.pages') => $book->pages ?? '-',
+                    __('book.copies_label') => __('book.copies_available', ['available' => $book->available_copies_count, 'total' => $book->copies_count]),
+                    __('book.readers') => number_format($readerCount, 0, ',', '.'),
+                    __('book.status') => match ($book->status) {
+                        App\Models\Book::STATUS_AVAILABLE => __('book.available_for_loan'),
+                        App\Models\Book::STATUS_BORROWED => __('book.currently_borrowed'),
+                        default => __('book.inactive'),
                     },
                 ] as $label => $value)
                     <div class="flex items-center justify-between gap-4 px-5 py-3.5">
@@ -92,7 +93,7 @@
 
             {{-- Sinopsis --}}
             <section class="mt-8">
-                <h2 class="section-title">Sinopsis</h2>
+                <h2 class="section-title">{{ __('book.synopsis') }}</h2>
                 @if ($book->description)
                     {{--
                         `whitespace-pre-line` dipakai karena sinopsis ditulis
@@ -103,7 +104,7 @@
                         {{ $book->description }}
                     </p>
                 @else
-                    <p class="mt-3 text-sm text-secondary">Sinopsis untuk buku ini belum tersedia.</p>
+                    <p class="mt-3 text-sm text-secondary">{{ __('book.no_synopsis') }}</p>
                 @endif
             </section>
 
@@ -128,12 +129,12 @@
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                               d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
                                     </svg>
-                                    {{ $lastReadPage > 0 ? 'Lanjut dari halaman ' . $lastReadPage : 'Baca Buku' }}
+                                    {{ $lastReadPage > 0 ? __('book.continue_from_page', ['page' => $lastReadPage]) : __('book.read_book') }}
                                 </a>
                             @else
                                 <span class="btn btn-secondary btn-lg cursor-not-allowed opacity-60"
-                                      title="Hanya staff dan anggota yang sedang meminjam buku ini yang bisa membacanya.">
-                                    Baca Buku
+                                                                            title="{{ __('book.cannot_read') }}">
+                                                                        {{ __('book.read_book') }}
                                 </span>
                             @endif
                         @endif
@@ -152,13 +153,13 @@
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                   d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
                                         </svg>
-                                        Pinjam Buku
+                                        {{ __('book.borrow') }}
                                     </button>
                                 </form>
                             @else
                                 <span class="btn btn-secondary btn-lg cursor-not-allowed opacity-60"
                                       title="{{ $borrowState['reason'] }}">
-                                    Pinjam Buku
+                                    {{ __('book.borrow') }}
                                 </span>
                             @endif
                         @elseif (auth()->user()->isStaff())
@@ -166,14 +167,14 @@
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 0 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931ZM19.5 7.125 16.875 4.5" />
                                 </svg>
-                                Edit buku
+                                {{ __('book.edit') }}
                             </a>
                             <a href="{{ route('loans.index') }}" class="btn btn-secondary btn-lg">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                           d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/>
                                 </svg>
-                                Catat Peminjaman
+                                {{ __('book.record_loan') }}
                             </a>
                         @endif
 
@@ -214,8 +215,8 @@
                                      dua tempat, sooner or later salah satu tidak
                                      ikut diubah dan tombolnya berbohong. --}}
                                 <button type="submit" class="btn btn-ghost {{ $isFavorite ? 'text-overdue' : '' }}" data-favorite-button
-                                        data-label-add="Tambah ke favorit"
-                                        data-label-remove="Hapus dari favorit"
+                                        data-label-add="{{ __('book.add_favorite') }}"
+                                        data-label-remove="{{ __('book.remove_favorite') }}"
                                         aria-pressed="{{ $isFavorite ? 'true' : 'false' }}">
                                     <svg class="h-4 w-4" data-favorite-icon
                                          fill="{{ $isFavorite ? 'currentColor' : 'none' }}"
@@ -223,7 +224,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                               d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
                                     </svg>
-                                    <span data-favorite-label>{{ $isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit' }}</span>
+                                    <span data-favorite-label>{{ $isFavorite ? __('book.remove_favorite') : __('book.add_favorite') }}</span>
                                 </button>
                             </form>
                         @endif
@@ -231,13 +232,13 @@
 
                     @unless ($book->hasFile())
                         <p class="mt-4 text-sm text-secondary">
-                            Buku digital untuk judul ini belum tersedia. Anggota dapat meminjam versi fisiknya.
+                            {{ __('book.digital_unavailable') }}
                         </p>
                     @endunless
                 @else
                     <p class="text-sm text-secondary">
-                        <a href="{{ route('login') }}" class="link-accent">Masuk</a>
-                        untuk meminjam, menyimpan ke favorit, dan membaca versi digitalnya.
+                        <a href="{{ route('login') }}" class="link-accent">{{ __('auth.login') }}</a>
+                        {{ __('book.login_to_access') }}
                     </p>
                 @endauth
             </div>

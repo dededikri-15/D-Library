@@ -49,7 +49,7 @@ class CategoryController extends Controller
     {
         Category::create($request->validated());
 
-        return $this->success('categories.index', 'Kategori berhasil ditambahkan.');
+        return $this->success('categories.index', __('messages.category_created'));
     }
 
     public function edit(Category $category): View
@@ -65,7 +65,7 @@ class CategoryController extends Controller
     {
         $category->update($request->validated());
 
-        return $this->success('categories.index', 'Kategori berhasil diperbarui.');
+        return $this->success('categories.index', __('messages.category_updated'));
     }
 
     public function destroy(Category $category): RedirectResponse

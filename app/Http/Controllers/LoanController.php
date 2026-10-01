@@ -7,6 +7,7 @@ use App\Actions\MarkOverdueLoans;
 use App\Exceptions\LoanNotPossibleException;
 use App\Http\Requests\LoanRequest;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -60,7 +61,7 @@ class LoanController extends Controller
         $this->markOverdue->handle();
 
         $loans = Loan::query()
-            ->with(['user', 'book'])
+            ->with(['user', 'book', 'bookCopy'])
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             // `scopeActive()` definisi yang sama dengan angka "Peminjaman
             // Aktif" di dasbor, jadi kartu dan daftar ini tidak bisa
@@ -100,7 +101,7 @@ class LoanController extends Controller
             return back()->withErrors(['book_id' => $e->getMessage()])->withInput();
         }
 
-        return $this->success('loans.index', 'Peminjaman berhasil dicatat.');
+        return $this->success('loans.index', __('messages.loan_created'));
     }
 
     /**
@@ -128,7 +129,7 @@ class LoanController extends Controller
 
         return $this->success(
             'books.show',
-            'Buku berhasil dipinjam. Jangan lupa dikembalikan sebelum tanggal jatuh tempo.',
+            __('messages.book_borrowed'),
             ['book' => $book]
         );
     }
@@ -139,10 +140,10 @@ class LoanController extends Controller
     public function returnBook(Loan $loan): RedirectResponse
     {
         if (! $this->completeReturn($loan)) {
-            return $this->backWithStatus('Buku ini sudah pernah dikembalikan.');
+            return $this->backWithStatus(__('messages.book_already_returned'));
         }
 
-        return $this->success('loans.index', 'Buku berhasil dikembalikan.');
+        return $this->success('loans.index', __('messages.book_returned'));
     }
 
     public function requestReturn(Request $request, Loan $loan): RedirectResponse
@@ -166,9 +167,9 @@ class LoanController extends Controller
         });
 
         return match ($result) {
-            'returned' => $this->backWithStatus('Pinjaman ini sudah tidak aktif.'),
-            'pending' => $this->backWithStatus('Permintaan pengembalianmu sedang menunggu konfirmasi pustakawan.'),
-            default => $this->backWithStatus('Permintaan pengembalian dikirim ke pustakawan.'),
+            'returned' => $this->backWithStatus(__('messages.loan_inactive')),
+            'pending' => $this->backWithStatus(__('messages.return_pending')),
+            default => $this->backWithStatus(__('messages.return_requested')),
         };
     }
 
@@ -186,7 +187,25 @@ class LoanController extends Controller
                 'status' => Loan::STATUS_RETURNED,
             ]);
 
-            $lockedLoan->book()->update(['status' => Book::STATUS_AVAILABLE]);
+            $book = Book::query()->whereKey($lockedLoan->book_id)->lockForUpdate()->first();
+            $copy = $lockedLoan->book_copy_id
+                ? BookCopy::query()->whereKey($lockedLoan->book_copy_id)->lockForUpdate()->first()
+                : null;
+
+            // Loans lama belum tentu terhubung ke ID eksemplar.
+            $copy ??= $book?->copies()
+                ->where('status', BookCopy::STATUS_BORROWED)
+                ->lockForUpdate()
+                ->first();
+            $copy?->update(['status' => BookCopy::STATUS_AVAILABLE]);
+
+            if ($book && $book->status !== Book::STATUS_INACTIVE) {
+                $book->update([
+                    'status' => $book->availableCopies()->exists()
+                        ? Book::STATUS_AVAILABLE
+                        : Book::STATUS_BORROWED,
+                ]);
+            }
 
             return true;
         });
@@ -197,18 +216,31 @@ class LoanController extends Controller
      */
     public function destroy(Loan $loan): RedirectResponse
     {
-        $book = $loan->book;
+        DB::transaction(function () use ($loan) {
+            $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
+            $book = Book::query()->whereKey($lockedLoan->book_id)->lockForUpdate()->first();
 
-        DB::transaction(function () use ($loan, $book) {
             // Kalau peminjaman aktif dihapus, buku harus kembali tersedia.
-            if (! $loan->isReturned() && $book !== null) {
-                $book->update(['status' => Book::STATUS_AVAILABLE]);
+            if (! $lockedLoan->isReturned() && $book !== null) {
+                $copy = $lockedLoan->book_copy_id
+                    ? BookCopy::query()->whereKey($lockedLoan->book_copy_id)->lockForUpdate()->first()
+                    : $book->copies()->where('status', BookCopy::STATUS_BORROWED)
+                    ->lockForUpdate()->first();
+                $copy?->update(['status' => BookCopy::STATUS_AVAILABLE]);
+
+                if ($book->status !== Book::STATUS_INACTIVE) {
+                    $book->update([
+                        'status' => $book->availableCopies()->exists()
+                            ? Book::STATUS_AVAILABLE
+                            : Book::STATUS_BORROWED,
+                    ]);
+                }
             }
 
-            $loan->delete();
+            $lockedLoan->delete();
         });
 
-        return $this->success('loans.index', 'Data peminjaman dihapus.');
+        return $this->success('loans.index', __('messages.loan_deleted'));
     }
 
     /**
@@ -225,7 +257,7 @@ class LoanController extends Controller
         $this->markOverdue->handle();
 
         $loans = $user->loans()
-            ->with('book')
+            ->with(['book', 'bookCopy'])
             ->latest('borrowed_at')
             ->paginate(config('perpustakaan.pagination.per_page'))
             ->withQueryString();

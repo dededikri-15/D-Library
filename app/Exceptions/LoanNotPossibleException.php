@@ -19,7 +19,7 @@ class LoanNotPossibleException extends Exception
 {
     public static function bookMissing(): self
     {
-        return new self('Buku tidak ditemukan.');
+        return new self(__('messages.book_missing'));
     }
 
     /**
@@ -28,7 +28,7 @@ class LoanNotPossibleException extends Exception
      */
     public static function bookInactive(): self
     {
-        return new self('Buku ini sedang tidak aktif dan tidak bisa dipinjam.');
+        return new self(__('messages.book_inactive'));
     }
 
     /**
@@ -40,11 +40,11 @@ class LoanNotPossibleException extends Exception
      */
     public static function alreadyBorrowedByRequester(): self
     {
-        return new self('Anda sedang meminjam buku ini.');
+        return new self(__('messages.already_borrowed_by_requester'));
     }
 
     public static function borrowedByOtherMember(): self
     {
-        return new self('Buku ini sedang dipinjam oleh anggota lain.');
+        return new self(__('messages.borrowed_by_other_member'));
     }
 }

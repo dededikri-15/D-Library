@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Favorit - ' . config('app.name'))
+@section('title', __('member.favorites_title').' - '.config('app.name'))
 
 @section('content')
-    <h1 class="text-h1 font-semibold text-primary">Buku Favorit</h1>
-    <p class="mt-1 text-sm text-secondary">{{ number_format($favorites->total(), 0, ',', '.') }} buku tersimpan.</p>
+    <h1 class="text-h1 font-semibold text-primary">{{ __('member.favorites_title') }}</h1>
+    <p class="mt-1 text-sm text-secondary">{{ __('member.favorites_count', ['count' => number_format($favorites->total(), 0, ',', '.')]) }}</p>
 
     @if ($favorites->isEmpty())
         <x-empty-state class="mt-6"
-                       title="Belum ada buku favorit"
-                       description="Buka halaman buku lalu tekan Tambah ke favorit untuk menyimpannya di sini.">
-            <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">Jelajahi katalog</a>
+                       :title="__('member.no_favorites')"
+                       :description="__('member.add_favorite_hint')">
+            <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">{{ __('member.explore_catalog') }}</a>
         </x-empty-state>
     @else
         <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -34,18 +34,18 @@
                             </a>
                         </h2>
 
-                        <p class="mt-1 text-sm text-secondary">{{ $book->author?->name ?? 'Penulis tidak diketahui' }}</p>
-                        <p class="text-sm text-secondary">Disimpan {{ $favorite->created_at->diffForHumans() }}</p>
+                        <p class="mt-1 text-sm text-secondary">{{ $book->author?->name ?? __('member.unknown_author') }}</p>
+                        <p class="text-sm text-secondary">{{ __('member.saved', ['date' => $favorite->created_at->diffForHumans()]) }}</p>
 
                         <div class="mt-auto flex flex-wrap gap-2 pt-4">
-                            <a href="{{ route('books.show', $book) }}" class="btn btn-secondary btn-sm">Lihat detail</a>
+                            <a href="{{ route('books.show', $book) }}" class="btn btn-secondary btn-sm">{{ __('member.details') }}</a>
 
                             <form method="POST" action="{{ route('favorites.destroy', $book) }}"
-                                  data-confirm="Hapus {{ $book->title }} dari favorit?"
-                                  data-confirm-title="Hapus dari favorit">
+                                  data-confirm="{{ __('member.remove_favorite_confirmation', ['title' => $book->title]) }}"
+                                  data-confirm-title="{{ __('member.remove_favorite') }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                <button type="submit" class="btn btn-danger btn-sm">{{ __('member.delete') }}</button>
                             </form>
                         </div>
                     </div>

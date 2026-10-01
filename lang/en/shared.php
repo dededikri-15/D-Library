@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'close_notice' => 'Dismiss notification',
+    'loading' => 'Loading...',
+    'quick_preview' => 'Quick preview',
+    'synopsis_unavailable' => 'No synopsis is available for this book yet.',
+    'unknown_author' => 'Unknown author',
+    'publisher' => 'Publisher',
+    'isbn' => 'ISBN',
+    'pages' => 'Pages',
+    'published' => 'Published',
+    'close' => 'Close',
+    'view_details' => 'View details',
+    'toggle_dark' => 'Switch to dark mode',
+    'toggle_light' => 'Switch to light mode',
+    'pagination' => 'Pagination',
+    'showing_range' => 'Showing :first–:last of :total items',
+    'showing_count' => ':count items',
+    'previous' => 'Previous',
+    'next' => 'Next',
+    'go_to_page' => 'Go to page :page',
+    'confirm_heading' => 'Confirm action',
+    'confirm_cancel' => 'Cancel',
+    'confirm_accept' => 'Continue',
+];

@@ -1,5 +1,5 @@
 @props([
-    'label' => 'Memuat data...',
+    'label' => null,
     'rows' => 3,
     'as' => 'div',
 ])
@@ -32,7 +32,7 @@
 <{{ $as }} @attributes>
     <p class="skeleton-caption" role="status" aria-live="polite">
         <span class="skeleton-spinner" aria-hidden="true"></span>
-        {{ $label }}
+        {{ $label ?? __('shared.loading') }}
     </p>
 
     <div class="mt-2 space-y-3" aria-hidden="true">

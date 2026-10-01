@@ -74,7 +74,11 @@ class User extends Authenticatable
 
     public function roleLabel(): string
     {
-        return self::ROLE_LABELS[$this->role] ?? Str::ucfirst((string) $this->role);
+        return match ($this->role) {
+            self::ROLE_PUSTAKAWAN => __('roles.pustakawan'),
+            self::ROLE_ANGGOTA => __('roles.anggota'),
+            default => Str::ucfirst((string) $this->role),
+        };
     }
 
     public function hasRole(string $role): bool

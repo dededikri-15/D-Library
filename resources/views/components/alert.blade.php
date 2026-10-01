@@ -69,7 +69,7 @@
     @if ($dismissible)
         <button type="button" data-toast-close
                 class="shrink-0 cursor-pointer rounded p-0.5 text-secondary transition-colors hover:text-primary"
-                aria-label="Tutup notifikasi">
+                aria-label="{{ __('shared.close_notice') }}">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
             </svg>

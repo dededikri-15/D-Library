@@ -12,8 +12,10 @@
 
 <button type="button"
         data-theme-toggle
-        aria-label="Aktifkan mode gelap"
-        title="Aktifkan mode gelap"
+        aria-label="{{ __('shared.toggle_dark') }}"
+        title="{{ __('shared.toggle_dark') }}"
+        data-dark-label="{{ __('shared.toggle_dark') }}"
+        data-light-label="{{ __('shared.toggle_light') }}"
         class="btn btn-ghost btn-sm group px-2.5">
     {{-- Matahari: tampil saat mode gelap aktif (klik untuk kembali terang) --}}
     <svg class="hidden h-5 w-5 text-tertiary transition-transform duration-300 group-hover:rotate-45 motion-reduce:transform-none dark:block"

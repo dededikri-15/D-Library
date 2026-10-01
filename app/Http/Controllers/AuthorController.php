@@ -39,7 +39,7 @@ class AuthorController extends Controller
 
         Author::create($data);
 
-        return $this->success('authors.index', 'Penulis berhasil ditambahkan.');
+        return $this->success('authors.index', __('messages.author_created'));
     }
 
     public function edit(Author $author): View
@@ -67,7 +67,7 @@ class AuthorController extends Controller
 
         $author->update($data);
 
-        return $this->success('authors.index', 'Penulis berhasil diperbarui.');
+        return $this->success('authors.index', __('messages.author_updated'));
     }
 
     public function destroy(Author $author): RedirectResponse

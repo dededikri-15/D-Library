@@ -27,8 +27,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Mail::extend('database', fn () => new DatabaseTransport);
 
-        $security = (array) config('perpustakaan.security');
-
         /*
          * Named limiter, dipakai lewat `->middleware('throttle:login')` di
          * routes/web.php. Batas per email + IP sendiri tetap dihitung di
@@ -36,19 +34,19 @@ class AppServiceProvider extends ServiceProvider
          * ditulis dua kali.
          */
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute((int) ($security['login_per_minute'] ?? 10))
+            return Limit::perMinute((int) config('perpustakaan.security.login_per_minute', 10))
                 ->by($request->ip());
         });
 
         RateLimiter::for('register', function (Request $request) {
-            return Limit::perMinute((int) ($security['register_per_minute'] ?? 6))
+            return Limit::perMinute((int) config('perpustakaan.security.register_per_minute', 6))
                 ->by($request->ip());
         });
 
         // Membatasi pengambilan PDF agar satu akun tidak bisa mengunduh
         // seluruh koleksi dengan cepat.
         RateLimiter::for('file-read', function (Request $request) {
-            return Limit::perMinute((int) ($security['file_read_per_minute'] ?? 30))
+            return Limit::perMinute((int) config('perpustakaan.security.file_read_per_minute', 30))
                 ->by($request->user()?->id ?: $request->ip());
         });
 
@@ -60,7 +58,7 @@ class AppServiceProvider extends ServiceProvider
          * menembak puluhan query `like` per menit dari satu browser.
          */
         RateLimiter::for('search', function (Request $request) {
-            return Limit::perMinute((int) ($security['search_per_minute'] ?? 60))
+            return Limit::perMinute((int) config('perpustakaan.security.search_per_minute', 60))
                 ->by($request->user()?->id ?: $request->ip());
         });
 

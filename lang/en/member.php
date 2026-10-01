@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'favorites_title' => 'Favorite Books',
+    'favorites_count' => ':count saved books.',
+    'no_favorites' => 'No favorite books yet',
+    'add_favorite_hint' => 'Open a book page and select Add to favorites to save it here.',
+    'explore_catalog' => 'Explore catalog',
+    'unknown_author' => 'Unknown author',
+    'saved' => 'Saved :date',
+    'details' => 'View details',
+    'remove_favorite' => 'Remove from favorites',
+    'remove_favorite_confirmation' => 'Remove :title from your favorites?',
+    'reading_title' => 'Reading History',
+    'reading_count' => ':count books read.',
+    'no_reading' => 'No reading history yet',
+    'reading_hint' => 'Your history is saved automatically when you open a digital book.',
+    'last_page' => 'Last page',
+    'last_read' => 'Last read',
+    'action' => 'Action',
+    'continue_reading' => 'Continue reading',
+    'delete_history' => 'Delete reading history',
+    'delete_reading_confirmation' => 'Delete reading history for :title?',
+    'delete' => 'Delete',
+];

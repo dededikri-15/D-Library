@@ -176,7 +176,7 @@ class MemberLoanTest extends TestCase
 
     public function test_borrow_book_menolak_buku_yang_sudah_dipinjam(): void
     {
-        $book = Book::factory()->create(['status' => Book::STATUS_BORROWED]);
+        $book = Book::factory()->create(['status' => Book::STATUS_AVAILABLE]);
         $first = User::factory()->anggota()->create();
         $second = User::factory()->anggota()->create();
 

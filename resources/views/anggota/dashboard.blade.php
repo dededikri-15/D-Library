@@ -3,14 +3,14 @@
 @section('title', 'Dasbor Anggota - ' . config('app.name'))
 
 @section('content')
-    <h1 class="text-h1 font-semibold text-primary">Halo, {{ auth()->user()->name }}</h1>
-    <p class="mt-1 text-sm text-secondary">Ringkasan aktivitas Anda di D-Library.</p>
+    <x-dashboard.header :title="__('dashboard.member_greeting', ['name' => auth()->user()->name])"
+                        :description="__('dashboard.member_description')" />
 
     <div class="mt-8 grid gap-4 sm:grid-cols-3">
         @foreach ([
-            'Peminjaman Aktif' => [$activeLoanCount, 'text-primary'],
-            'Terlambat' => [$overdueCount, 'text-overdue'],
-            'Favorit' => [$favoriteCount, 'text-primary'],
+            __('dashboard.active_loans') => [$activeLoanCount, 'text-primary'],
+            __('dashboard.overdue') => [$overdueCount, 'text-overdue'],
+            __('dashboard.favorites') => [$favoriteCount, 'text-primary'],
         ] as $label => [$value, $tone])
             <div class="card p-5">
                 <p class="text-label font-medium tracking-wide text-secondary uppercase">{{ $label }}</p>
@@ -21,9 +21,9 @@
 
     <div class="card mt-8 p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-semibold text-primary">Buku yang sedang dipinjam</h2>
+            <h2 class="font-semibold text-primary">{{ __('dashboard.currently_borrowed_books') }}</h2>
             <a href="{{ route('books.index') }}" class="text-sm font-medium text-tertiary hover:underline">
-                Cari buku &rarr;
+                {{ __('dashboard.find_books') }} &rarr;
             </a>
         </div>
 
@@ -39,23 +39,23 @@
                     @else
                         <x-status-badge :status="$loan->status" />
                     @endif
-                    <span class="text-sm text-secondary">Jatuh tempo {{ $loan->displayDate($loan->due_at)?->format('d M Y') }}</span>
+                    <span class="text-sm text-secondary">{{ __('dashboard.due_date', ['date' => $loan->displayDate($loan->due_at)?->format('d M Y')]) }}</span>
                 </div>
             </div>
         @empty
             <x-empty-state class="mt-4 border-0"
-                           title="Belum ada buku yang dipinjam"
-                           description="Telusuri katalog untuk menemukan buku yang ingin Anda baca.">
-                <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">Jelajahi katalog</a>
+                           :title="__('dashboard.no_active_books')"
+                           :description="__('dashboard.browse_to_borrow')">
+                <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">{{ __('dashboard.browse_catalog') }}</a>
             </x-empty-state>
         @endforelse
     </div>
 
     <div class="card mt-4 p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-semibold text-primary">Riwayat peminjaman</h2>
+            <h2 class="font-semibold text-primary">{{ __('dashboard.loan_history') }}</h2>
             <a href="{{ route('loans.mine') }}" class="text-sm font-medium text-tertiary hover:underline">
-                Lihat semua &rarr;
+                {{ __('dashboard.see_all') }} &rarr;
             </a>
         </div>
 
@@ -66,7 +66,7 @@
                        class="font-medium text-primary transition-colors hover:text-tertiary">
                         {{ $loan->book->title }}
                     </a>
-                    <p class="text-sm text-secondary">Dipinjam {{ $loan->displayDate($loan->borrowed_at)?->format('d M Y') }}</p>
+                    <p class="text-sm text-secondary">{{ __('dashboard.borrowed_on', ['date' => $loan->displayDate($loan->borrowed_at)?->format('d M Y')]) }}</p>
                 </div>
                 <x-status-badge :status="$loan->status" />
             </div>
@@ -77,9 +77,9 @@
 
     <div class="card mt-4 p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-semibold text-primary">Riwayat membaca terakhir</h2>
+            <h2 class="font-semibold text-primary">{{ __('dashboard.reading_history') }}</h2>
             <a href="{{ route('reading-histories.index') }}" class="text-sm font-medium text-tertiary hover:underline">
-                Lihat semua &rarr;
+                {{ __('dashboard.see_all') }} &rarr;
             </a>
         </div>
 
@@ -90,26 +90,26 @@
                        class="font-medium text-primary transition-colors hover:text-tertiary">
                         {{ $history->book->title }}
                     </a>
-                    <p class="text-sm text-secondary">Halaman {{ $history->last_page }}</p>
+                    <p class="text-sm text-secondary">{{ __('dashboard.page', ['number' => $history->last_page]) }}</p>
                 </div>
 
                 {{-- Task 11.7: langsung buka di halaman yang tersimpan. --}}
                 @if ($history->book->hasFile() && $history->last_page > 0)
                     <a href="{{ route('books.read', ['book' => $history->book, 'page' => $history->last_page]) }}"
-                       class="btn btn-secondary btn-sm">Lanjut baca</a>
+                       class="btn btn-secondary btn-sm">{{ __('dashboard.continue_reading') }}</a>
                 @endif
             </div>
         @empty
             <x-empty-state class="mt-4 border-0"
-                           title="Belum ada riwayat membaca"
-                           description="Buka buku digital dan riwayat halaman akan tercatat di sini." />
+                           :title="__('dashboard.no_reading_history')"
+                           :description="__('dashboard.open_digital_book')" />
         @endforelse
     </div>
 
     @if ($recommendations->isNotEmpty())
         <div class="mt-8">
-            <h2 class="font-semibold text-primary">Rekomendasi untuk Anda</h2>
-            <p class="mt-1 text-sm text-secondary">Berdasarkan kategori yang sering Anda baca.</p>
+            <h2 class="font-semibold text-primary">{{ __('dashboard.recommendations') }}</h2>
+            <p class="mt-1 text-sm text-secondary">{{ __('dashboard.recommendation_description') }}</p>
             <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($recommendations as $book)
                     <x-book-card :book="$book" />

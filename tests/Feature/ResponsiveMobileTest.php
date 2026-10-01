@@ -231,4 +231,23 @@ class ResponsiveMobileTest extends TestCase
             'setDrawerOpen() tidak memindahkan fokus ke dalam drawer saat dibuka.',
         );
     }
+
+    public function test_back_to_top_tersembunyi_di_awal_dan_memiliki_aksi_aksesibel(): void
+    {
+        $content = $this->get(route('home'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<button[^>]*data-back-to-top[^>]*\shidden(?:\s|>)[^>]*aria-label="Kembali ke atas"[^>]*>/s',
+            $content,
+            'Tombol harus tersembunyi di awal dan memiliki label aksesibel.',
+        );
+        $this->assertStringContainsString('fixed right-5 bottom-5', $content);
+
+        $script = file_get_contents(resource_path('js/app.js'));
+        $this->assertStringContainsString('window.scrollY > threshold', $script);
+        $this->assertStringContainsString('window.scrollTo({ top: 0, behavior })', $script);
+        $this->assertStringContainsString('prefers-reduced-motion: reduce', $script);
+    }
 }

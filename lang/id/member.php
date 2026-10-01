@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'favorites_title' => 'Buku Favorit',
+    'favorites_count' => ':count buku tersimpan.',
+    'no_favorites' => 'Belum ada buku favorit',
+    'add_favorite_hint' => 'Buka halaman buku lalu tekan Tambah ke favorit untuk menyimpannya di sini.',
+    'explore_catalog' => 'Jelajahi katalog',
+    'unknown_author' => 'Penulis tidak diketahui',
+    'saved' => 'Disimpan :date',
+    'details' => 'Lihat detail',
+    'remove_favorite' => 'Hapus dari favorit',
+    'remove_favorite_confirmation' => 'Hapus :title dari favorit?',
+    'reading_title' => 'Riwayat Membaca',
+    'reading_count' => ':count buku pernah dibaca.',
+    'no_reading' => 'Belum ada riwayat membaca',
+    'reading_hint' => 'Riwayat akan tersimpan otomatis saat Anda membuka buku digital.',
+    'last_page' => 'Halaman terakhir',
+    'last_read' => 'Terakhir dibaca',
+    'action' => 'Aksi',
+    'continue_reading' => 'Lanjut baca',
+    'delete_history' => 'Hapus riwayat baca',
+    'delete_reading_confirmation' => 'Hapus riwayat baca :title?',
+    'delete' => 'Hapus',
+];

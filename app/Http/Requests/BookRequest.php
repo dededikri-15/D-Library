@@ -45,6 +45,8 @@ class BookRequest extends FormRequest
                 'max:'.(int) now()->year,
             ],
             'pages' => ['nullable', 'integer', 'min:1', 'max:10000'],
+            'initial_copies' => ['sometimes', 'integer', 'min:1', 'max:500'],
+            'add_copies' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:500'],
             'status' => ['required', Rule::in(Book::statuses())],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'author_id' => ['required', 'integer', 'exists:authors,id'],

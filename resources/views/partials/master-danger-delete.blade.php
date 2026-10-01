@@ -37,27 +37,26 @@
 --}}
 
 <div class="mt-6 max-w-xl rounded-lg border border-overdue/30 bg-overdue/5 p-5">
-    <h2 class="text-base font-semibold text-primary">Hapus {{ $label }}</h2>
+    <h2 class="text-base font-semibold text-primary">{{ __('master.delete_entity', ['entity' => $label]) }}</h2>
 
     @if ($isUsed)
         <p class="mt-1 text-sm text-secondary">
-            Hapus {{ $label }} ini beserta <strong class="font-semibold text-overdue">{{ $booksCount }} buku</strong>
-            di dalamnya. Buku, file PDF, dan riwayat peminjamannya ikut terhapus permanen.
+            {{ __('master.delete_used_description', ['entity' => $label, 'count' => $booksCount]) }}
         </p>
     @else
         <p class="mt-1 text-sm text-secondary">
-            Hapus {{ $label }} ini dari daftar. Buku yang sudah ada tidak terpengaruh, dan tindakan ini tidak bisa dibatalkan.
+            {{ __('master.delete_unused_description', ['entity' => $label]) }}
         </p>
     @endif
 
     <form method="POST" action="{{ $action }}" class="mt-4"
           data-confirm="{{ $isUsed
-              ? 'Hapus ' . $label . ' "' . $name . '"? ' . $booksCount . ' buku ikut terhapus permanen, beserta file dan riwayat peminjamannya.'
-              : 'Hapus ' . $label . ' "' . $name . '"? Tindakan ini tidak bisa dibatalkan.'
+              ? __('master.delete_question_used', ['entity' => $label, 'name' => $name, 'count' => $booksCount])
+              : __('master.delete_question_unused', ['entity' => $label, 'name' => $name])
           }}"
-          data-confirm-title="Hapus {{ $label }}">
+          data-confirm-title="{{ __('master.delete_entity', ['entity' => $label]) }}">
         @csrf
         @method('DELETE')
-        <button type="submit" class="btn btn-danger">Hapus {{ $label }}</button>
+        <button type="submit" class="btn btn-danger">{{ __('master.delete_button', ['entity' => $label]) }}</button>
     </form>
 </div>

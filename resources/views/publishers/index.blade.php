@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Penerbit - ' . config('app.name'))
+@section('title', __('master.publishers').' - '.config('app.name'))
 
 @section('content')
     @include('partials.master-index', [
-        'title' => 'Penerbit',
+        'title' => __('master.publishers'),
         'routeBase' => 'publishers',
         'rows' => $publishers,
         'searchAction' => route('publishers.index'),

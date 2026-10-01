@@ -19,33 +19,33 @@
             <p class="section-eyebrow animate-fade-in">D-Library</p>
 
             <h1 class="mt-5 max-w-3xl text-display font-extrabold tracking-tight text-balance text-primary animate-fade-up">
-    Akses ribuan buku, <span class="text-tertiary">dalam satu klik.</span>
+                {{ __('home.headline') }} <span class="text-tertiary">{{ __('home.headline_accent') }}</span>
 </h1>
 
 <p class="mt-5 max-w-xl text-lg leading-relaxed text-secondary animate-fade-up [animation-delay:80ms]">
-    Nikmati pengalaman membaca buku digital yang cepat, rapi, dan responsif langsung melalui perangkat Anda kapan saja.
+                {{ __('home.description') }}
 </p>
 
             <div class="mt-9 flex flex-wrap items-center gap-3 animate-fade-up [animation-delay:160ms]">
                 @auth
                     <a href="{{ route(auth()->user()->isStaff() ? 'dashboard' : 'anggota.dashboard') }}"
                        class="btn btn-primary btn-lg">
-                        Buka dasbor
+                        {{ __('home.open_dashboard') }}
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
                         </svg>
                     </a>
-                    <a href="{{ route('books.index') }}" class="btn btn-secondary btn-lg">Jelajahi katalog</a>
+                    <a href="{{ route('books.index') }}" class="btn btn-secondary btn-lg">{{ __('home.explore_catalog') }}</a>
                 @else
                     <a href="{{ route('books.index') }}" class="btn btn-blue-primary btn-lg">
-                        Jelajahi katalog
+                        {{ __('home.explore_catalog') }}
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
                         </svg>
                     </a>
-                    <a href="{{ route('login') }}" class="btn btn-blue-outline btn-lg">Masuk</a>
+                    <a href="{{ route('login') }}" class="btn btn-blue-outline btn-lg">{{ __('home.sign_in') }}</a>
                     @if (config('perpustakaan.registration.enabled', true))
-                        <a href="{{ route('register') }}" class="btn btn-blue-outline btn-lg">Daftar anggota</a>
+                        <a href="{{ route('register') }}" class="btn btn-blue-outline btn-lg">{{ __('home.register') }}</a>
                     @endif
                 @endauth
             </div>
@@ -53,12 +53,12 @@
     </section>
 
     {{-- Angka koleksi --}}
-    <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Ringkasan koleksi">
+    <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="{{ __('home.collection_summary') }}">
         @foreach ([
-            ['label' => 'Buku tersedia', 'value' => $totalBooks, 'tone' => 'available', 'text' => 'text-available'],
-            ['label' => 'Sedang dipinjam', 'value' => $currentlyBorrowed, 'tone' => 'borrowed', 'text' => 'text-borrowed'],
-            ['label' => 'Kategori', 'value' => $totalCategories, 'tone' => 'tertiary', 'text' => 'text-tertiary'],
-            ['label' => 'Anggota terdaftar', 'value' => $totalMembers, 'tone' => 'primary', 'text' => 'text-primary'],
+            ['label' => __('home.available_books'), 'value' => $totalBooks, 'tone' => 'available', 'text' => 'text-available'],
+            ['label' => __('home.currently_borrowed'), 'value' => $currentlyBorrowed, 'tone' => 'borrowed', 'text' => 'text-borrowed'],
+            ['label' => __('home.categories'), 'value' => $totalCategories, 'tone' => 'tertiary', 'text' => 'text-tertiary'],
+            ['label' => __('home.registered_members'), 'value' => $totalMembers, 'tone' => 'primary', 'text' => 'text-primary'],
         ] as $stat)
             @php
                 // Ikon ditulis sebagai SVG, bukan emoji: emoji tampil berbeda
@@ -100,19 +100,19 @@
     <section class="mt-14">
         <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
-                <p class="section-eyebrow">Koleksi</p>
-                <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">Buku Terbaru</h2>
-                <p class="mt-1.5 text-sm text-secondary">Koleksi yang baru ditambahkan ke katalog.</p>
+                <p class="section-eyebrow">{{ __('home.collection') }}</p>
+                <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.latest_books') }}</h2>
+                <p class="mt-1.5 text-sm text-secondary">{{ __('home.latest_description') }}</p>
             </div>
             <a href="{{ route('books.index') }}" class="link-accent text-sm">
-                Lihat semua &rarr;
+                {{ __('home.see_all') }} &rarr;
             </a>
         </div>
 
         @if ($latestBooks->isEmpty())
             <x-empty-state class="mt-6"
-                           title="Katalog masih kosong"
-                           description="Buku yang ditambahkan pustakawan akan muncul di sini." />
+                           :title="__('home.empty_catalog')"
+                           :description="__('home.empty_catalog_description')" />
         @else
             <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($latestBooks as $book)
@@ -127,9 +127,9 @@
         <section class="mt-14">
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <p class="section-eyebrow">Favorit Pembaca</p>
-                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">Buku Populer</h2>
-                    <p class="mt-1.5 text-sm text-secondary">Paling sering dipinjam anggota.</p>
+                    <p class="section-eyebrow">{{ __('home.reader_favorites') }}</p>
+                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.popular_books') }}</h2>
+                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.popular_description') }}</p>
                 </div>
             </div>
 
@@ -146,12 +146,12 @@
         <section class="mt-14">
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <p class="section-eyebrow">Topik</p>
-                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">Jelajahi Kategori</h2>
-                    <p class="mt-1.5 text-sm text-secondary">Telusuri koleksi berdasarkan topik.</p>
+                    <p class="section-eyebrow">{{ __('home.topics') }}</p>
+                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.explore_categories') }}</h2>
+                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.categories_description') }}</p>
                 </div>
                 <a href="{{ route('categories.public') }}" class="link-accent text-sm">
-                    Semua kategori &rarr;
+                    {{ __('home.all_categories') }} &rarr;
                 </a>
             </div>
 
@@ -176,12 +176,11 @@
     @guest
         @if (config('perpustakaan.registration.enabled', true))
             <section class="mt-14 overflow-hidden rounded-xl border border-tertiary/25 bg-tertiary/5 px-6 py-14 text-center">
-                <h2 class="text-h1 font-bold tracking-tight text-primary">Mulai membaca hari ini</h2>
+                <h2 class="text-h1 font-bold tracking-tight text-primary">{{ __('home.start_reading') }}</h2>
                 <p class="mx-auto mt-3 max-w-lg text-secondary">
-                    Daftar sebagai anggota untuk menyimpan buku ke favorit, memantau riwayat baca,
-                    dan meminjam koleksi digital kami.
+                    {{ __('home.join_description') }}
                 </p>
-                <a href="{{ route('register') }}" class="btn btn-primary btn-lg mt-8">Daftar sekarang</a>
+                <a href="{{ route('register') }}" class="btn btn-primary btn-lg mt-8">{{ __('home.register_now') }}</a>
             </section>
         @endif
     @endguest

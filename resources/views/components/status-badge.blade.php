@@ -28,7 +28,7 @@
 
     $label = $status
         ? (App\Models\Book::statusOptions()[$status] ?? App\Models\Loan::statusOptions()[$status] ?? $status)
-        : 'Tidak diketahui';
+        : __('status.unknown');
 @endphp
 
 <span {{ $attributes->merge(['class' => 'badge '.$meta['class']]) }}>

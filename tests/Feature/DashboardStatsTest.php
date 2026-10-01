@@ -33,6 +33,39 @@ class DashboardStatsTest extends TestCase
             ->assertSee('Peminjaman Aktif');
     }
 
+    public function test_both_dashboards_render_live_status_and_clock_widgets(): void
+    {
+        $this->actingAs(User::factory()->pustakawan()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-system-indicator', false)
+            ->assertSee('data-live-clock', false)
+            ->assertSee('Asia/Jakarta', false);
+
+        $this->actingAs(User::factory()->anggota()->create())
+            ->get(route('anggota.dashboard'))
+            ->assertOk()
+            ->assertSee('data-system-indicator', false)
+            ->assertSee('data-live-clock', false)
+            ->assertSee('Asia/Jakarta', false);
+    }
+
+    public function test_global_status_and_clock_render_on_public_pages(): void
+    {
+        foreach ([route('home'), route('books.index'), route('login')] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('data-system-indicator', false)
+                ->assertSee('data-live-clock', false);
+        }
+    }
+
+    public function test_widget_labels_have_indonesian_and_english_translations(): void
+    {
+        $this->assertSame('Sistem Aktif', __('ui.system_active', [], 'id'));
+        $this->assertSame('System active', __('ui.system_active', [], 'en'));
+    }
+
     public function test_dashboard_memuat_statistik_dengan_tiga_query_agregat(): void
     {
         $staff = User::factory()->pustakawan()->create();

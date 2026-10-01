@@ -48,6 +48,73 @@ class MasterDataCrudTest extends TestCase
         $this->assertDatabaseHas('books', ['isbn' => '978-602-111-111-1', 'title' => $book->title]);
     }
 
+    public function test_staff_can_create_book_with_multiple_inventory_copies(): void
+    {
+        $book = Book::factory()->make();
+
+        $this->actingAs(User::factory()->pustakawan()->create())
+            ->post(route('books.store'), [
+                'title' => $book->title,
+                'isbn' => '978-602-111-112-8',
+                'publication_year' => 2023,
+                'status' => Book::STATUS_AVAILABLE,
+                'category_id' => $book->category_id,
+                'author_id' => $book->author_id,
+                'publisher_id' => $book->publisher_id,
+                'initial_copies' => 3,
+            ])
+            ->assertRedirect();
+
+        $createdBook = Book::where('isbn', '978-602-111-112-8')->firstOrFail();
+
+        $this->assertSame(3, $createdBook->copies()->count());
+        $this->assertSame(3, $createdBook->copies()->distinct('inventory_code')->count());
+        $this->assertSame(3, $createdBook->total_copies);
+    }
+
+    public function test_staff_can_add_inventory_copies_to_existing_book(): void
+    {
+        $book = Book::factory()->create();
+
+        $this->actingAs(User::factory()->pustakawan()->create())
+            ->put(route('books.update', $book), [
+                'title' => $book->title,
+                'isbn' => $book->isbn,
+                'publication_year' => $book->publication_year,
+                'status' => $book->status,
+                'category_id' => $book->category_id,
+                'author_id' => $book->author_id,
+                'publisher_id' => $book->publisher_id,
+                'add_copies' => 2,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(3, $book->copies()->count());
+        $this->assertSame(3, $book->fresh()->total_copies);
+        $this->assertSame(Book::STATUS_AVAILABLE, $book->fresh()->status);
+    }
+
+    public function test_added_copies_follow_inactive_book_status(): void
+    {
+        $book = Book::factory()->create(['status' => Book::STATUS_INACTIVE]);
+
+        $this->actingAs(User::factory()->pustakawan()->create())
+            ->put(route('books.update', $book), [
+                'title' => $book->title,
+                'isbn' => $book->isbn,
+                'publication_year' => $book->publication_year,
+                'status' => Book::STATUS_INACTIVE,
+                'category_id' => $book->category_id,
+                'author_id' => $book->author_id,
+                'publisher_id' => $book->publisher_id,
+                'add_copies' => 1,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(2, $book->fresh()->total_copies);
+        $this->assertSame(0, $book->availableCopies()->count());
+    }
+
     public function test_book_create_rejects_duplicate_isbn(): void
     {
         $existing = Book::factory()->create(['isbn' => '978-602-222-222-2']);

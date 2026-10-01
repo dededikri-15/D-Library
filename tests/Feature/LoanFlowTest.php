@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,6 +50,38 @@ class LoanFlowTest extends TestCase
         $this->assertTrue($loan->borrowed_at->isSameDay(now()));
         $this->assertTrue($loan->due_at->isSameDay(now()->addDays($duration)));
         $this->assertSame(Book::STATUS_BORROWED, $book->fresh()->status);
+    }
+
+    public function test_two_copies_of_one_book_can_be_loaned_to_different_members(): void
+    {
+        $book = Book::factory()->create(['status' => Book::STATUS_AVAILABLE]);
+        $secondCopy = $book->copies()->create(['status' => BookCopy::STATUS_AVAILABLE]);
+        $staff = User::factory()->pustakawan()->create();
+
+        foreach ([1, 2] as $index) {
+            $this->actingAs($staff)
+                ->post(route('loans.store'), [
+                    'user_id' => User::factory()->anggota()->create()->id,
+                    'book_id' => $book->id,
+                    'borrowed_at' => now()->toDateString(),
+                ])
+                ->assertRedirect();
+        }
+
+        $loans = Loan::query()->where('book_id', $book->id)->orderBy('id')->get();
+
+        $this->assertCount(2, $loans);
+        $this->assertNotSame($loans[0]->book_copy_id, $loans[1]->book_copy_id);
+        $this->assertContains($secondCopy->id, $loans->pluck('book_copy_id')->all());
+        $this->assertSame(Book::STATUS_BORROWED, $book->fresh()->status);
+
+        $this->actingAs($staff)
+            ->post(route('loans.return', $loans[0]))
+            ->assertRedirect();
+
+        $this->assertSame(BookCopy::STATUS_AVAILABLE, $loans[0]->bookCopy->fresh()->status);
+        $this->assertSame(BookCopy::STATUS_BORROWED, $loans[1]->bookCopy->fresh()->status);
+        $this->assertSame(Book::STATUS_AVAILABLE, $book->fresh()->status);
     }
 
     public function test_staff_can_record_loan_for_today_in_display_timezone(): void

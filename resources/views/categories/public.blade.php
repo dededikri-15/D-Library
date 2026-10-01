@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Kategori Buku - ' . config('app.name'))
+@section('title', __('categories.public_title').' - '.config('app.name'))
 
 @section('content')
-    <h1 class="text-h1 font-semibold text-primary">Kategori Buku</h1>
+    <h1 class="text-h1 font-semibold text-primary">{{ __('categories.public_title') }}</h1>
     <p class="mt-1 text-sm text-secondary">
-        Pilih kategori untuk menyaring katalog. Jumlah buku tidak menghitung buku yang tidak aktif.
+        {{ __('categories.public_description') }}
     </p>
 
     @forelse ($categories as $category)
@@ -19,12 +19,12 @@
             </div>
 
             <span class="badge shrink-0 bg-tertiary/10 text-tertiary">
-                {{ $category->books_count }} buku
+                {{ __('categories.book_count', ['count' => $category->books_count]) }}
             </span>
         </a>
     @empty
         <x-empty-state class="mt-6"
-                       title="Belum ada kategori"
-                       description="Kategori akan tampil di sini setelah pustakawan menambahkannya." />
+                       :title="__('categories.empty_title')"
+                       :description="__('categories.empty_description')" />
     @endforelse
 @endsection

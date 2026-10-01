@@ -27,7 +27,7 @@ class PublisherController extends Controller
     {
         Publisher::create($request->validated());
 
-        return $this->success('publishers.index', 'Penerbit berhasil ditambahkan.');
+        return $this->success('publishers.index', __('messages.publisher_created'));
     }
 
     public function edit(Publisher $publisher): View
@@ -43,7 +43,7 @@ class PublisherController extends Controller
     {
         $publisher->update($request->validated());
 
-        return $this->success('publishers.index', 'Penerbit berhasil diperbarui.');
+        return $this->success('publishers.index', __('messages.publisher_updated'));
     }
 
     public function destroy(Publisher $publisher): RedirectResponse

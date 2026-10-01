@@ -48,12 +48,12 @@ class ReadingHistoryController extends Controller
          * dengan memalsukan POST.
          */
         if (! $book->canBeReadBy($user)) {
-            abort(403, 'Anda tidak punya izin membaca buku ini.');
+            abort(403, __('messages.not_allowed_to_read'));
         }
 
         $this->recordReading->savePage($user, $book, $request->integer('last_page'));
 
-        return $this->backWithStatus('Posisi baca tersimpan.');
+        return $this->backWithStatus(__('messages.reading_position_saved'));
     }
 
     public function destroy(Request $request, ReadingHistory $readingHistory): RedirectResponse
@@ -63,6 +63,6 @@ class ReadingHistoryController extends Controller
 
         $readingHistory->delete();
 
-        return $this->success('reading-histories.index', 'Riwayat baca dihapus.');
+        return $this->success('reading-histories.index', __('messages.reading_history_deleted'));
     }
 }

@@ -23,6 +23,7 @@ class Loan extends Model
     protected $fillable = [
         'user_id',
         'book_id',
+        'book_copy_id',
         'borrowed_at',
         'due_at',
         'returned_at',
@@ -86,9 +87,9 @@ class Loan extends Model
     public static function statusOptions(): array
     {
         return [
-            self::STATUS_BORROWED => 'Dipinjam',
-            self::STATUS_RETURNED => 'Dikembalikan',
-            self::STATUS_OVERDUE => 'Terlambat',
+            self::STATUS_BORROWED => __('status.borrowed'),
+            self::STATUS_RETURNED => __('status.returned'),
+            self::STATUS_OVERDUE => __('status.overdue'),
         ];
     }
 
@@ -149,5 +150,10 @@ class Loan extends Model
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
+    }
+
+    public function bookCopy(): BelongsTo
+    {
+        return $this->belongsTo(BookCopy::class);
     }
 }
