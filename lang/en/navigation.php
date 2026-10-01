@@ -25,4 +25,5 @@ return [
     'switch_to_english' => 'Switch language to English',
     'switch_to_indonesian' => 'Switch language to Indonesian',
     'open_account_menu' => 'Open account menu',
+    'profile' => 'My Profile',
 ];

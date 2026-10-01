@@ -211,17 +211,21 @@
 
         <div class="border-t border-hairline pt-3">
             @auth
-                <div class="flex items-center gap-3 px-2.5 py-2">
-                    <span
-                        class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-tertiary/10 text-sm font-semibold text-tertiary"
-                        aria-hidden="true">
-                        {{ str($user->name)->substr(0, 1)->upper() }}
-                    </span>
+                {{--
+                    Blok identitas di kaki sidebar sekaligus jalan pintas ke
+                    halaman profil. `title` menjaga keterangan tetap ada ketika
+                    sidebar dalam keadaan ciut (label disembunyikan), sama seperti
+                    item menu lain di atas.
+                --}}
+                <a href="{{ route('profile.show') }}" title="{{ __('navigation.profile') }}"
+                   class="flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors hover:bg-secondary/5">
+                    {{-- Avatar: foto kalau ada, inisial kalau tidak. --}}
+                    <x-avatar :user="$user" size="sm" alt="" />
                     <span data-sidebar-label class="min-w-0 flex-1 leading-tight">
                         <span class="block truncate text-sm font-medium text-primary">{{ $user->name }}</span>
                         <span class="mt-1 block text-label text-secondary">{{ $user->roleLabel() }}</span>
                     </span>
-                </div>
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" title="{{ __('navigation.logout') }}" class="sidebar-link w-full">

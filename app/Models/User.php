@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'avatar',
     ];
 
     /**
@@ -79,6 +81,51 @@ class User extends Authenticatable
             self::ROLE_ANGGOTA => __('roles.anggota'),
             default => Str::ucfirst((string) $this->role),
         };
+    }
+
+    /**
+     * Disk tempat foto profil disimpan.
+     *
+     * Sama seperti cover buku, avatar memakai disk publik: file-nya hanya
+     * gambar profil, bukan dokumen, dan tidak ada di URL yang perlu ditebak.
+     */
+    public static function avatarDisk(): string
+    {
+        return (string) config('perpustakaan.uploads.avatar_disk');
+    }
+
+    /**
+     * URL foto profil, atau null kalau user belum mengunggah foto.
+     *
+     * Sengaja null (bukan string kosong): pemanggil memakai `?:` atau `@if` untuk
+     * Falls back ke avatar huruf, dan string kosong yang lolos `?:` justru akan
+     * membuat `<img src="">` yang browsermuat ulang halaman itu sendiri.
+     */
+    public function avatarUrl(): ?string
+    {
+        if (blank($this->avatar)) {
+            return null;
+        }
+
+        return Storage::disk(static::avatarDisk())->url($this->avatar);
+    }
+
+    /**
+     * Inisial untuk avatar huruf, dipakai kalau user tidak punya foto.
+     *
+     * Hanya huruf pertama yang diambil. Nama Indonesia sering dua kata
+     * ("Budi Santoso") dan dua inisial butuh ruang lebih pada lingkaran kecil
+     * di navbar, sehingga satu huruf selalu muat tanpa terpotong.
+     */
+    public function initials(): string
+    {
+        $name = trim((string) $this->name);
+
+        if ($name === '') {
+            return '?';
+        }
+
+        return Str::upper(Str::substr($name, 0, 1));
     }
 
     public function hasRole(string $role): bool

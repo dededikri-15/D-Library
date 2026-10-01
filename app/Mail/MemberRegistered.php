@@ -9,7 +9,6 @@ use Illuminate\Mail\Mailables\Envelope;
 
 class MemberRegistered extends Mailable
 {
-
     public function __construct(
         public User $user,
     ) {

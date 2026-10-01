@@ -1661,6 +1661,53 @@ function initBackToTop() {
     updateVisibility();
 }
 
+/**
+ * Pratinjau foto profil sebelum diunggah.
+ *
+ * Tanpa ini, satu-satunya cara tahu foto yang dipilih benar adalah menyimpan
+ * dulu, lalu menunggu halaman dimuat ulang — dan kalau salah, satu langkah
+ * sia-sia terbuang. `URL.createObjectURL` membaca berkas langsung dari
+ * komputer, jadi tidak ada upload ke server sama sekali.
+ *
+ * `revokeObjectURL` wajib dipanggil begitu objek selesai dipakai: setiap
+ * `createObjectURL` menahan salinan berkas di memori browser sampai di-revoke,
+ * dan mengulanginya tiap user memilih foto bisa menahan banyak berkas besar.
+ *
+ * JS mati bukan masalah: `form` tetap mengirim apa adanya ke server, hanya
+ * pratinjau yang tidak muncul.
+ */
+function initAvatarPreview() {
+    const input = document.querySelector("[data-avatar-input]");
+    const preview = document.querySelector("[data-avatar-preview]");
+
+    if (!input || !preview) return;
+
+    input.addEventListener("change", () => {
+        const file = input.files?.[0];
+
+        // Memilih ulang berkas yang sama TIDAK memicu event `change` kalau
+        // input tidak dikosongkan lebih dulu. Men_assign ulang `value`
+        // dengan string kosong membuat input menerima event itu lagi, jadi
+        // "hapus foto lalu pilih berkas yang sama" ikut terpakai.
+        input.value = "";
+
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) return;
+
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.src = url;
+        image.alt = "";
+        image.className = "h-full w-full object-cover";
+
+        image.addEventListener("load", () => URL.revokeObjectURL(url));
+        image.addEventListener("error", () => URL.revokeObjectURL(url));
+
+        preview.replaceChildren(image);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initNavToggle();
@@ -1680,4 +1727,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initQuickAdd();
     initGlobalStatusAndClock();
     initBackToTop();
+    initAvatarPreview();
 });

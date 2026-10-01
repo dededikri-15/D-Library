@@ -23,6 +23,7 @@ return [
     'reading_history_deleted' => 'Reading history deleted.',
     'user_created' => 'User added successfully.',
     'user_updated' => 'User updated successfully.',
+    'profile_updated' => 'Profile updated successfully.',
     'cannot_delete_self' => 'You cannot delete your own account.',
     'user_deleted' => 'User deleted successfully.',
     'favorite_added' => 'Book added to favorites.',

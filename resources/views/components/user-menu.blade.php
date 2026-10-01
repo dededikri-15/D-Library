@@ -71,11 +71,8 @@
 
 <x-dropdown align="right" menu-label="Menu akun" trigger-class="h-10 px-1.5 sm:px-2.5">
     <x-slot:trigger>
-        <span
-            class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-tertiary/10 text-label font-semibold text-tertiary"
-            aria-hidden="true">
-            {{ str($user->name)->substr(0, 1)->upper() }}
-        </span>
+        {{-- `alt=""` karena nama user sudah tertulis di sebelah avatar ini. --}}
+        <x-avatar :user="$user" size="xs" alt="" />
         <span class="hidden max-w-32 truncate sm:block">{{ $user->name }}</span>
         <svg data-dropdown-icon class="hidden h-4 w-4 shrink-0 text-secondary transition-transform sm:block" fill="none"
             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -85,14 +82,32 @@
     </x-slot:trigger>
 
     <x-slot:menu>
-        <div role="presentation" class="px-3 pt-2 pb-3">
-            <p class="truncate text-sm font-semibold text-primary">{{ $user->name }}</p>
-            <p class="mt-0.5 truncate text-label text-secondary">{{ $user->email }}</p>
-            <span class="badge badge-muted mt-2">{{ $user->roleLabel() }}</span>
+        <div role="presentation" class="flex items-center gap-3 px-3 pt-2 pb-3">
+            <x-avatar :user="$user" size="md" alt="" />
+            <span class="min-w-0">
+                <span class="block truncate text-sm font-semibold text-primary">{{ $user->name }}</span>
+                <span class="mt-0.5 block truncate text-label text-secondary">{{ $user->email }}</span>
+                <span class="badge badge-muted mt-2">{{ $user->roleLabel() }}</span>
+            </span>
         </div>
 
         <div role="separator" class="dropdown-separator"></div>
         <p role="presentation" class="dropdown-label">{{ __('navigation.menu') }}</p>
+
+        {{--
+            Profil melingkupi semua item lain: available untuk anggota maupun
+            pustakawan, jadi posisinya di paling atas daftar dan bukan di bawah
+            blok yang hanya untuk staff.
+        --}}
+        <a href="{{ route('profile.show') }}" role="menuitem"
+            @class(['dropdown-item', 'dropdown-item-active' => request()->routeIs('profile.*')])>
+            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 1 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+            <span class="truncate">{{ __('navigation.profile') }}</span>
+        </a>
 
         @foreach ($menuLinks as $link)
             <a href="{{ route($link['route']) }}" role="menuitem"

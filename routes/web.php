@@ -14,6 +14,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailboxController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReadingHistoryController;
 use App\Http\Controllers\UserController;
@@ -188,6 +189,18 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('book')
         ->middleware('throttle:file-read')
         ->name('books.file');
+
+    /*
+     * Profil (PRD §3 "Anggota dapat: mengelola profil").
+     *
+     * Didaftarkan di sini, di group `auth` polos, BUKAN di group role di bawah.
+     * Setiap user yang sudah masuk boleh melihat dan mengubah profilnya sendiri
+     * — anggota maupun pustakawan — jadi tidak perlu dua route terpisah per
+     * role. Role tidak boleh diubah lewat form ini; itu urusan pustakawan
+     * lewat `UserRequest`.
+     */
+    Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 /*

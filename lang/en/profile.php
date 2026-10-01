@@ -1,0 +1,24 @@
+<?php
+
+return [
+    'title' => 'My Profile',
+    'description' => 'View and update your details and profile photo.',
+    'edit_title' => 'Edit Profile Details',
+    'edit_description' => 'Leave the password fields blank to keep your current password.',
+    'photo' => 'Profile photo',
+    'photo_hint' => 'Optional. JPG, PNG, or WebP. Without a photo, your initials are shown instead.',
+    'remove_photo' => 'Remove profile photo',
+    'name' => 'Name',
+    'email' => 'Email',
+    'change_password' => 'Change password (optional)',
+    'leave_password_blank' => 'Leave both fields blank to keep the current password.',
+    'password' => 'New password',
+    'confirm_password' => 'Confirm new password',
+    'save' => 'Save Changes',
+    'back' => 'Back',
+    'member_since' => 'Member since',
+    'total_loans' => 'Total loans',
+    'active_loans' => 'Currently borrowed',
+    'favorites' => 'Favorites',
+    'reading_history' => 'Reading history',
+];

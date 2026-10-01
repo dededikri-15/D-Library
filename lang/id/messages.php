@@ -23,6 +23,7 @@ return [
     'reading_history_deleted' => 'Riwayat baca dihapus.',
     'user_created' => 'Pengguna berhasil ditambahkan.',
     'user_updated' => 'Pengguna berhasil diperbarui.',
+    'profile_updated' => 'Profil berhasil diperbarui.',
     'cannot_delete_self' => 'Anda tidak dapat menghapus akun sendiri.',
     'user_deleted' => 'Pengguna berhasil dihapus.',
     'favorite_added' => 'Buku ditambahkan ke favorit.',

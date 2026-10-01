@@ -1,17 +1,29 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-class RegisterRequest extends FormRequest
+/**
+ * Formulir edit profil milik user yang sedang login.
+ *
+ * Bedanya dengan `UserRequest` (yang dipakai pustakawan untuk mengelola akun
+ * orang lain) ada dua hal yang disengaja:
+ *
+ * 1. Tidak ada field `role`. User boleh mengubah namanya sendiri, tapi tidak
+ *    boleh mengubah role-nya sendiri — kalau boleh, dia bisa menaikkan dirinya
+ *    jadi pustakawan. Role hanya bisa diubah pustakawan lewat `UserRequest`.
+ * 2. `authorize()` hanya memeriksa "sudah login", bukan "adalah pustakawan".
+ *    Halaman profil harusnya terbuka untuk anggota juga.
+ */
+class ProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) config('perpustakaan.registration.enabled', true);
+        return $this->user() !== null;
     }
 
     /**
@@ -21,25 +33,21 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Password::defaults()],
-
-            /*
-             * Foto profil saat pendaftaran sifatnya OPSIONAL, dan itu keputusan
-             * sadar, bukan sekadar lupa 'required'.
-             *
-             * Batas pendaftaran publik sudah ditetapkan agar orang bisa cepat
-             * selesai mendaftar; memaksa unggah foto di sini membuat sebagian
-             * orang membatalkan pendaftaran, dan harga yang dibayar tidak sebanding.
-             * Tanpa foto, user tetap punya akun penuh dan bisa menambahkannya
-             * kapan saja lewat /profil.
-             */
+            'email' => [
+                'required', 'string', 'email', 'max:255',
+                // `ignore($this->user()->id)` wajib: tanpa itu, user yang tidak
+                // mengubah email-nya pun akan bentrok dengan barisnya sendiri.
+                Rule::unique('users', 'email')->ignore($this->user()?->id),
+            ],
+            // Dikosongkan = kata sandi lama dipertahankan.
+            'password' => ['nullable', 'confirmed', Password::defaults()],
             'avatar' => [
                 'nullable',
                 'image',
                 'mimes:'.implode(',', (array) config('perpustakaan.uploads.avatar_mimes')),
                 'max:'.(int) config('perpustakaan.uploads.avatar_max_kb'),
             ],
+            'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
 
@@ -69,9 +77,9 @@ class RegisterRequest extends FormRequest
     }
 
     /**
-     * Email dinormalkan ke huruf kecil, bukan ditolak kalau ada huruf besar:
-     * keyboard ponsel sering mengetik huruf besar sendiri, dan `users.email`
-     * punya unique constraint sehingga bentuk email harus seragam.
+     * Email dinormalkan ke huruf kecil, sama seperti `RegisterRequest` dan
+     * `UserRequest`. Alasannya sama: `users.email` punya unique constraint, dan
+     * seluruh query membandingkan email secara case-sensitive.
      */
     protected function prepareForValidation(): void
     {

@@ -4,11 +4,20 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake(User::avatarDisk());
+    }
 
     public function test_registration_screen_can_be_rendered(): void
     {
@@ -92,5 +101,65 @@ class RegistrationTest extends TestCase
         $this->actingAs(User::factory()->anggota()->create())
             ->get('/register')
             ->assertRedirect();
+    }
+
+    /* ------------------------------------------------------------------
+     | Foto profil saat pendaftaran (opsional)
+     * ----------------------------------------------------------------- */
+
+    public function test_register_form_declares_multipart_encoding(): void
+    {
+        // Tanpa `enctype`, field `avatar` hilang sebelum sampai ke PHP: user
+        // mengira gagal mengunggah, padahal berkasnya tidak pernah terkirim.
+        $this->get('/register')
+            ->assertOk()
+            ->assertSee('enctype="multipart/form-data"', false)
+            ->assertSee('name="avatar"', false);
+    }
+
+    public function test_registration_succeeds_without_avatar(): void
+    {
+        $this->post('/register', [
+            'name' => 'Tanpa Foto',
+            'email' => 'tanpafoto@example.com',
+            'password' => 'rahasia-kuat-123',
+            'password_confirmation' => 'rahasia-kuat-123',
+        ])->assertRedirect(route('anggota.dashboard'));
+
+        $user = User::where('email', 'tanpafoto@example.com')->firstOrFail();
+
+        $this->assertNull($user->avatar);
+        $this->assertNull($user->avatarUrl());
+    }
+
+    public function test_registration_can_include_avatar(): void
+    {
+        $this->post('/register', [
+            'name' => 'Dengan Foto',
+            'email' => 'denganfoto@example.com',
+            'password' => 'rahasia-kuat-123',
+            'password_confirmation' => 'rahasia-kuat-123',
+            'avatar' => UploadedFile::fake()->image('foto.jpg', 300, 300),
+        ])->assertRedirect(route('anggota.dashboard'));
+
+        $user = User::where('email', 'denganfoto@example.com')->firstOrFail();
+
+        $this->assertNotNull($user->avatar);
+        $this->assertStringStartsWith('avatars/', $user->avatar);
+        Storage::disk(User::avatarDisk())->assertExists($user->avatar);
+    }
+
+    public function test_registration_rejects_non_image_avatar(): void
+    {
+        $this->post('/register', [
+            'name' => 'Jebakan',
+            'email' => 'jebakan@example.com',
+            'password' => 'rahasia-kuat-123',
+            'password_confirmation' => 'rahasia-kuat-123',
+            'avatar' => UploadedFile::fake()->create('dokumen.pdf', 20, 'application/pdf'),
+        ])->assertSessionHasErrors('avatar');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'jebakan@example.com']);
     }
 }

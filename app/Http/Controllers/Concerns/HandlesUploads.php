@@ -89,7 +89,7 @@ trait HandlesUploads
     /**
      * @param  array<string, string|null>  $payload
      */
-    private function applyUploadField(
+    protected function applyUploadField(
         array &$payload,
         string $field,
         object $request,

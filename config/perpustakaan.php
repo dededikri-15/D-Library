@@ -54,6 +54,15 @@ return [
 
         'book_file_mimes' => ['pdf'],
         'book_file_max_kb' => (int) env('PERPUSTAKAAN_BOOK_FILE_MAX_KB', 20480),
+
+        /*
+         * Foto profil berdiri sendiri, bukan berbagi dengan cover: user tidak
+         * boleh mengunggah PDF ke kolom foto, dan batas ukurannya lebih kecil
+         * karena avatar ditampilkan kecil di navbar dan daftar pengguna.
+         */
+        'avatar_disk' => env('PERPUSTAKAAN_AVATAR_DISK', 'public'),
+        'avatar_mimes' => ['jpg', 'jpeg', 'png', 'webp'],
+        'avatar_max_kb' => (int) env('PERPUSTAKAAN_AVATAR_MAX_KB', 2048),
     ],
 
     /*

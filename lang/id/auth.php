@@ -15,6 +15,8 @@ return [
     'full_name' => 'Nama lengkap',
     'password_hint' => 'Minimal 8 karakter.',
     'confirm_password' => 'Ulangi kata sandi',
+    'photo_profile' => 'Foto profil (opsional)',
+    'photo_profile_hint' => 'JPG, PNG, atau WebP. Kalau dikosongkan, avatar berupa inisial nama.',
     'register' => 'Daftar',
     'has_account' => 'Sudah punya akun?',
     'forgot_title' => 'Lupa Sandi',

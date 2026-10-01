@@ -225,7 +225,7 @@ class LoanController extends Controller
                 $copy = $lockedLoan->book_copy_id
                     ? BookCopy::query()->whereKey($lockedLoan->book_copy_id)->lockForUpdate()->first()
                     : $book->copies()->where('status', BookCopy::STATUS_BORROWED)
-                    ->lockForUpdate()->first();
+                        ->lockForUpdate()->first();
                 $copy?->update(['status' => BookCopy::STATUS_AVAILABLE]);
 
                 if ($book->status !== Book::STATUS_INACTIVE) {

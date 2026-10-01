@@ -76,6 +76,12 @@ class UserController extends Controller
             return $this->backWithStatus(__('messages.cannot_delete_self'));
         }
 
+        // Foto profil dihapus dari disk dulu, baru datanya. Urutan ini penting:
+        // kalau `delete()` yang pertama dan throws, berkas fotonya akan tetap
+        // tertinggal di storage tanpa ada baris database yang menunjuknya —
+        // tidak ada yang bisa membersihkannya nanti.
+        $this->deleteUpload($user->avatar, User::avatarDisk());
+
         $user->delete();
 
         return $this->success('users.index', __('messages.user_deleted'));

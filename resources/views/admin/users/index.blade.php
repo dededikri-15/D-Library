@@ -49,10 +49,18 @@
                 @forelse ($users as $user)
                     <tr>
                         <td class="font-medium text-primary">
-                            {{ $user->name }}
-                            @if ($user->id === auth()->id())
-                                <span class="badge ml-2 bg-tertiary/10 text-tertiary">{{ __('users.you') }}</span>
-                            @endif
+                            {{-- `alt=""`: nama ada di sebelah avatar ini, jadi
+                                 membacanya dua kali hanya menambah kebisingan. --}}
+                            <span class="flex items-center gap-2.5">
+                                <x-avatar :user="$user" size="xs" alt="" />
+                                <span class="min-w-0">
+                                    <span class="block truncate">{{ $user->name }}</span>
+                                    @if ($user->id === auth()->id())
+                                        <span
+                                            class="badge mt-1 bg-tertiary/10 text-tertiary">{{ __('users.you') }}</span>
+                                    @endif
+                                </span>
+                            </span>
                         </td>
                         <td class="text-secondary">{{ $user->email }}</td>
                         <td>

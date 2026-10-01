@@ -15,6 +15,8 @@ return [
     'full_name' => 'Full name',
     'password_hint' => 'At least 8 characters.',
     'confirm_password' => 'Confirm password',
+    'photo_profile' => 'Profile photo (optional)',
+    'photo_profile_hint' => 'JPG, PNG, or WebP. If left empty, your initials are shown instead.',
     'register' => 'Register',
     'has_account' => 'Already have an account?',
     'forgot_title' => 'Forgot Password',

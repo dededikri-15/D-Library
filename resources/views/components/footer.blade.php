@@ -94,8 +94,11 @@
             </div>
         </div>
 
+        {{-- Baris paling bawah. `built_with` pernah duduk di pojok kanan (sm:justify-between)
+             dan tertutup tombol "Kembali ke atas" yang fixed di kanan bawah. Sekarang
+             ditumpuk di tengah, jadi tidak pernah bertabrakan dengan tombol itu. --}}
         <div
-            class="mt-10 flex flex-col gap-3 border-t border-hairline pt-6 text-sm text-secondary sm:flex-row sm:items-center sm:justify-between">
+            class="mt-10 flex flex-col items-center gap-1 border-t border-hairline pt-6 text-center text-sm text-secondary">
             <p>&copy; {{ now()->year }} {{ config('app.name') }}</p>
             <p class="text-label">{{ __('footer.built_with', ['version' => Illuminate\Foundation\Application::VERSION]) }}</p>
         </div>
