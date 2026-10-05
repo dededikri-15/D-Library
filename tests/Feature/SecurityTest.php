@@ -234,6 +234,7 @@ class SecurityTest extends TestCase
         $this->post('/register', [
             'name' => 'Anggota Baru',
             'email' => 'baru@perpustakaan.test',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -379,6 +380,7 @@ class SecurityTest extends TestCase
             $this->post('/register', [
                 'name' => 'Massa '.$i,
                 'email' => "massa{$i}@perpustakaan.test",
+                'gender' => User::GENDER_LAKI_LAKI,
                 'password' => 'password123',
                 'password_confirmation' => 'password123',
             ]);
@@ -387,6 +389,7 @@ class SecurityTest extends TestCase
         $this->post('/register', [
             'name' => 'Kelebihan',
             'email' => 'kelebihan@perpustakaan.test',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ])->assertStatus(429);

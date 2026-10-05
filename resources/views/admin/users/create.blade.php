@@ -12,6 +12,9 @@
 
         <x-form.input name="name" :label="__('users.name')" required :value="$user->name" />
         <x-form.input name="email" :label="__('users.email')" type="email" required :value="$user->email" autocomplete="email" />
+        <x-form.select name="gender" :label="__('users.gender')" required :allowEmpty="true"
+                       :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()"
+                       :value="$user->gender" />
         <x-form.input name="password" :label="__('users.password')" type="password" required autocomplete="new-password" />
         <x-form.input name="password_confirmation" :label="__('users.confirm_password')" type="password" required
                       autocomplete="new-password" />

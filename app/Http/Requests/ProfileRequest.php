@@ -39,6 +39,7 @@ class ProfileRequest extends FormRequest
                 // mengubah email-nya pun akan bentrok dengan barisnya sendiri.
                 Rule::unique('users', 'email')->ignore($this->user()?->id),
             ],
+            'gender' => ['required', Rule::in(\App\Models\User::genders())],
             // Dikosongkan = kata sandi lama dipertahankan.
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'avatar' => [
@@ -71,6 +72,7 @@ class ProfileRequest extends FormRequest
         return [
             'name' => 'nama',
             'email' => 'email',
+            'gender' => 'jenis kelamin',
             'password' => 'kata sandi',
             'avatar' => 'foto profil',
         ];

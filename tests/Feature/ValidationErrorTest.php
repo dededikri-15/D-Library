@@ -153,6 +153,7 @@ class ValidationErrorTest extends TestCase
         $this->post('/register', [
             'name' => 'Budi Santoso',
             'email' => 'Budi@Contoh.test',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia123',
             'password_confirmation' => 'rahasia123',
         ])->assertSessionHasNoErrors();
@@ -167,6 +168,7 @@ class ValidationErrorTest extends TestCase
         $this->post('/register', [
             'name' => 'Budi',
             'email' => 'BUDI@CONTOH.TEST',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia123',
             'password_confirmation' => 'rahasia123',
         ])->assertSessionHasErrors('email');
@@ -183,6 +185,7 @@ class ValidationErrorTest extends TestCase
             ->put(route('users.update', $member), [
                 'name' => $member->name,
                 'email' => 'Baru@Contoh.test',
+                'gender' => $member->gender,
                 'role' => 'anggota',
             ])
             ->assertSessionHasNoErrors();

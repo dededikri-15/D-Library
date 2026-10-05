@@ -219,7 +219,7 @@
                 --}}
                 <a href="{{ route('profile.show') }}" title="{{ __('navigation.profile') }}"
                    class="flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors hover:bg-secondary/5">
-                    {{-- Avatar: foto kalau ada, inisial kalau tidak. --}}
+                    {{-- Avatar: foto kalau ada, ilustrasi sesuai jenis kelamin kalau tidak. --}}
                     <x-avatar :user="$user" size="sm" alt="" />
                     <span data-sidebar-label class="min-w-0 flex-1 leading-tight">
                         <span class="block truncate text-sm font-medium text-primary">{{ $user->name }}</span>

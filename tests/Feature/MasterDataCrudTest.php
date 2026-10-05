@@ -294,6 +294,7 @@ class MasterDataCrudTest extends TestCase
             ->post(route('users.store'), [
                 'name' => 'Anggota Baru',
                 'email' => 'anggota.baru@example.com',
+                'gender' => User::GENDER_PEREMPUAN,
                 'password' => 'rahasia-kuat-123',
                 'password_confirmation' => 'rahasia-kuat-123',
                 'role' => User::ROLE_ANGGOTA,
@@ -303,7 +304,28 @@ class MasterDataCrudTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'anggota.baru@example.com',
             'role' => User::ROLE_ANGGOTA,
+            'gender' => User::GENDER_PEREMPUAN,
         ]);
+    }
+
+    public function test_user_forms_show_gender_and_current_choice(): void
+    {
+        $staff = User::factory()->pustakawan()->create();
+        $member = User::factory()->anggota()->create([
+            'gender' => User::GENDER_PEREMPUAN,
+        ]);
+
+        $this->actingAs($staff)
+            ->get(route('users.create'))
+            ->assertOk()
+            ->assertSee('name="gender"', false)
+            ->assertSee('Laki-laki')
+            ->assertSee('Perempuan');
+
+        $this->actingAs($staff)
+            ->get(route('users.edit', $member))
+            ->assertOk()
+            ->assertSee('value="perempuan" selected', false);
     }
 
     public function test_pustakawan_cannot_assign_removed_admin_role(): void
@@ -314,6 +336,7 @@ class MasterDataCrudTest extends TestCase
             ->put(route('users.update', $member), [
                 'name' => $member->name,
                 'email' => $member->email,
+                'gender' => $member->gender,
                 'role' => 'admin',
             ])
             ->assertSessionHasErrors('role');
@@ -330,11 +353,13 @@ class MasterDataCrudTest extends TestCase
             ->put(route('users.update', $anggota), [
                 'name' => $anggota->name,
                 'email' => $anggota->email,
+                'gender' => User::GENDER_PEREMPUAN,
                 'role' => User::ROLE_PUSTAKAWAN,
             ])
             ->assertRedirect();
 
         $this->assertSame(User::ROLE_PUSTAKAWAN, $anggota->fresh()->role);
+        $this->assertSame(User::GENDER_PEREMPUAN, $anggota->fresh()->gender);
     }
 
     public function test_editing_user_without_password_keeps_existing_password(): void
@@ -347,6 +372,7 @@ class MasterDataCrudTest extends TestCase
             ->put(route('users.update', $anggota), [
                 'name' => 'Nama Baru',
                 'email' => $anggota->email,
+                'gender' => $anggota->gender,
                 'role' => User::ROLE_ANGGOTA,
             ])
             ->assertRedirect();

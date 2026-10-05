@@ -29,6 +29,7 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Budi Santoso',
             'email' => 'budi@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ]);
@@ -38,6 +39,7 @@ class RegistrationTest extends TestCase
 
         $user = User::where('email', 'budi@example.com')->firstOrFail();
         $this->assertSame(User::ROLE_ANGGOTA, $user->role);
+        $this->assertSame(User::GENDER_LAKI_LAKI, $user->gender);
     }
 
     public function test_password_is_stored_hashed_not_plain_text(): void
@@ -45,6 +47,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Siti Aminah',
             'email' => 'siti@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ]);
@@ -60,6 +63,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Andi',
             'email' => 'andi@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'berbeda-sekali',
         ])->assertSessionHasErrors('password');
@@ -74,6 +78,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Kembar',
             'email' => 'kembar@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ])->assertSessionHasErrors('email');
@@ -85,6 +90,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Penyusup',
             'email' => 'penyusup@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
             'role' => User::ROLE_PUSTAKAWAN,
@@ -114,7 +120,8 @@ class RegistrationTest extends TestCase
         $this->get('/register')
             ->assertOk()
             ->assertSee('enctype="multipart/form-data"', false)
-            ->assertSee('name="avatar"', false);
+            ->assertSee('name="avatar"', false)
+            ->assertSee('name="gender"', false);
     }
 
     public function test_registration_succeeds_without_avatar(): void
@@ -122,6 +129,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Tanpa Foto',
             'email' => 'tanpafoto@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ])->assertRedirect(route('anggota.dashboard'));
@@ -137,6 +145,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Dengan Foto',
             'email' => 'denganfoto@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
             'avatar' => UploadedFile::fake()->image('foto.jpg', 300, 300),
@@ -154,6 +163,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Jebakan',
             'email' => 'jebakan@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
             'avatar' => UploadedFile::fake()->create('dokumen.pdf', 20, 'application/pdf'),

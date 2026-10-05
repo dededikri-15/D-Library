@@ -36,6 +36,12 @@
 
             <dl class="mt-6 space-y-3 border-t border-hairline pt-5 text-sm">
                 <div class="flex items-center justify-between gap-3">
+                    <dt class="text-secondary">{{ __('profile.gender') }}</dt>
+                    <dd class="text-right font-medium text-primary">
+                        {{ $user->genderLabel() ?? __('users.gender_not_set') }}
+                    </dd>
+                </div>
+                <div class="flex items-center justify-between gap-3">
                     <dt class="text-secondary">{{ __('profile.member_since') }}</dt>
                     <dd class="text-right font-medium text-primary">
                         {{ $user->created_at?->translatedFormat('d M Y') }}
@@ -76,7 +82,7 @@
                 @csrf
                 @method('PATCH')
 
-                {{-- Foto profil. Tidak wajib: kosong berarti pakai avatar huruf. --}}
+                {{-- Foto profil opsional; fallback avatar mengikuti jenis kelamin. --}}
                 <div>
                     <label for="avatar" class="field-label">{{ __('profile.photo') }}</label>
                     <input type="file" id="avatar" name="avatar" accept="image/*" data-avatar-input
@@ -111,6 +117,9 @@
                               :value="$user->name" />
                 <x-form.input name="email" :label="__('profile.email')" type="email" required
                               autocomplete="email" :value="$user->email" />
+                <x-form.select name="gender" :label="__('profile.gender')" required :allowEmpty="true"
+                               :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()"
+                               :value="$user->gender" />
 
                 {{--
                     Ganti kata sandi dipisah jadi blok tersendiri supaya jelas

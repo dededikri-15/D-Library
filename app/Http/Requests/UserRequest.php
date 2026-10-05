@@ -28,6 +28,7 @@ class UserRequest extends FormRequest
                 'required', 'string', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
+            'gender' => ['required', Rule::in(User::genders())],
             // Saat edit, kata sandi boleh dikosongkan (artinya tidak diubah).
             'password' => [$this->isMethod('POST') ? 'required' : 'nullable', 'confirmed', Password::defaults()],
             'role' => ['required', Rule::in(User::roles())],
@@ -44,6 +45,7 @@ class UserRequest extends FormRequest
             'email' => 'email',
             'password' => 'kata sandi',
             'role' => 'role',
+            'gender' => 'jenis kelamin',
         ];
     }
 

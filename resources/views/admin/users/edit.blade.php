@@ -14,6 +14,10 @@
         <x-form.input name="name" :label="__('users.name')" required :value="$user->name" />
         <x-form.input name="email" :label="__('users.email')" type="email" required :value="$user->email" autocomplete="email" />
 
+        <x-form.select name="gender" :label="__('users.gender')" required :allowEmpty="true"
+                       :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()"
+                       :value="$user->gender" />
+
         <x-form.select name="role" :label="__('users.role')" required :allowEmpty="false"
                        :options="collect(App\Models\User::roles())
                             ->mapWithKeys(fn ($role) => [$role => __('roles.'.$role)])

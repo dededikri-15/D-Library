@@ -20,6 +20,10 @@ class User extends Authenticatable
 
     public const ROLE_ANGGOTA = 'anggota';
 
+    public const GENDER_LAKI_LAKI = 'laki-laki';
+
+    public const GENDER_PEREMPUAN = 'perempuan';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -30,6 +34,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'gender',
         'avatar',
     ];
 
@@ -62,6 +67,33 @@ class User extends Authenticatable
             self::ROLE_PUSTAKAWAN,
             self::ROLE_ANGGOTA,
         ];
+    }
+
+    /** @return list<string> */
+    public static function genders(): array
+    {
+        return [
+            self::GENDER_LAKI_LAKI,
+            self::GENDER_PEREMPUAN,
+        ];
+    }
+
+    /** @return array<string, string> */
+    public static function genderOptions(): array
+    {
+        return [
+            self::GENDER_LAKI_LAKI => __('users.gender_male'),
+            self::GENDER_PEREMPUAN => __('users.gender_female'),
+        ];
+    }
+
+    public function genderLabel(): ?string
+    {
+        return match ($this->gender) {
+            self::GENDER_LAKI_LAKI => __('users.gender_male'),
+            self::GENDER_PEREMPUAN => __('users.gender_female'),
+            default => null,
+        };
     }
 
     /**
@@ -97,9 +129,8 @@ class User extends Authenticatable
     /**
      * URL foto profil, atau null kalau user belum mengunggah foto.
      *
-     * Sengaja null (bukan string kosong): pemanggil memakai `?:` atau `@if` untuk
-     * Falls back ke avatar huruf, dan string kosong yang lolos `?:` justru akan
-     * membuat `<img src="">` yang browsermuat ulang halaman itu sendiri.
+     * Sengaja null (bukan string kosong): komponen memakai ilustrasi gender,
+     * dan string kosong justru membuat `<img src="">` memuat ulang halaman.
      */
     public function avatarUrl(): ?string
     {

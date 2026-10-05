@@ -26,7 +26,18 @@
 
     $avatarClass = $sizes[$size] ?? $sizes['sm'];
     $avatarUrl = $user->avatarUrl();
-    $initials = $user->initials();
+    $userNumber = abs((int) $user->getKey());
+    $malePortraits = [0, 2, 4, 6, 8, 11, 13, 15, 17, 19];
+    $femalePortraits = [1, 3, 5, 7, 9, 10, 12, 14, 16, 18];
+    $portraitOptions = match ($user->gender) {
+        \App\Models\User::GENDER_LAKI_LAKI => $malePortraits,
+        \App\Models\User::GENDER_PEREMPUAN => $femalePortraits,
+        default => $userNumber % 2 === 0 ? $malePortraits : $femalePortraits,
+    };
+    $avatarIndex = $portraitOptions[intdiv($userNumber, 2) % count($portraitOptions)];
+    $avatarColumn = $avatarIndex % 5;
+    $avatarRow = intdiv($avatarIndex, 5);
+    $avatarPositionY = $avatarRow * (100 / 3);
 @endphp
 
 @if ($avatarUrl)
@@ -37,15 +48,11 @@
              'class' => $avatarClass.' shrink-0 rounded-full border border-hairline object-cover',
          ]) }}>
 @else
-    {{--
-        Tanpa foto: lingkaran berisi inisial. `aria-hidden` karena teksnya
-        bukan informasi baru — nama user sudah tertulis di sebelahnya, dan
-        pembaca layar tidak perlu membaca "B" dua kali.
-    --}}
+    {{-- Pilih ilustrasi cowok atau cewek secara konsisten untuk tiap akun. --}}
     <span aria-hidden="true"
         {{ $attributes->merge([
-            'class' => $avatarClass.' grid shrink-0 place-items-center rounded-full bg-tertiary/10 font-semibold text-tertiary',
-        ]) }}>
-        {{ $initials }}
+            'class' => $avatarClass.' shrink-0 overflow-hidden rounded-full border border-hairline bg-center bg-no-repeat',
+        ]) }}
+        style="background-image: url('{{ asset('images/avatar-sprite.png') }}'); background-size: 500% 400%; background-position: {{ $avatarColumn * 25 }}% {{ $avatarPositionY }}%;">
     </span>
 @endif

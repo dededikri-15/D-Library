@@ -40,6 +40,7 @@ class ProfileTest extends TestCase
         return array_merge([
             'name' => 'Budi Santoso',
             'email' => 'budi@perpustakaan.test',
+            'gender' => User::GENDER_LAKI_LAKI,
         ], $overrides);
     }
 
@@ -59,6 +60,8 @@ class ProfileTest extends TestCase
         $this->actingAs($user)
             ->get(route('profile.show'))
             ->assertOk()
+            ->assertSee('name="gender"', false)
+            ->assertSee('value="laki-laki" selected', false)
             ->assertSee('Anggota Satu');
     }
 
@@ -235,7 +238,7 @@ class ProfileTest extends TestCase
         Storage::disk(User::avatarDisk())->assertExists($user->avatar);
     }
 
-    public function test_avatar_is_optional_and_falls_back_to_initials(): void
+    public function test_avatar_is_optional_and_falls_back_to_gender_illustration(): void
     {
         $user = User::factory()->anggota()->create(['name' => 'Budi Santoso']);
 
@@ -252,7 +255,34 @@ class ProfileTest extends TestCase
         $this->actingAs($user)
             ->get(route('profile.show'))
             ->assertOk()
+            ->assertSee('avatar-sprite.png', false)
             ->assertSee('B', false);
+    }
+
+    public function test_changing_gender_updates_the_saved_value_and_fallback_avatar(): void
+    {
+        $user = User::factory()->anggota()->create([
+            'gender' => User::GENDER_LAKI_LAKI,
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('profile.update'), $this->profilePayload([
+                'email' => $user->email,
+                'gender' => User::GENDER_PEREMPUAN,
+            ]))
+            ->assertRedirect(route('profile.show'));
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'gender' => User::GENDER_PEREMPUAN,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('profile.show'))
+            ->assertOk()
+            ->assertSee('background-position: 25% 0%;', false)
+            ->assertSee('value="perempuan" selected', false)
+            ->assertSee('Perempuan');
     }
 
     public function test_replacing_avatar_deletes_the_old_file(): void

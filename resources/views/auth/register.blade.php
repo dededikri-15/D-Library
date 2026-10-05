@@ -20,6 +20,8 @@
 
                 <x-form.input name="name" :label="__('auth.full_name')" required autocomplete="name" />
                 <x-form.input name="email" :label="__('auth.email')" type="email" required autocomplete="username" />
+                <x-form.select name="gender" :label="__('auth.gender')" required :allowEmpty="true"
+                               :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()" />
                 <x-form.input name="password" :label="__('auth.password')" type="password" required
                               autocomplete="new-password" :hint="__('auth.password_hint')" />
                 <x-form.input name="password_confirmation" :label="__('auth.confirm_password')" type="password" required
@@ -29,7 +31,7 @@
                     Foto profil: OPSIONAL. Label-nya menyatakan itu dengan jelas,
                     karena "tidak wajib" yang tidak ditulis orang tetap dibaca
                     sebagai wajib oleh sebagian pengguna. Kalau dikosongkan,
-                    avatar huruf (inisial nama) yang dipakai.
+                    avatar otomatis mengikuti jenis kelamin akun.
                 --}}
                 <div>
                     <label for="avatar" class="field-label">{{ __('auth.photo_profile') }}</label>

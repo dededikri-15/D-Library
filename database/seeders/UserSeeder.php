@@ -14,10 +14,10 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            ['name' => 'Pustakawan Utama', 'email' => 'pustakawan@perpustakaan', 'role' => User::ROLE_PUSTAKAWAN],
-            ['name' => 'Anggota Satu', 'email' => 'anggota1@perpustakaan.test', 'role' => User::ROLE_ANGGOTA],
-            ['name' => 'Anggota Dua', 'email' => 'anggota2@perpustakaan.test', 'role' => User::ROLE_ANGGOTA],
-            ['name' => 'Anggota Tiga', 'email' => 'anggota3@perpustakaan.test', 'role' => User::ROLE_ANGGOTA],
+            ['name' => 'Pustakawan Utama', 'email' => 'pustakawan@perpustakaan', 'role' => User::ROLE_PUSTAKAWAN, 'gender' => User::GENDER_LAKI_LAKI],
+            ['name' => 'Anggota Satu', 'email' => 'anggota1@perpustakaan.test', 'role' => User::ROLE_ANGGOTA, 'gender' => User::GENDER_LAKI_LAKI],
+            ['name' => 'Anggota Dua', 'email' => 'anggota2@perpustakaan.test', 'role' => User::ROLE_ANGGOTA, 'gender' => User::GENDER_PEREMPUAN],
+            ['name' => 'Anggota Tiga', 'email' => 'anggota3@perpustakaan.test', 'role' => User::ROLE_ANGGOTA, 'gender' => User::GENDER_PEREMPUAN],
         ];
 
         foreach ($users as $user) {
@@ -26,6 +26,7 @@ class UserSeeder extends Seeder
                 [
                     'name' => $user['name'],
                     'role' => $user['role'],
+                    'gender' => $user['gender'],
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
                 ]
