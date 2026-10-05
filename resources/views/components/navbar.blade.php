@@ -226,6 +226,13 @@
                         <span class="mt-1 block text-label text-secondary">{{ $user->roleLabel() }}</span>
                     </span>
                 </a>
+
+                <div data-sidebar-label class="rounded-md bg-secondary/5 px-2.5 py-2 text-label text-secondary">
+                    <div class="flex items-center justify-between gap-2">
+                        <span>{{ __('navigation.last_login') }}</span>
+                        <span class="font-medium text-primary">{{ $user->lastLoginAt()?->format('d M Y H:i') ?? '-' }}</span>
+                    </div>
+                </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" title="{{ __('navigation.logout') }}" class="sidebar-link w-full">

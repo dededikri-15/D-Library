@@ -26,4 +26,6 @@ return [
     'switch_to_indonesian' => 'Ganti bahasa ke Indonesia',
     'open_account_menu' => 'Buka menu akun',
     'profile' => 'Profil Saya',
+    'last_login' => 'Login terakhir',
+    'last_logout' => 'Logout terakhir',
 ];

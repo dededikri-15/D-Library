@@ -96,6 +96,25 @@ class User extends Authenticatable
         };
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(UserActivity::class)->latest('created_at');
+    }
+
+    public function lastLoginAt(): ?\Illuminate\Support\Carbon
+    {
+        return $this->activities()
+            ->where('type', UserActivity::TYPE_LOGIN)
+            ->value('created_at');
+    }
+
+    public function lastLogoutAt(): ?\Illuminate\Support\Carbon
+    {
+        return $this->activities()
+            ->where('type', UserActivity::TYPE_LOGOUT)
+            ->value('created_at');
+    }
+
     /**
      * Label role dalam Bahasa Indonesia, untuk ditampilkan di UI.
      *
