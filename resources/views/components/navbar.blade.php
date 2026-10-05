@@ -281,7 +281,7 @@
             <span class="max-[360px]:sr-only">D-Library</span>
         </a>
 
-        <x-system-status-clock />
+        <x-public-stats />
 
         <div class="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
             <x-theme-toggle />

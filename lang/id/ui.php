@@ -21,4 +21,6 @@ return [
     'confirm_cancel' => 'Batal',
     'confirm_accept' => 'Ya, lanjutkan',
     'back_to_top' => 'Kembali ke atas',
+    'stats_available_books' => 'Buku tersedia',
+    'stats_total_members' => 'Anggota terdaftar',
 ];
