@@ -112,6 +112,12 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
     Route::delete('/peminjaman/{loan}', [LoanController::class, 'destroy'])
         ->whereNumber('loan')
         ->name('loans.destroy');
+    Route::post('/peminjaman/{loan}/perpanjang', [LoanController::class, 'renew'])
+        ->whereNumber('loan')
+        ->name('loans.renew');
+    Route::post('/peminjaman/{loan}/denda-lunas', [LoanController::class, 'payFine'])
+        ->whereNumber('loan')
+        ->name('loans.fine.pay');
 });
 
 /*
@@ -223,6 +229,9 @@ Route::middleware(['auth', 'role:anggota'])->group(function () {
     Route::post('/riwayat-peminjaman/{loan}/ajukan-pengembalian', [LoanController::class, 'requestReturn'])
         ->whereNumber('loan')
         ->name('loans.mine.request-return');
+    Route::post('/riwayat-peminjaman/{loan}/perpanjang', [LoanController::class, 'renew'])
+        ->whereNumber('loan')
+        ->name('loans.mine.renew');
 
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorit/{book}', [FavoriteController::class, 'store'])->whereNumber('book')->name('favorites.store');

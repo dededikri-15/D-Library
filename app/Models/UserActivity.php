@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserActivity extends Model
 {
     public const TYPE_LOGIN = 'login';
+
     public const TYPE_LOGOUT = 'logout';
 
     public $timestamps = false;

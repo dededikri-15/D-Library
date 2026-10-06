@@ -58,11 +58,28 @@
                                 <span class="block text-label text-overdue">
                                     {{ __('loans.late_since', ['date' => $loan->displayDate($loan->due_at)?->diffForHumans()]) }}
                                 </span>
+                                @if ($loan->liveFine() > 0)
+                                    <span class="block text-label font-medium text-overdue">
+                                        {{ __('loans.fine_amount', ['amount' => number_format($loan->liveFine(), 0, ',', '.')]) }}
+                                    </span>
+                                @endif
+                            @elseif ($loan->isActive() && $loan->renewalsLeft() > 0)
+                                <span class="block text-label text-secondary">
+                                    {{ __('loans.renewals_left', ['count' => $loan->renewalsLeft()]) }}
+                                </span>
                             @endif
                         </td>
                         <td class="text-secondary">{{ $loan->displayDate($loan->returned_at)?->format('d M Y') ?? '-' }}
                         </td>
-                        <td><x-status-badge :status="$loan->status" /></td>
+                        <td>
+                            <x-status-badge :status="$loan->status" />
+                            @if ($loan->isReturned() && $loan->fine > 0)
+                                <span class="mt-1 block text-label {{ $loan->fine_paid_at ? 'text-available' : 'text-overdue' }}">
+                                    {{ __('loans.fine_amount', ['amount' => number_format($loan->fine, 0, ',', '.')]) }}
+                                    · {{ $loan->fine_paid_at ? __('loans.fine_paid') : __('loans.fine_unpaid') }}
+                                </span>
+                            @endif
+                        </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
                                 @if ($loan->isReturned())
@@ -70,6 +87,14 @@
                                 @elseif ($loan->hasReturnRequest())
                                     <span class="text-label font-medium text-borrowed">{{ __('loans.waiting_librarian') }}</span>
                                 @elseif ($loan->isActive() && $loan->book)
+                                    @if ($loan->canRenew())
+                                        <form method="POST" action="{{ route('loans.mine.renew', $loan) }}"
+                                            data-confirm="{{ __('loans.renew_confirmation', ['title' => $loan->book->title, 'date' => $loan->displayDate($loan->renewalDueAt())?->format('d M Y')]) }}"
+                                            data-confirm-title="{{ __('loans.renew') }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-secondary btn-sm">{{ __('loans.renew') }}</button>
+                                        </form>
+                                    @endif
                                     <form method="POST" action="{{ route('loans.mine.request-return', $loan) }}"
                                         data-confirm="{{ __('loans.request_confirmation', ['title' => $loan->book->title]) }}"
                                         data-confirm-title="{{ __('loans.request_return') }}">

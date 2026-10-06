@@ -64,6 +64,16 @@
                         <td class="text-secondary">{{ $loan->displayDate($loan->due_at)?->format('d M Y') }}</td>
                         <td>
                             <x-status-badge :status="$loan->isOverdue() ? 'overdue' : $loan->status" />
+                            @if ($loan->isOverdue() && $loan->liveFine() > 0)
+                                <span class="mt-1 block text-label text-overdue">
+                                    {{ __('loans.fine_amount', ['amount' => number_format($loan->liveFine(), 0, ',', '.')]) }}
+                                </span>
+                            @elseif ($loan->isReturned() && $loan->fine > 0)
+                                <span class="mt-1 block text-label {{ $loan->fine_paid_at ? 'text-available' : 'text-overdue' }}">
+                                    {{ __('loans.fine_amount', ['amount' => number_format($loan->fine, 0, ',', '.')]) }}
+                                    · {{ $loan->fine_paid_at ? __('loans.fine_paid') : __('loans.fine_unpaid') }}
+                                </span>
+                            @endif
                             @if ($loan->hasReturnRequest() && $loan->isActive())
                                 <span class="mt-1 block text-label text-borrowed">{{ __('loans.return_pending') }}</span>
                             @endif
@@ -71,11 +81,22 @@
                         <td>
                             <div class="flex items-center justify-end gap-2">
                                 @if ($loan->isActive())
+                                    @if ($loan->canRenew())
+                                        <form method="POST" action="{{ route('loans.renew', $loan) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-ghost btn-sm">{{ __('loans.renew') }}</button>
+                                        </form>
+                                    @endif
                                     <form method="POST" action="{{ route('loans.return', $loan) }}">
                                         @csrf
                                         <button type="submit" class="btn btn-ghost btn-sm text-available hover:bg-available/5">
                                             {{ $loan->hasReturnRequest() ? __('loans.confirm_return') : __('loans.return_book') }}
                                         </button>
+                                    </form>
+                                @elseif ($loan->hasUnpaidFine())
+                                    <form method="POST" action="{{ route('loans.fine.pay', $loan) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-secondary btn-sm">{{ __('loans.mark_fine_paid') }}</button>
                                     </form>
                                 @endif
 

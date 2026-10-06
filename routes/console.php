@@ -28,3 +28,19 @@ use Illuminate\Support\Facades\Schedule;
 */
 
 Schedule::command('loans:mark-overdue')->hourly();
+
+/*
+| Pengingat jatuh tempo lewat email (H-1/jatuh tempo + keterlambatan).
+|
+| `dailyAt('08:00')`, bukan hourly: pengingat memang dirancang sekali sehari
+| per peminjaman — anggota tidak butuh email yang sama berulang tiap jam.
+| Jam 08:00 dipilih karena masuk jam kerja pustaka (bukan tengah malam,
+| di mana email baru terbuka pagi hari dan efek pengingatnya hilang).
+|
+| Sekali jalan sudah cukup: `SendLoanReminders` mengklaim kolom penanda
+| secara atomik, jadi run ganda tidak menghasilkan email dobel.
+|
+| Sama seperti di atas: dev lokal perlu `php artisan schedule:work`.
+|
+*/
+Schedule::command('loans:remind')->dailyAt('08:00');

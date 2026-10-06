@@ -15,6 +15,16 @@ return [
 
     'loan' => [
         'duration_days' => (int) env('PERPUSTAKAAN_LOAN_DURATION_DAYS', 14),
+
+        // Batas berapa kali satu peminjaman boleh diperpanjang. Sifatnya
+        // tetap: peminjaman tidak boleh diperpanjang tanpa batas, karena
+        // orang lain mungkin sedang menunggu buku yang sama.
+        'max_renewals' => (int) env('PERPUSTAKAAN_LOAN_MAX_RENEWALS', 1),
+
+        // Denda per hari keterlambatan, dalam Rupiah. Disimpan sebagai
+        // angka bulat (tanpa desimal) karena Rupiah memang tidak memakai
+        // pecahan di sini.
+        'fine_per_day' => (int) env('PERPUSTAKAAN_LOAN_FINE_PER_DAY', 1000),
     ],
 
     'display_timezone' => env('PERPUSTAKAAN_DISPLAY_TIMEZONE', 'Asia/Jakarta'),

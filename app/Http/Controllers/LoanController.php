@@ -173,6 +173,70 @@ class LoanController extends Controller
         };
     }
 
+    /**
+     * Perpanjangan peminjaman — oleh anggota (pinjamannya sendiri) atau
+     * pustakawan (pinjaman siapa pun).
+     *
+     * Aturan kelayakan ada di `Loan::canRenew()`: tombol di view memakai
+     * method yang sama, jadi kasus tombol terlihat tapi server menolak
+     * hampir mustahil terjadi — kecuali saat race (dua orang menekan
+     * perpanjangan bersamaan), yang ditangani `lockForUpdate` di bawah.
+     */
+    public function renew(Request $request, Loan $loan): RedirectResponse
+    {
+        $user = $request->user();
+
+        // Anggota hanya boleh memperpanjang pinjamannya sendiri. URL route
+        // ini bisa ditebak orang, jadi otorisasinya dicek di server —
+        // bukan disembunyikan di view.
+        if (! $user->isPustakawan() && $loan->user_id !== $user->getKey()) {
+            abort(403);
+        }
+
+        $result = DB::transaction(function () use ($loan) {
+            $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
+
+            if (! $lockedLoan->canRenew()) {
+                return 'ineligible';
+            }
+
+            $lockedLoan->update([
+                'due_at' => $lockedLoan->renewalDueAt(),
+                'renew_count' => $lockedLoan->renew_count + 1,
+            ]);
+
+            return 'renewed';
+        });
+
+        if ($result === 'ineligible') {
+            return back()->with('error', __('messages.loan_not_renewable'));
+        }
+
+        // Kembali ke riwayat milik anggota, tapi pustakawan yang memperpanjang
+        // dari halaman manajemen tetap mendarat di sana.
+        return $this->backWithStatus(__('messages.loan_renewed', [
+            'days' => (int) config('perpustakaan.loan.duration_days'),
+        ]));
+    }
+
+    /**
+     * Tandai denda sudah dibayar (pencatatan kas meja sirkulasi).
+     *
+     * Tidak ada alur pembayaran online di PRD — denda dibayar tunai/transfer,
+     * lalu pustakawan menekan tombol ini supaya status "belum lunas" hilang
+     * dari daftar.
+     */
+    public function payFine(Loan $loan): RedirectResponse
+    {
+        if (! $loan->hasUnpaidFine()) {
+            return back()->with('error', __('messages.fine_not_payable'));
+        }
+
+        $loan->update(['fine_paid_at' => now()]);
+
+        return $this->backWithStatus(__('messages.fine_paid'));
+    }
+
     protected function completeReturn(Loan $loan): bool
     {
         return DB::transaction(function () use ($loan) {
@@ -185,6 +249,15 @@ class LoanController extends Controller
             $lockedLoan->update([
                 'returned_at' => now(),
                 'status' => Loan::STATUS_RETURNED,
+                /*
+                 * Denda di-snapshot di sini, saat momen pengembalian.
+                 * `liveFine()` pada saat status masih aktif menghitung dari
+                 * `due_at` sampai `now()` — yang kebetulan adalah detik
+                 * pengembalian ini. Setelah baris ini, tampilan memakai
+                 * kolom `fine`, jadi tarif yang berubah nanti tidak
+                 * mengubah denda yang sudah pernah ditagih.
+                 */
+                'fine' => $lockedLoan->liveFine(),
             ]);
 
             $book = Book::query()->whereKey($lockedLoan->book_id)->lockForUpdate()->first();

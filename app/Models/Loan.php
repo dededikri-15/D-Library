@@ -29,6 +29,11 @@ class Loan extends Model
         'returned_at',
         'return_requested_at',
         'status',
+        'renew_count',
+        'fine',
+        'fine_paid_at',
+        'due_reminder_sent_at',
+        'overdue_notified_at',
     ];
 
     protected function casts(): array
@@ -38,6 +43,11 @@ class Loan extends Model
             'due_at' => 'datetime',
             'returned_at' => 'datetime',
             'return_requested_at' => 'datetime',
+            'renew_count' => 'integer',
+            'fine' => 'integer',
+            'fine_paid_at' => 'datetime',
+            'due_reminder_sent_at' => 'datetime',
+            'overdue_notified_at' => 'datetime',
         ];
     }
 
@@ -135,6 +145,91 @@ class Loan extends Model
     public function hasReturnRequest(): bool
     {
         return $this->return_requested_at !== null;
+    }
+
+    /**
+     * Jumlah hari keterlambatan, dihitung per tanggal kalender.
+     *
+     * Sengaja memakai selisih tanggal (bukan detik): "terlambat 1 jam di
+     * hari yang sama" tetap dihitung 0 hari, sementara terlambat 1 menit
+     * pada hari berikutnya sudah dihitung 1 hari — aturan yang paling mudah
+     * dijelaskan ke anggota di meja sirkulasi.
+     */
+    public function overdueDays(): int
+    {
+        if ($this->due_at === null || ! now()->greaterThan($this->due_at)) {
+            return 0;
+        }
+
+        $until = $this->returned_at ?? now();
+
+        if (! $until->greaterThan($this->due_at)) {
+            return 0;
+        }
+
+        return max(0, (int) $this->due_at->copy()->startOfDay()->diffInDays($until->copy()->startOfDay()));
+    }
+
+    /**
+     * Denda yang berlaku sekarang.
+     *
+     * Untuk peminjaman yang belum dikembalikan nilainya dihitung hidup
+     * (waktu terus berjalan, denda terus tumbuh). Untuk yang sudah
+     * dikembalikan, dipakai nilai snapshot di kolom `fine` — tarif boleh
+     * berubah kapan pun, denda yang pernah ditagih tidak ikut berubah.
+     */
+    public function liveFine(): int
+    {
+        if ($this->isReturned()) {
+            return (int) $this->fine;
+        }
+
+        return $this->overdueDays() * max(0, (int) config('perpustakaan.loan.fine_per_day'));
+    }
+
+    /**
+     * Denda yang tercatat tapi belum ditandai lunas oleh pustakawan.
+     */
+    public function hasUnpaidFine(): bool
+    {
+        return $this->isReturned() && (int) $this->fine > 0 && $this->fine_paid_at === null;
+    }
+
+    /**
+     * Bolehkah peminjaman ini diperpanjang?
+     *
+     * Syaratnya sengaja ketat dan semuanya ada di satu method, supaya tombol
+     * di view, test, dan controller tidak mungkin memakai aturan yang
+     * berbeda:
+     *
+     * - masih aktif (belum dikembalikan),
+     * - belum lewat jatuh tempo (terlambat = perpanjangan menutupi keterlambatan),
+     * - belum ada pengajuan pengembalian yang menunggu,
+     * - belum mencapai batas perpanjangan.
+     */
+    public function canRenew(): bool
+    {
+        return $this->isActive()
+            && ! $this->hasReturnRequest()
+            && $this->due_at !== null
+            && ! now()->greaterThan($this->due_at)
+            && $this->renew_count < max(0, (int) config('perpustakaan.loan.max_renewals'));
+    }
+
+    public function renewalsLeft(): int
+    {
+        return max(0, max(0, (int) config('perpustakaan.loan.max_renewals')) - $this->renew_count);
+    }
+
+    /**
+     * Jatuh tempo setelah perpanjangan: tempo lama + durasi pinjam.
+     *
+     * `dueAt()` adalah satu-satunya sumber aturan durasi, jadi perpanjangan
+     * dan peminjaman baru tidak bisa berbeda panjangnya.
+     */
+    public function renewalDueAt(): Carbon
+    {
+        return self::dueAt($this->due_at);
     }
 
     public function displayDate(?Carbon $date): ?Carbon

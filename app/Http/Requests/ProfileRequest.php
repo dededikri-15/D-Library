@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -39,7 +40,7 @@ class ProfileRequest extends FormRequest
                 // mengubah email-nya pun akan bentrok dengan barisnya sendiri.
                 Rule::unique('users', 'email')->ignore($this->user()?->id),
             ],
-            'gender' => ['required', Rule::in(\App\Models\User::genders())],
+            'gender' => ['required', Rule::in(User::genders())],
             // Dikosongkan = kata sandi lama dipertahankan.
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'avatar' => [

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -101,14 +102,14 @@ class User extends Authenticatable
         return $this->hasMany(UserActivity::class)->latest('created_at');
     }
 
-    public function lastLoginAt(): ?\Illuminate\Support\Carbon
+    public function lastLoginAt(): ?Carbon
     {
         return $this->activities()
             ->where('type', UserActivity::TYPE_LOGIN)
             ->value('created_at');
     }
 
-    public function lastLogoutAt(): ?\Illuminate\Support\Carbon
+    public function lastLogoutAt(): ?Carbon
     {
         return $this->activities()
             ->where('type', UserActivity::TYPE_LOGOUT)
