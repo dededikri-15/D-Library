@@ -1,6 +1,5 @@
 @php
     $user = auth()->user();
-    $dashboardRoute = $user?->isStaff() ? 'dashboard' : 'anggota.dashboard';
 
     $links = array_values(
         array_filter([
@@ -24,14 +23,7 @@
                 'icon' =>
                     'M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z',
             ],
-            $user
-                ? [
-                    'route' => $dashboardRoute,
-                    'pattern' => $dashboardRoute,
-                    'label' => __('navigation.dashboard'),
-                    'icon' => 'M3.75 3.75h7.5v7.5h-7.5zm9 0h7.5v4.5h-7.5zm0 6h7.5v10.5h-7.5zm-9 3h7.5v7.5h-7.5z',
-                ]
-                : null,
+
             $user?->isStaff()
                 ? [
                     'route' => 'books.index',

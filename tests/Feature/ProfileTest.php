@@ -124,6 +124,7 @@ class ProfileTest extends TestCase
             ->patch(route('profile.update'), [
                 'name' => 'Akhir',
                 'email' => 'tetap@perpustakaan.test',
+                'gender' => User::GENDER_LAKI_LAKI,
             ])
             ->assertSessionHasNoErrors();
 

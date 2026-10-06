@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AnggotaDashboardController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -8,7 +7,6 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoanController;
@@ -67,7 +65,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 */
 
 Route::middleware(['auth', 'role:pustakawan'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
     // Master data (PRD §6)
     Route::resource('kategori', CategoryController::class)
@@ -210,7 +208,7 @@ Route::middleware('auth')->group(function () {
 */
 
 Route::middleware(['auth', 'role:anggota'])->group(function () {
-    Route::get('/anggota', [AnggotaDashboardController::class, 'index'])->name('anggota.dashboard');
+    Route::get('/anggota', [HomeController::class, 'index'])->name('anggota.dashboard');
 
     // Peminjaman mandiri (PRD §9, Task 10.1 & 10.11).
     //
