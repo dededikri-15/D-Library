@@ -4,9 +4,17 @@ namespace App\Notifications;
 
 use App\Models\Loan;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Pemberitahuan peminjaman baru untuk SELURUH PUSTAKAWAN.
+ *
+ * Baik peminjaman yang dicatat staf maupun yang diambil anggota sendiri
+ * dari halaman buku, meja sirkulasi perlu tahu: buku fisik sedang keluar
+ * dari rak dan statusnya berubah.
+ *
+ * Lihat kontrak payload di `LoanBorrowed`.
+ */
 class LoanCreated extends Notification
 {
     use Queueable;
@@ -24,20 +32,6 @@ class LoanCreated extends Notification
         return ['database'];
     }
 
-    public function toMail(object $notifiable): MailMessage
-    {
-        $loan = $this->loan;
-        $book = $loan->book;
-        $user = $loan->user;
-        $dueDate = $loan->displayDate($loan->due_at)?->format('d M Y') ?? '-';
-
-        return (new MailMessage)
-            ->subject('Peminjaman baru')
-            ->line(($user?->name ?? 'Anggota') . ' telah meminjam buku: ' . ($book?->title ?? '-'))
-            ->line('Batas pengembalian: ' . $dueDate)
-            ->action('Lihat Peminjaman', route('loans.index'));
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -48,14 +42,14 @@ class LoanCreated extends Notification
         $user = $loan->user;
 
         return [
-            'type' => 'created',
-            'loan_id' => $loan->id,
-            'book_id' => $book?->id,
-            'book_title' => $book?->title,
-            'user_id' => $user?->id,
-            'user_name' => $user?->name,
-            'due_at_formatted' => $loan->displayDate($loan->due_at)?->format('d M Y'),
-            'message' => 'Peminjaman baru: ' . ($book?->title ?? 'Buku') . ' oleh ' . ($user?->name ?? '-'),
+            'type' => 'loan_created',
+            'loan_id' => $loan->getKey(),
+            'book_id' => $book?->getKey(),
+            'book_title' => $book?->title ?? __('loans.book_deleted'),
+            'user_id' => $user?->getKey(),
+            'user_name' => $user?->name ?? '-',
+            'borrowed_at' => $loan->borrowed_at?->toIso8601String(),
+            'due_at' => $loan->due_at?->toIso8601String(),
             'url' => route('loans.index'),
         ];
     }

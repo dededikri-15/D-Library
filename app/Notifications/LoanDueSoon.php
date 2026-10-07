@@ -7,16 +7,16 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 /**
- * Buku sudah dikembalikan — konfirmasi ke ANGGOTA pemilik pinjaman.
+ * Pengingat dalam aplikasi: buku mendekati batas pengembalian (H-1/jatuh tempo).
  *
- * Sengaja kanal `database` saja: pengembalian bukan pengingat, dan anggota
- * sudah melihat toast "Buku berhasil dikembalikan" pada detik yang sama.
- * Email disimpan untuk peristiwa yang butuh perhatian di luar aplikasi
- * (pengingat jatuh tempo) — lihat `LoanDueReminder`.
+ * Pasangan dari email `LoanDueReminder` — keduanya dikirim dari command
+ * `loans:remind` pada klaim yang sama (`due_reminder_sent_at`), jadi tidak
+ * mungkin email terkirim tanpa notifikasi lonceng atau sebaliknya, dan tidak
+ * mungkin keduanya dobel.
  *
  * Lihat kontrak payload di `LoanBorrowed`.
  */
-class LoanReturned extends Notification
+class LoanDueSoon extends Notification
 {
     use Queueable;
 
@@ -42,13 +42,12 @@ class LoanReturned extends Notification
         $book = $loan->book;
 
         return [
-            'type' => 'returned',
+            'type' => 'due_soon',
             'loan_id' => $loan->getKey(),
             'book_id' => $book?->getKey(),
             'book_title' => $book?->title ?? __('loans.book_deleted'),
-            'returned_at' => $loan->returned_at?->toIso8601String(),
-            'fine' => (int) $loan->fine,
-            'fine_paid_at' => $loan->fine_paid_at?->toIso8601String(),
+            'due_at' => $loan->due_at?->toIso8601String(),
+            'renewals_left' => $loan->renewalsLeft(),
             'url' => route('loans.mine'),
         ];
     }

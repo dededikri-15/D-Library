@@ -285,6 +285,9 @@
         <div class="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
             <x-theme-toggle />
             @auth
+                {{-- Notifikasi dipisah dari menu akun: daftar tindakan (menu)
+                     dan daftar kabar (lonceng) punya isi yang berbeda. --}}
+                <x-notification-bell />
                 <x-user-menu />
             @else
                 <a href="{{ route('login') }}" class="btn btn-blue-outline btn-sm lg:hidden">{{ __('navigation.login') }}</a>

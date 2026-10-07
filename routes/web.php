@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailboxController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReadingHistoryController;
@@ -205,6 +206,26 @@ Route::middleware('auth')->group(function () {
      */
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
+
+    /*
+     * Notifikasi dalam aplikasi (lonceng + halaman riwayat).
+     *
+     * Seperti profil, route ini berada di group `auth` polos: anggota dan
+     * pustakawan sama-sama butuh notifikasi, jadi tidak ada pembagian per
+     * role. Isinya murni milik user login (lihat NotificationController).
+     *
+     * `whereUuid` pada parameternya WAJIB, bukan `whereNumber` (yang memang
+     * tidak cocok, karena id notifikasi berbentuk UUID): PostgreSQL menolak
+     * perbandingan string sembarang terhadap kolom `uuid` dengan
+     * QueryException -> HTTP 500. Dengan pola ini, id yang bukan UUID tidak
+     * pernah sampai ke query — route-nya sendiri tidak cocok -> 404.
+     */
+    Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifikasi/tandai-semua', [NotificationController::class, 'readAll'])
+        ->name('notifications.readAll');
+    Route::get('/notifikasi/{notification}/tandai', [NotificationController::class, 'read'])
+        ->whereUuid('notification')
+        ->name('notifications.read');
 });
 
 /*

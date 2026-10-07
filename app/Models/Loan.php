@@ -34,6 +34,7 @@ class Loan extends Model
         'fine_paid_at',
         'due_reminder_sent_at',
         'overdue_notified_at',
+        'overdue_alerted_at',
     ];
 
     protected function casts(): array
@@ -48,6 +49,7 @@ class Loan extends Model
             'fine_paid_at' => 'datetime',
             'due_reminder_sent_at' => 'datetime',
             'overdue_notified_at' => 'datetime',
+            'overdue_alerted_at' => 'datetime',
         ];
     }
 

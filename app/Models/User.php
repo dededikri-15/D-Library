@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -206,6 +207,23 @@ class User extends Authenticatable
     public function isStaff(): bool
     {
         return $this->isPustakawan();
+    }
+
+    /**
+     * Seluruh akun pustakawan.
+     *
+     * Dipakai pemberitahuan yang harus diterima MEJA SIRKULASI (peminjaman
+     * baru, pengajuan pengembalian, keterlambatan). Menulis
+     * `where('role', ...)` berulang di tiap aksi akan membuat role jadi
+     * pengetahuan yang tersebar — kalau suatu saat ada role tambahan yang
+     * ikut bertugas, cukup satu tempat ini yang diubah.
+     *
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopePustakawan(Builder $query): Builder
+    {
+        return $query->where('role', self::ROLE_PUSTAKAWAN);
     }
 
     public function loans(): HasMany

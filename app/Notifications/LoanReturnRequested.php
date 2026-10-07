@@ -4,9 +4,15 @@ namespace App\Notifications;
 
 use App\Models\Loan;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Anggota mengajukan pengembalian buku — diteruskan ke SELURUH PUSTAKAWAN.
+ *
+ * Buku belum kembali ke rak sampai staf menandainya di meja sirkulasi,
+ * jadi pengajuan ini adalah antrean kerja, bukan sekadar kabar. Lihat
+ * kontrak payload di `LoanBorrowed`.
+ */
 class LoanReturnRequested extends Notification
 {
     use Queueable;
@@ -24,18 +30,6 @@ class LoanReturnRequested extends Notification
         return ['database'];
     }
 
-    public function toMail(object $notifiable): MailMessage
-    {
-        $loan = $this->loan;
-        $book = $loan->book;
-        $user = $loan->user;
-
-        return (new MailMessage)
-            ->subject('Permintaan pengembalian buku')
-            ->line(($user?->name ?? 'Anggota') . ' mengajukan pengembalian buku: ' . ($book?->title ?? '-'))
-            ->action('Lihat Peminjaman', route('loans.index'));
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -47,13 +41,13 @@ class LoanReturnRequested extends Notification
 
         return [
             'type' => 'return_requested',
-            'loan_id' => $loan->id,
-            'book_id' => $book?->id,
-            'book_title' => $book?->title,
-            'user_id' => $user?->id,
-            'user_name' => $user?->name,
-            'message' => 'Permintaan pengembalian: ' . ($book?->title ?? 'Buku') . ' oleh ' . ($user?->name ?? '-'),
-            'url' => route('loans.index'),
+            'loan_id' => $loan->getKey(),
+            'book_id' => $book?->getKey(),
+            'book_title' => $book?->title ?? __('loans.book_deleted'),
+            'user_id' => $user?->getKey(),
+            'user_name' => $user?->name ?? '-',
+            'due_at' => $loan->due_at?->toIso8601String(),
+            'url' => route('loans.index', ['status' => Loan::STATUS_BORROWED]),
         ];
     }
 }

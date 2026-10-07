@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Actions\MarkOverdueLoans;
 use App\Models\Loan;
 use App\Notifications\LoanDueReminder;
+use App\Notifications\LoanDueSoon;
 use Illuminate\Console\Command;
 
 /**
@@ -15,18 +16,23 @@ use Illuminate\Console\Command;
  *
  * 1. Segarkan status `overdue` dulu (MarkOverdueLoans). Tanpa ini,
  *    peminjaman yang baru saja lewat tempo masih berstatus `borrowed`
- *    dan tidak akan masuk query pemberitahuan keterlambatan.
+ *    dan tidak akan masuk query pemberitahuan keterlambatan. Penyegaran
+ *    itu sekaligus mengirim notifikasi lonceng keterlambatan lewat
+ *    AlertOverdueLoans — kolom penandanya terpisah, jadi tidak berebut
+ *    dengan email di command ini.
  * 2. H-1/jatuh tempo: pinjaman aktif yang `due_at`-nya jatuh hari ini
- *    atau besok, dan belum pernah dikirim pengingatnya.
- * 3. Terlambat: pinjaman berstatus `overdue` yang belum pernah
- *    dikirim pemberitahuannya.
+ *    atau besok, dan belum pernah dikirim pengingatnya — berupa email
+ *    (LoanDueReminder) dan notifikasi lonceng (LoanDueSoon).
+ * 3. Terlambat: email pemberitahuan untuk pinjaman berstatus `overdue`
+ *    yang belum pernah dikirim emailnya.
  *
  * "Belum pernah dikirim" diwakili kolom penanda (`due_reminder_sent_at`,
- * `overdue_notified_at`). Klaimnya dilakukan dengan UPDATE atomik
- * `... WHERE kolom IS NULL` SEBELUM notify: dua scheduler yang jalan
- * bersamaan akan berebut klaim yang sama, dan hanya pemenang yang
- * mengirim email. Kalau notify dikirim dulu lalu klaimnya, tabrakan
- * dua scheduler berarti dua email identik ke anggota yang sama.
+ * `overdue_notified_at`, plus `overdue_alerted_at` untuk lonceng).
+ * Klaimnya dilakukan dengan UPDATE atomik `... WHERE kolom IS NULL`
+ * SEBELUM notify: dua scheduler yang jalan bersamaan akan berebut klaim
+ * yang sama, dan hanya pemenang yang mengirim. Kalau notify dikirim dulu
+ * lalu klaimnya, tabrakan dua scheduler berarti dua email identik ke
+ * anggota yang sama.
  *
  * Jadwal: `routes/console.php` — setiap hari jam 08:00.
  * Dev lokal: jalankan `php artisan schedule:work`.
@@ -85,7 +91,12 @@ class SendLoanReminders extends Command
                 continue;
             }
 
+            // Email dan notifikasi lonceng berangkat dari klaim YANG SAMA,
+            // jadi keduanya tidak mungkin berpisah: email terkirim tanpa
+            // lonceng (atau sebaliknya) hanya terjadi kalau notify kedua
+            // gagal di tengah jalan, bukan karena jadwal.
             $loan->user->notify(new LoanDueReminder($loan, LoanDueReminder::KIND_DUE_SOON));
+            $loan->user->notify(new LoanDueSoon($loan));
             $sent++;
         }
 

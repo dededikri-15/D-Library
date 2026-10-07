@@ -4,12 +4,29 @@ namespace App\Notifications;
 
 use App\Models\Loan;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Peminjaman anggota DIHAPUS oleh pustakawan (koreksi administratif).
+ *
+ * Tanpa notifikasi ini anggota hanya menemukan riwayatnya hilang begitu saja
+ * pada kali berikutnya membuka halaman. Alasan disimpan sebagai KODE
+ * (`admin_deleted`), bukan kalimat, supaya teksnya diterjemahkan saat dibaca
+ * — lihat kontrak payload di `LoanBorrowed`.
+ */
 class LoanRejected extends Notification
 {
     use Queueable;
+
+    /**
+     * Kode alasan "dihapus pustakawan".
+     *
+     * Disimpan sebagai KODE, bukan kalimat, karena teks notifikasi baru
+     * dibuat saat dibaca (lihat kontrak payload di `LoanBorrowed`) — kalau
+     * kalimatnya ditulis di sini, anggota yang sedang berbahasa Inggris
+     * tetap menerima alasan berbahasa Indonesia.
+     */
+    public const REASON_ADMIN_DELETED = 'admin_deleted';
 
     public function __construct(public Loan $loan, public ?string $reason = null)
     {
@@ -24,22 +41,6 @@ class LoanRejected extends Notification
         return ['database'];
     }
 
-    public function toMail(object $notifiable): MailMessage
-    {
-        $loan = $this->loan;
-        $book = $loan->book;
-
-        $mail = (new MailMessage)
-            ->subject('Peminjaman ditolak')
-            ->line('Peminjaman buku ' . ($book?->title ?? '-') . ' ditolak.');
-
-        if ($this->reason) {
-            $mail->line('Alasan: ' . $this->reason);
-        }
-
-        return $mail;
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -50,11 +51,11 @@ class LoanRejected extends Notification
 
         return [
             'type' => 'rejected',
-            'loan_id' => $loan->id,
-            'book_id' => $book?->id,
-            'book_title' => $book?->title,
+            'loan_id' => $loan->getKey(),
+            'book_id' => $book?->getKey(),
+            'book_title' => $book?->title ?? __('loans.book_deleted'),
             'reason' => $this->reason,
-            'message' => 'Peminjaman ditolak: ' . ($book?->title ?? 'Buku'),
+            'due_at' => $loan->due_at?->toIso8601String(),
             'url' => route('loans.mine'),
         ];
     }

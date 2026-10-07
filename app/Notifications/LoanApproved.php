@@ -4,9 +4,17 @@ namespace App\Notifications;
 
 use App\Models\Loan;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Konfirmasi peminjaman yang DICATAT PUSTAKAWAN atas nama anggota.
+ *
+ * Anggota tidak memilih sendiri di sini — staf yang mengetik di meja
+ * sirkulasi — jadi pemberitahuannya berbentuk "disetujui" beserta batas
+ * pengembalian, bukan "berhasil dipinjam" seperti `LoanBorrowed`.
+ *
+ * Lihat kontrak payload di `LoanBorrowed`.
+ */
 class LoanApproved extends Notification
 {
     use Queueable;
@@ -24,19 +32,6 @@ class LoanApproved extends Notification
         return ['database'];
     }
 
-    public function toMail(object $notifiable): MailMessage
-    {
-        $loan = $this->loan;
-        $book = $loan->book;
-        $dueDate = $loan->displayDate($loan->due_at)?->format('d M Y') ?? '-';
-
-        return (new MailMessage)
-            ->subject('Peminjaman disetujui')
-            ->line('Peminjaman buku ' . ($book?->title ?? '-') . ' telah disetujui.')
-            ->line('Batas pengembalian: ' . $dueDate)
-            ->action('Lihat Riwayat', route('loans.mine'));
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -47,11 +42,11 @@ class LoanApproved extends Notification
 
         return [
             'type' => 'approved',
-            'loan_id' => $loan->id,
-            'book_id' => $book?->id,
-            'book_title' => $book?->title,
-            'due_at_formatted' => $loan->displayDate($loan->due_at)?->format('d M Y'),
-            'message' => 'Peminjaman disetujui: ' . ($book?->title ?? 'Buku'),
+            'loan_id' => $loan->getKey(),
+            'book_id' => $book?->getKey(),
+            'book_title' => $book?->title ?? __('loans.book_deleted'),
+            'borrowed_at' => $loan->borrowed_at?->toIso8601String(),
+            'due_at' => $loan->due_at?->toIso8601String(),
             'url' => route('loans.mine'),
         ];
     }

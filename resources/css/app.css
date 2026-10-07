@@ -419,6 +419,49 @@
     }
 
     /*
+    | Notifikasi (Task 22.6): penanda "belum dibaca" diikat pada SATU atribut
+    | `data-notification-unread` pada <li>, bukan pada beberapa class yang
+    | ditulis Blade per baris.
+    |
+    | Alasannya: membuka lonceng menandai semua notifikasi sudah dibaca, dan
+    | JS cukup menghapus satu atribut per baris — latar, tebal judul, titik,
+    | dan teks pembaca layar ikut hilang bersamaan. Kalau gaya itu ditulis
+    | sebagai class Tailwind di Blade, JS harus menghapus daftar class satu
+    | per satu dan mudah tidak sinkron dengan tampilan.
+    |
+    | Titik dan label pembaca layar tetap selalu dirender (sembunyi lewat CSS)
+    | supaya JS tidak perlu membuat elemen saat menandai sudah dibaca.
+    */
+    .notification-item {
+        @apply rounded-md;
+    }
+
+    .notification-title {
+        @apply font-medium text-secondary;
+    }
+
+    .notification-dot,
+    .notification-unread-label {
+        display: none;
+    }
+
+    [data-notification-unread] > a {
+        @apply bg-tertiary/5;
+    }
+
+    [data-notification-unread] .notification-title {
+        @apply font-semibold text-primary;
+    }
+
+    [data-notification-unread] .notification-dot {
+        display: block;
+    }
+
+    [data-notification-unread] .notification-unread-label {
+        display: inline;
+    }
+
+    /*
     | Modal (Task 14.3) memakai elemen `<dialog>` asli, bukan overlay buatan
     | sendiri. Alasannya: browser sudah memberi focus trap, tombol Escape,
     | `inert` untuk konten di belakang, dan pengembalian fokus ke tombol

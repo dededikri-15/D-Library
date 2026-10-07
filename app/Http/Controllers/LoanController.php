@@ -10,8 +10,15 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Loan;
 use App\Models\User;
+use App\Notifications\LoanApproved;
+use App\Notifications\LoanBorrowed;
+use App\Notifications\LoanCreated;
+use App\Notifications\LoanRejected;
+use App\Notifications\LoanReturned;
+use App\Notifications\LoanReturnRequested;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -94,12 +101,14 @@ class LoanController extends Controller
         $member = User::findOrFail($request->integer('user_id'));
 
         try {
-            $this->borrowBook->handle($member, $request->integer('book_id'), $request->date('borrowed_at'));
+            $loan = $this->borrowBook->handle($member, $request->integer('book_id'), $request->date('borrowed_at'));
         } catch (LoanNotPossibleException $e) {
             // Pesannya ditempel ke field `book_id`, bukan flashed sebagai
             // error umum, supaya muncul tepat di bawah dropdown buku.
             return back()->withErrors(['book_id' => $e->getMessage()])->withInput();
         }
+
+        $this->announceNewLoan($loan, $request->user(), recordedByStaff: true);
 
         return $this->success('loans.index', __('messages.loan_created'));
     }
@@ -116,7 +125,7 @@ class LoanController extends Controller
         Gate::authorize('borrow', $book);
 
         try {
-            $this->borrowBook->handle($request->user(), $book->getKey());
+            $loan = $this->borrowBook->handle($request->user(), $book->getKey());
         } catch (LoanNotPossibleException $e) {
             // Selalu kembali ke detail buku. `back()` tidak boleh dipakai
             // di sini: kalau pesan ini muncul dari sumber lain, referer
@@ -126,6 +135,8 @@ class LoanController extends Controller
                 ->route('books.show', $book)
                 ->with('status', $e->getMessage());
         }
+
+        $this->announceNewLoan($loan, $request->user(), recordedByStaff: false);
 
         return $this->success(
             'books.show',
@@ -142,6 +153,16 @@ class LoanController extends Controller
         if (! $this->completeReturn($loan)) {
             return $this->backWithStatus(__('messages.book_already_returned'));
         }
+
+        /*
+         * `completeReturn()` menulis barisnya lewat instance KUNCI yang
+         * berbeda di dalam transaksi, jadi `$loan` yang ini masih membawa
+         * nilai lama — `returned_at` dan denda snapshot-nya masih null.
+         * Refresh dulu, kalau tidak notifikasi anggota dikirim dengan
+         * tanggal pengembalian kosong dan denda Rp 0.
+         */
+        $loan->refresh();
+        $loan->user?->notify(new LoanReturned($loan));
 
         return $this->success('loans.index', __('messages.book_returned'));
     }
@@ -165,6 +186,12 @@ class LoanController extends Controller
 
             return 'requested';
         });
+
+        // Hanya pengajuan BARU yang memberi tahu pustakawan. Pengajuan
+        // kedua ('pending') sudah pernah dikabari pada kali pertama.
+        if ($result === 'requested') {
+            $this->notifyLibrarians(new LoanReturnRequested($loan));
+        }
 
         return match ($result) {
             'returned' => $this->backWithStatus(__('messages.loan_inactive')),
@@ -289,6 +316,10 @@ class LoanController extends Controller
      */
     public function destroy(Loan $loan): RedirectResponse
     {
+        // Penerima notifikasi ditentukan SEBELUM barisnya dihapus, supaya
+        // alurnya tidak bergantung pada relasi yang barisnya sudah tidak ada.
+        $borrower = $loan->user;
+
         DB::transaction(function () use ($loan) {
             $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
             $book = Book::query()->whereKey($lockedLoan->book_id)->lockForUpdate()->first();
@@ -313,7 +344,51 @@ class LoanController extends Controller
             $lockedLoan->delete();
         });
 
+        /*
+         * Peminjaman yang dihapus bukan lagi urusan staf — dia yang
+         * menekan tombolnya — tapi bagi anggota itu riwayatnya hilang.
+         * Tanpa kabar ini, dia baru mengetahuinya pada kunjungan berikutnya
+         * dan akan mengira datanya rusak.
+         */
+        $borrower?->notify(new LoanRejected($loan, LoanRejected::REASON_ADMIN_DELETED));
+
         return $this->success('loans.index', __('messages.loan_deleted'));
+    }
+
+    /**
+     * Kabari anggota bahwa peminjaman barunya tercatat, lalu seluruh
+     * pustakawan tentang peminjaman yang keluar dari rak.
+     *
+     * Bentuk pemberitahuannya berbeda tergantung SIAPA yang mencatat:
+     * staf menginput atas nama anggota -> "disetujui"; anggota meminjam
+     * sendiri -> "berhasil dipinjam".
+     *
+     * @param  bool  $recordedByStaff  true saat dicatat lewat form staf
+     */
+    private function announceNewLoan(Loan $loan, ?User $actor, bool $recordedByStaff): void
+    {
+        $loan->user?->notify($recordedByStaff
+            ? new LoanApproved($loan)
+            : new LoanBorrowed($loan));
+
+        $this->notifyLibrarians(new LoanCreated($loan), except: $actor);
+    }
+
+    /**
+     * Pemberitahuan untuk meja sirkulasi.
+     *
+     * @param  ?User  $except  pustakawan yang sedang menjalankan aksi ini —
+     *                         notifikasi adalah daftar pekerjaan, dan baris
+     *                         yang baru saja dia tulis sendiri bukan pekerjaan
+     *                         baru
+     */
+    private function notifyLibrarians(Notification $notification, ?User $except = null): void
+    {
+        User::query()
+            ->pustakawan()
+            ->when($except?->isPustakawan(), fn ($query) => $query->whereKeyNot($except->getKey()))
+            ->get()
+            ->each(fn (User $librarian) => $librarian->notify($notification));
     }
 
     /**

@@ -1708,6 +1708,71 @@ function initAvatarPreview() {
     });
 }
 
+/**
+ * Lonceng notifikasi (Task 22.x).
+ *
+ * Membuka lonceng diartikan "sudah saya lihat": begitu panel terbuka, seluruh
+ * notifikasi ditandai sudah dibaca lewat fetch, sehingga angka pada lonceng
+ * hilang di saat yang sama. Kenapa bukan memuat ulang halaman? Karena refresh
+ * justru menutup panel yang baru saja dibuka — angkanya memang hilang, tapi
+ * penggunanya harus mengklik lonceng kedua kalinya untuk melihat isinya.
+ *
+ * Listener dipasang SETELAH `initDropdowns()` pada tombol pemicu yang sama.
+ * Kedua listener sinkron dan dijalankan sesuai urutan pendaftaran, jadi saat
+ * handler ini berjalan, menu sudah berada dalam keadaan terbuka (`menu.hidden`
+ * sudah false). Klik yang justru MENUTUP panel terbaca dari `menu.hidden`
+ * yang tetap true dan tidak memicu apa-apa.
+ *
+ * Kalau fetch gagal, angka sengaja dibiarkan: notifikasi belum tentu sudah
+ * dibaca, dan tombol "Tandai semua sudah dibaca" di dalam panel tetap
+ * tersedia sebagai jalur biasa (form POST tanpa JS).
+ */
+function initNotificationBell() {
+    document.querySelectorAll('[data-notification-bell]').forEach((root) => {
+        const trigger = root.querySelector('[data-dropdown]');
+        const menu = root.querySelector('[data-dropdown-menu]');
+
+        if (!trigger || !menu) return;
+
+        trigger.addEventListener('click', () => {
+            if (menu.hidden) return;
+
+            // Tanpa badge berarti memang tidak ada yang belum dibaca —
+            // tidak ada alasan memukul server di setiap pembukaan panel.
+            if (!root.querySelector('[data-notification-badge]')) return;
+
+            window
+                .ajax(root.dataset.readAllUrl, { method: 'POST' })
+                .then((response) => {
+                    if (response.ok) clearNotificationUnreadState(root);
+                })
+                .catch(() => {
+                    //
+                });
+        });
+    });
+}
+
+/**
+ * Bersihkan penanda "belum dibaca" di DOM setelah server mengonfirmasi.
+ *
+ * Gaya barisnya (latar, tebal judul, titik, teks pembaca layar) semuanya
+ * mengikuti atribut `data-notification-unread` — lihat blok notifikasi di
+ * `app.css`. Karena itu cukup satu `removeAttribute` per baris, tanpa JS
+ * perlu tahu class Tailwind apa pun.
+ */
+function clearNotificationUnreadState(root) {
+    root.querySelector('[data-notification-badge]')?.remove();
+    root.querySelectorAll('[data-notification-unread]').forEach((item) => {
+        item.removeAttribute('data-notification-unread');
+    });
+    root.querySelector('[data-notification-count]')?.remove();
+    root.querySelector('[data-notification-mark-all]')?.remove();
+
+    const text = root.querySelector('[data-notification-unread-text]');
+    if (text) text.textContent = root.dataset.emptyText;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initNavToggle();
@@ -1721,6 +1786,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAjaxForms();
     initReader();
     initDropdowns();
+    initNotificationBell();
     initModals();
     initSidebar();
     initSearch();

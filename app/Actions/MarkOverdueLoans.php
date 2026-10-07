@@ -33,19 +33,44 @@ use App\Models\Loan;
  * Buku terlambat TETAP berstatus `borrowed`, bukan `available`. Buku
  * fisiknya masih di luar pustaka. Kalau diubah jadi tersedia, anggota lain
  * bisa langsung meminjam buku yang belum dikembalikan.
+ *
+ * ## Kenapa aksi ini juga mengirim notifikasi?
+ *
+ * Karena inilah titik DETEKSI keterlambatan. Setiap tempat yang menyegarkan
+ * status (scheduler per jam, halaman peminjaman, beranda) otomatis memberi
+ * tahu anggota dan pustakawan lewat AlertOverdueLoans, tanpa user harus
+ * membuka halaman tertentu dan tanpa menunggu batch harian jam 08:00.
+ * Pengirimannya sendiri idempotent — klaim atomik di AlertOverdueLoans yang
+ * menjamin peringatan hanya terkirim sekali per peminjaman.
  */
 class MarkOverdueLoans
 {
+    public function __construct(protected AlertOverdueLoans $alertOverdue)
+    {
+        //
+    }
+
     /**
      * @return int jumlah peminjaman yang berubah statusnya
      */
     public function handle(): int
     {
-        return Loan::query()
+        $marked = Loan::query()
             ->where('status', Loan::STATUS_BORROWED)
             // `due_at < now()` (bukan `<=`) supaya jatuh tempo tepat hari ini
             // masih dianggap normal, baru terlambat mulai besok.
             ->where('due_at', '<', now())
             ->update(['status' => Loan::STATUS_OVERDUE]);
+
+        /*
+         * Selalu dipanggil, bukan hanya saat `$marked > 0`:
+         * peminjaman yang sudah `overdue` tapi peringatannya belum terkirim
+         * (mis. karena pengiriman sebelumnya gagal di tengah jalan) tetap
+         * tertangani. Kalau tidak ada yang tertunda, query-nya kembali kosong
+         * dan biayanya satu SELECT kecil.
+         */
+        $this->alertOverdue->handle();
+
+        return $marked;
     }
 }
