@@ -22,4 +22,12 @@ return [
     'delete_history' => 'Hapus riwayat baca',
     'delete_reading_confirmation' => 'Hapus riwayat baca :title?',
     'delete' => 'Hapus',
+    'waiting_title' => 'Daftar Tunggu',
+    'waiting_count' => ':count buku sedang diantre (maksimal :max).',
+    'no_waiting' => 'Belum ada buku yang diantre',
+    'waiting_hint' => 'Buka halaman buku yang sedang habis dipinjam lalu tekan Masuk daftar tunggu. Anda akan dikabari begitu bukunya tersedia.',
+    'waiting_joined' => 'Mengantre sejak :date',
+    'waiting_notified' => 'Sudah dikabari :date',
+    'cancel_waiting' => 'Batalkan antrean',
+    'cancel_waiting_confirmation' => 'Batalkan antrean buku :title?',
 ];

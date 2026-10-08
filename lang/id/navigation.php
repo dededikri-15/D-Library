@@ -15,6 +15,7 @@ return [
     'users' => 'Pengguna',
     'loan_history' => 'Riwayat Pinjam',
     'favorites' => 'Favorit',
+    'waiting_list' => 'Daftar Tunggu',
     'reading_history' => 'Riwayat Baca',
     'mailbox' => 'Kotak Masuk',
     'logout' => 'Keluar',

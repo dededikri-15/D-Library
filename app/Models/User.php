@@ -245,4 +245,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ReadingHistory::class);
     }
+
+    public function waitingLists(): HasMany
+    {
+        return $this->hasMany(WaitingList::class);
+    }
 }

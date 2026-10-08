@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\NotifyWaitingList;
 use App\Actions\RecordReading;
 use App\Http\Requests\BookRequest;
 use App\Models\Author;
@@ -33,8 +34,10 @@ class BookController extends Controller
      */
     private const SEARCH_RESULT_LIMIT = 8;
 
-    public function __construct(protected RecordReading $recordReading)
-    {
+    public function __construct(
+        protected RecordReading $recordReading,
+        protected NotifyWaitingList $notifyWaitingList,
+    ) {
         //
     }
 
@@ -259,6 +262,12 @@ class BookController extends Controller
             'favoriteIds' => $user?->isMember()
                 ? $user->favorites()->pluck('book_id')->all()
                 : [],
+            // Anggota yang sudah terdaftar di antrean buku ini, supaya
+            // tombol daftar tunggu bisa langsung menampilkan "keluar"
+            // tanpa menunggu satu request dulu.
+            'waitingListed' => $user?->isMember()
+                ? $user->waitingLists()->where('book_id', $book->getKey())->exists()
+                : false,
             'related' => Book::query()
                 ->with(['category', 'author'])
                 ->where('status', '!=', Book::STATUS_INACTIVE)
@@ -281,18 +290,25 @@ class BookController extends Controller
      * setelah halaman ini dirender. Nilai di sini cuma mencegah orang
      * menekan tombol yang memang tidak akan berhasil.
      *
-     * @return array{can: bool, reason: ?string}
+     * `queueable` menandai satu-satunya kasus tombol pinjam tidak bisa
+     * ditekan yang tetap berhak masuk daftar tunggu: semua eksemplar sedang
+     * dipinjam orang lain. Buku tidak aktif, atau user sendiri yang sedang
+     * meminjamnya, sengaja dikecualikan — persis seperti penolakan di
+     * WaitingListController::store, supaya tombol tidak pernah menjanjikan
+     * sesuatu yang akan ditolak server.
+     *
+     * @return array{can: bool, reason: ?string, queueable: bool}
      */
     protected function borrowState(Book $book, ?User $user): array
     {
         if (! $user?->isMember()) {
             // Guest diarahkan ke login oleh middleware, staff memakai form
             // /peminjaman. Keduanya tidak punya tombol di halaman ini.
-            return ['can' => false, 'reason' => null];
+            return ['can' => false, 'reason' => null, 'queueable' => false];
         }
 
         if ($book->status === Book::STATUS_INACTIVE) {
-            return ['can' => false, 'reason' => __('messages.book_inactive_reason')];
+            return ['can' => false, 'reason' => __('messages.book_inactive_reason'), 'queueable' => false];
         }
 
         $activeLoan = $book->loans()
@@ -307,14 +323,23 @@ class BookController extends Controller
                 'reason' => $activeLoan->isOverdue()
                     ? __('messages.loan_overdue_reason')
                     : __('messages.already_borrowing_reason'),
+                'queueable' => false,
             ];
         }
 
         if (! $book->availableCopies()->exists()) {
-            return ['can' => false, 'reason' => __('messages.copy_unavailable_reason')];
+            return [
+                'can' => false,
+                'reason' => __('messages.copy_unavailable_reason'),
+                // Status harus benar-benar `borrowed`. Buku berstatus
+                // `available` tapi tanpa eksemplar adalah data yang tidak
+                // konsisten — server menolak antrean untuk kasus itu
+                // ("masih tersedia"), jadi tombolnya jangan ditawarkan.
+                'queueable' => $book->status === Book::STATUS_BORROWED,
+            ];
         }
 
-        return ['can' => true, 'reason' => null];
+        return ['can' => true, 'reason' => null, 'queueable' => false];
     }
 
     /**
@@ -469,6 +494,13 @@ class BookController extends Controller
                     ? Book::STATUS_AVAILABLE
                     : Book::STATUS_BORROWED,
             ]);
+
+            // Menambah eksemplar (atau mengaktifkan kembali buku nonaktif)
+            // membuat buku tersedia lewat jalur SELAIN pengembalian — kalau
+            // tidak dihubungkan ke sini, yang mengantre tidak pernah tahu.
+            // `handle()` memastikan hanya buku yang benar-benar available
+            // yang mengirim notifikasi.
+            $this->notifyWaitingList->handle($book);
         }
 
         // Hanya catat jejak kalau benar-benar ada kolom yang berubah. Form

@@ -26,6 +26,8 @@ return [
     'record_loan' => 'Record loan',
     'add_favorite' => 'Add to favorites',
     'remove_favorite' => 'Remove from favorites',
+    'join_waiting' => 'Join waiting list',
+    'leave_waiting' => 'Leave waiting list',
     'digital_unavailable' => 'No digital edition is available. Members may borrow the physical copy.',
     'login_to_access' => 'to borrow, save favorites, and read digital editions.',
     'related_books' => 'Related books',

@@ -31,6 +31,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Daftar Tunggu (Waiting List)
+    |--------------------------------------------------------------------------
+    |
+    | Anggota boleh mengantre buku yang sedang habis dipinjam. Begitu buku
+    | kembali tersedia, seluruh yang mengantre menerima notifikasi lonceng.
+    |
+    */
+
+    'waiting_list' => [
+        // Batas jumlah buku yang bisa diantre satu anggota sekaligus.
+        // Tanpa batas, satu akun bisa mengantre seluruh katalog dan
+        // membanjiri loncengnya sendiri saat pengembalian massal.
+        'max_per_user' => (int) env('PERPUSTAKAAN_WAITING_LIST_MAX_PER_USER', 5),
+
+        // Berapa jam setelah notifikasi "buku tersedia" sebuah entri
+        // dianggap kedaluwarsa dan dihapus. Anggota yang tidak bertindak
+        // diberi kesempatan lagi pada ronde berikutnya dengan antre ulang.
+        'notify_window_hours' => (int) env('PERPUSTAKAAN_WAITING_LIST_NOTIFY_WINDOW_HOURS', 24),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Registrasi
     |--------------------------------------------------------------------------
     |

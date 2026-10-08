@@ -79,6 +79,10 @@ return [
             'body' => ':user_name is :overdue_days days late returning :book_title (was due :due_at).',
             'fine_notice' => 'Current fine: Rp :fine.',
         ],
+        'book_available' => [
+            'title' => 'The book you waited for is available',
+            'body' => ':book_title is available again and ready to borrow. Hurry before someone else takes it.',
+        ],
 
         /*
         | Action trail (ActionLogged): sent to the person who performed the
@@ -168,6 +172,14 @@ return [
         'favorite_removed' => [
             'title' => 'Removed from favorites',
             'body' => ':subject was removed from your favorites.',
+        ],
+        'waiting_list_joined' => [
+            'title' => 'Joined waiting list',
+            'body' => 'You are now waiting for :subject. We will notify you once it is available.',
+        ],
+        'waiting_list_left' => [
+            'title' => 'Left waiting list',
+            'body' => 'You cancelled your place in line for :subject.',
         ],
         'reading_saved' => [
             'title' => 'Reading position saved',

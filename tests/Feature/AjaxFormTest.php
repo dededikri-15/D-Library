@@ -185,9 +185,11 @@ class AjaxFormTest extends TestCase
 
         $this->assertStringContainsString('data-ajax', $content);
         $this->assertStringContainsString('data-favorite-toggle', $content);
-        $this->assertStringContainsString('data-favorite-button', $content);
-        $this->assertStringContainsString('data-favorite-label', $content);
-        $this->assertStringContainsString('data-favorite-icon', $content);
+        // Tombol dalam form toggle memakai atribut generik (`data-toggle-*`),
+        // karena daftar tunggu memakai bentuk form yang persis sama.
+        $this->assertStringContainsString('data-toggle-button', $content);
+        $this->assertStringContainsString('data-toggle-label', $content);
+        $this->assertStringContainsString('data-toggle-icon', $content);
 
         // Kedua endpoint harus ada di DOM, karena satu form dipakai untuk
         // tambah DAN hapus. Kalau `data-destroy-url` hilang, klik kedua

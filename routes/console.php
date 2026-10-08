@@ -44,3 +44,19 @@ Schedule::command('loans:mark-overdue')->hourly();
 |
 */
 Schedule::command('loans:remind')->dailyAt('08:00');
+
+/*
+| Pembersihan daftar tunggu.
+|
+| `hourly()`, bukan `daily()`: jendela kedaluwarsanya 24 jam dihitung dari
+| waktu notifikasi yang bervariasi per entri. Dengan jadwal harian, entri
+| bisa bertahan 24-48 jam sebelum terhapus; dengan hourly selisihnya paling
+| satu jam. Query-nya murah (satu index scan pada kolom penanda).
+|
+| Entri yang belum pernah dikabari (notified_at NULL) tidak tersentuh —
+| memang tugasnya menunggu selama buku belum tersedia.
+|
+| Sama seperti di atas: dev lokal perlu `php artisan schedule:work`.
+|
+*/
+Schedule::command('waiting-lists:expire')->hourly();

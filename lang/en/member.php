@@ -22,4 +22,12 @@ return [
     'delete_history' => 'Delete reading history',
     'delete_reading_confirmation' => 'Delete reading history for :title?',
     'delete' => 'Delete',
+    'waiting_title' => 'Waiting List',
+    'waiting_count' => ':count books queued (maximum :max).',
+    'no_waiting' => 'No books queued yet',
+    'waiting_hint' => 'Open a book page that is currently all borrowed and select Join waiting list. You will be notified as soon as it becomes available.',
+    'waiting_joined' => 'Queued since :date',
+    'waiting_notified' => 'Notified :date',
+    'cancel_waiting' => 'Cancel queue',
+    'cancel_waiting_confirmation' => 'Cancel your place in line for :title?',
 ];

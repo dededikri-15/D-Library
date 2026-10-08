@@ -15,6 +15,7 @@ return [
     'users' => 'Users',
     'loan_history' => 'Loan History',
     'favorites' => 'Favorites',
+    'waiting_list' => 'Waiting List',
     'reading_history' => 'Reading History',
     'mailbox' => 'Inbox',
     'logout' => 'Log out',

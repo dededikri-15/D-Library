@@ -403,9 +403,10 @@ function initSubmitGuards() {
  *    selamanya.
  *
  * 4. Form yang sama melakukan dua aksi berbeda. `form[data-favorite-toggle]`
- *    menukar `action` DAN field `_method` (POST -> DELETE) sekaligus. Kalau
- *    hanya `action` yang ditukar, klik kedua akan mengirim POST ke endpoint
- *    hapus, dan server akan membalas "route tidak cocok".
+ *    dan `form[data-waiting-toggle]` menukar `action` DAN field `_method`
+ *    (POST -> DELETE) sekaligus. Kalau hanya `action` yang ditukar, klik
+ *    kedua akan mengirim POST ke endpoint hapus, dan server akan membalas
+ *    "route tidak cocok".
  *
  * 5. Tombol harus dinonaktifkan selama request. Tanpa itu, klik ganda mengirim
  *    dua request; untuk favorit yang idempoten tidak merusak apa pun, tapi
@@ -581,30 +582,41 @@ function firstErrorMessage(errors) {
  *
  * Dipisah dari pengiriman request supaya "apa yang berubah kalau sukses"
  * bisa dibaca tanpa harus menelusuri rantai `.then()` yang panjang.
+ *
+ * Dua toggle memakai logika yang persis sama — bedanya hanya kunci payload
+ * dari server dan kelas warna yang menandai keadaan aktif. Favorit memakai
+ * `is_favorite` / `text-overdue`; daftar tunggu memakai `queued` /
+ * `text-tertiary` (indigo, aksen yang sama dengan badge antrean).
  */
 function applyAjaxResult(form, body) {
     if (form.matches('[data-favorite-toggle]')) {
-        applyFavoriteResult(form, body);
+        applyToggleResult(form, body.is_favorite === true, 'text-overdue');
+    } else if (form.matches('[data-waiting-toggle]')) {
+        applyToggleResult(form, body.queued === true, 'text-tertiary');
     }
 }
 
 /**
- * Toggling favorit harus menukar action, method, ikon, DAN label sekaligus.
+ * Toggling harus menukar action, method, ikon, DAN label sekaligus.
  *
  * Keempatnya. Kalau action dan method tidak ikut berubah, klik berikutnya
  * dikirim ke endpoint yang salah. Kalau ikon tidak berubah, database benar
  * tapi tampilannya berbohong — dan di sini tidak ada reload yang akan
  * membetulkan itu.
+ *
+ * @param  bool  `isActive`  keadaan SUKSES dari payload server, bukan tebakan
+ *                           dari klik user.
+ * @param  string  `activeClass`  kelas yang menandai keadaan aktif; kelas itu
+ *                                dilepas lagi saat keadaan kembali pasif.
  */
-function applyFavoriteResult(form, body) {
-    const isFavorite = body.is_favorite === true;
-    const button = form.querySelector('[data-favorite-button]');
-    const label = form.querySelector('[data-favorite-label]');
-    const icon = form.querySelector('[data-favorite-icon]');
+function applyToggleResult(form, isActive, activeClass) {
+    const button = form.querySelector('[data-toggle-button]');
+    const label = form.querySelector('[data-toggle-label]');
+    const icon = form.querySelector('[data-toggle-icon]');
     const methodField = form.querySelector('input[name="_method"]');
 
     // action + method. `POST` berarti tambah, `DELETE` berarti hapus.
-    if (isFavorite) {
+    if (isActive) {
         form.action = form.dataset.destroyUrl;
         form.method = 'POST';
 
@@ -631,18 +643,18 @@ function applyFavoriteResult(form, body) {
 
     if (label) {
         // Label diambil dari `data-*` di tombol, bukan ditulis ulang di sini.
-        label.textContent = isFavorite
+        label.textContent = isActive
             ? (button?.dataset.labelRemove ?? label.textContent)
             : (button?.dataset.labelAdd ?? label.textContent);
     }
 
     if (icon) {
-        icon.setAttribute('fill', isFavorite ? 'currentColor' : 'none');
+        icon.setAttribute('fill', isActive ? 'currentColor' : 'none');
     }
 
     if (button) {
-        button.setAttribute('aria-pressed', isFavorite ? 'true' : 'false');
-        button.classList.toggle('text-overdue', isFavorite);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        button.classList.toggle(activeClass, isActive);
     }
 }
 

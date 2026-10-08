@@ -26,6 +26,8 @@ return [
     'record_loan' => 'Catat Peminjaman',
     'add_favorite' => 'Tambah ke favorit',
     'remove_favorite' => 'Hapus dari favorit',
+    'join_waiting' => 'Masuk daftar tunggu',
+    'leave_waiting' => 'Keluar dari antrean',
     'digital_unavailable' => 'Buku digital untuk judul ini belum tersedia. Anggota dapat meminjam versi fisiknya.',
     'login_to_access' => 'untuk meminjam, menyimpan ke favorit, dan membaca versi digitalnya.',
     'related_books' => 'Buku terkait',

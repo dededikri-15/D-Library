@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\BorrowBook;
 use App\Actions\MarkOverdueLoans;
+use App\Actions\NotifyWaitingList;
 use App\Exceptions\LoanNotPossibleException;
 use App\Http\Requests\LoanRequest;
 use App\Models\Book;
@@ -29,6 +30,7 @@ class LoanController extends Controller
     public function __construct(
         protected BorrowBook $borrowBook,
         protected MarkOverdueLoans $markOverdue,
+        protected NotifyWaitingList $notifyWaitingList,
     ) {
         //
     }
@@ -175,6 +177,17 @@ class LoanController extends Controller
          */
         $loan->refresh();
         $loan->user?->notify(new LoanReturned($loan));
+
+        /*
+         * Pengembalian baru saja membuat stok bertambah (atau buku kembali
+         * tersedia seluruhnya) — kabari yang mengantre. Dipanggil SETELAH
+         * transaksi `completeReturn()` sukses, mengikuti pola proyek:
+         * notifikasi tidak boleh terkirim kalau transaksinya gagal di tengah
+         * jalan, karena isinya menyatakan keadaan buku yang sudah final.
+         */
+        if ($loan->book !== null) {
+            $this->notifyWaitingList->handle($loan->book);
+        }
 
         // Jejak pelaku (pustakawan): route ini hanya untuk staf, jadi pelaku
         // selalu user login — bukan anggota peminjam.
@@ -416,6 +429,14 @@ class LoanController extends Controller
          * dan akan mengira datanya rusak.
          */
         $borrower?->notify(new LoanRejected($loan, LoanRejected::REASON_ADMIN_DELETED));
+
+        // Penghapusan pinjaman aktif mengembalikan eksemplar ke rak —
+        // kalau itu membuat buku tersedia, yang mengantre perlu dikabari.
+        // `handle()` sendiri memeriksa statusnya, jadi memanggilnya untuk
+        // pinjaman yang sudah lama dikembalikan tidak menimbulkan apa pun.
+        if ($book = Book::find($loan->book_id)) {
+            $this->notifyWaitingList->handle($book);
+        }
 
         // Jejak pelaku (pustakawan): anggota sudah dikabari "dibatalkan",
         // pencatat penghapusannya sendiri baru melihat pesan flash.

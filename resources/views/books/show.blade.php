@@ -161,6 +161,36 @@
                                       title="{{ $borrowState['reason'] }}">
                                     {{ __('book.borrow') }}
                                 </span>
+
+                                {{-- Daftar tunggu (Task 24.6). Hanya muncul kalau
+                                     satu-satunya alasan tombol pinjam mati adalah
+                                     tidak ada eksemplar tersisa — kasus lain
+                                     (buku tidak aktif / sedang dipinjam sendiri)
+                                     memang ditolak server, jadi tidak ditawarkan. --}}
+                                @if ($borrowState['queueable'])
+                                    <form method="POST"
+                                          data-ajax
+                                          data-ajax-fallback
+                                          data-waiting-toggle
+                                          data-store-url="{{ route('waiting-lists.store', $book) }}"
+                                          data-destroy-url="{{ route('waiting-lists.destroy', $book) }}"
+                                          action="{{ $waitingListed ? route('waiting-lists.destroy', $book) : route('waiting-lists.store', $book) }}">
+                                        @csrf
+                                        @if ($waitingListed) @method('DELETE') @endif
+                                        <button type="submit" class="btn btn-secondary btn-lg {{ $waitingListed ? 'text-tertiary' : '' }}" data-toggle-button
+                                                data-label-add="{{ __('book.join_waiting') }}"
+                                                data-label-remove="{{ __('book.leave_waiting') }}"
+                                                aria-pressed="{{ $waitingListed ? 'true' : 'false' }}">
+                                            <svg class="h-4 w-4" data-toggle-icon
+                                                 fill="{{ $waitingListed ? 'currentColor' : 'none' }}"
+                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                            </svg>
+                                            <span data-toggle-label>{{ $waitingListed ? __('book.leave_waiting') : __('book.join_waiting') }}</span>
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                         @elseif (auth()->user()->isStaff())
                             <a href="{{ route('books.edit', $book) }}" class="btn btn-secondary btn-lg">
@@ -214,17 +244,17 @@
                                      di JS. Kalau kalimat "Tambah ke favorit" ada di
                                      dua tempat, sooner or later salah satu tidak
                                      ikut diubah dan tombolnya berbohong. --}}
-                                <button type="submit" class="btn btn-ghost {{ $isFavorite ? 'text-overdue' : '' }}" data-favorite-button
+                                <button type="submit" class="btn btn-ghost {{ $isFavorite ? 'text-overdue' : '' }}" data-toggle-button
                                         data-label-add="{{ __('book.add_favorite') }}"
                                         data-label-remove="{{ __('book.remove_favorite') }}"
                                         aria-pressed="{{ $isFavorite ? 'true' : 'false' }}">
-                                    <svg class="h-4 w-4" data-favorite-icon
+                                    <svg class="h-4 w-4" data-toggle-icon
                                          fill="{{ $isFavorite ? 'currentColor' : 'none' }}"
                                          viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                               d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
                                     </svg>
-                                    <span data-favorite-label>{{ $isFavorite ? __('book.remove_favorite') : __('book.add_favorite') }}</span>
+                                    <span data-toggle-label>{{ $isFavorite ? __('book.remove_favorite') : __('book.add_favorite') }}</span>
                                 </button>
                             </form>
                         @endif
