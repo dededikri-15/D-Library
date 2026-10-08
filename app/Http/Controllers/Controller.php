@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\HandlesUploads;
 use App\Http\Controllers\Concerns\RespondsWithFlash;
+use App\Models\User;
+use App\Notifications\ActionLogged;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -74,6 +76,26 @@ abstract class Controller
     protected function escapeLike(string $value): string
     {
         return addcslashes($value, '%_\\');
+    }
+
+    /**
+     * Catat aksi yang baru saja dijalankan sebagai notifikasi untuk PELAKUNYA.
+     *
+     * Notifikasi in-app dipakai sebagai jejak tindakan: user melihat di
+     * lonceng bahwa dia pernah menambah/mengubah/menghapus sesuatu, lengkap
+     * dengan tautan ke halaman yang relevan. Penerimanya SELALU user yang
+     * sedang login — bukan orang lain — sehingga ini bukan kanal pesan
+     * antar-user.
+     *
+     * `$url` diisi route() tujuan supaya klik notifikasi langsung membuka
+     * halaman yang berkaitan. Kalau null, klik akan mendarat di halaman
+     * notifikasi (lihat NotificationController::destination).
+     *
+     * @param  array<string, mixed>  $data  parameter tambahan untuk placeholder badan pesan
+     */
+    protected function notifySelf(User $user, string $type, array $data = [], ?string $url = null): void
+    {
+        $user->notify(new ActionLogged($type, $data, $url));
     }
 
     /**

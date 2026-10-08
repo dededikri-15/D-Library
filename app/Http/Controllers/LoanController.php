@@ -110,6 +110,18 @@ class LoanController extends Controller
 
         $this->announceNewLoan($loan, $request->user(), recordedByStaff: true);
 
+        // Jejak pelaku: anggota sudah dapat "disetujui", staf lain sudah
+        // dikabari "peminjaman baru" — pencatatnya sendiri belum.
+        $this->notifySelf(
+            $request->user(),
+            'loan_recorded',
+            [
+                'subject' => $loan->book?->title ?? __('loans.book_deleted'),
+                'user_name' => $member->name,
+            ],
+            route('loans.index'),
+        );
+
         return $this->success('loans.index', __('messages.loan_created'));
     }
 
@@ -148,7 +160,7 @@ class LoanController extends Controller
     /**
      * Pengembalian buku oleh pustakawan (Task 10.7).
      */
-    public function returnBook(Loan $loan): RedirectResponse
+    public function returnBook(Request $request, Loan $loan): RedirectResponse
     {
         if (! $this->completeReturn($loan)) {
             return $this->backWithStatus(__('messages.book_already_returned'));
@@ -163,6 +175,18 @@ class LoanController extends Controller
          */
         $loan->refresh();
         $loan->user?->notify(new LoanReturned($loan));
+
+        // Jejak pelaku (pustakawan): route ini hanya untuk staf, jadi pelaku
+        // selalu user login — bukan anggota peminjam.
+        $this->notifySelf(
+            $request->user(),
+            'return_recorded',
+            [
+                'subject' => $loan->book?->title ?? __('loans.book_deleted'),
+                'returned_at' => $loan->returned_at?->toIso8601String(),
+            ],
+            route('loans.index'),
+        );
 
         return $this->success('loans.index', __('messages.book_returned'));
     }
@@ -191,6 +215,18 @@ class LoanController extends Controller
         // kedua ('pending') sudah pernah dikabari pada kali pertama.
         if ($result === 'requested') {
             $this->notifyLibrarians(new LoanReturnRequested($loan));
+
+            // Jejak pelaku (anggota): tadi hanya pustakawan yang dikabari —
+            // pengirimnya sendiri cuma melihat pesan flash.
+            $this->notifySelf(
+                $request->user(),
+                'return_requested_self',
+                [
+                    'subject' => $loan->book?->title ?? __('loans.book_deleted'),
+                    'due_at' => $loan->due_at?->toIso8601String(),
+                ],
+                route('loans.mine'),
+            );
         }
 
         return match ($result) {
@@ -239,6 +275,24 @@ class LoanController extends Controller
             return back()->with('error', __('messages.loan_not_renewable'));
         }
 
+        if ($result === 'renewed') {
+            // `due_at` yang baru ada di instance transaksi ($lockedLoan),
+            // bukan di $loan ini — refresh dulu sebelum ikut di payload.
+            $loan->refresh();
+
+            // Jejak pelaku: perpanjangan tidak punya notifikasi sama sekali
+            // sebelumnya — hanya pesan flash yang hilang saat refresh.
+            $this->notifySelf(
+                $user,
+                'loan_renewed',
+                [
+                    'subject' => $loan->book?->title ?? __('loans.book_deleted'),
+                    'due_at' => $loan->due_at?->toIso8601String(),
+                ],
+                $user->isPustakawan() ? route('loans.index') : route('loans.mine'),
+            );
+        }
+
         // Kembali ke riwayat milik anggota, tapi pustakawan yang memperpanjang
         // dari halaman manajemen tetap mendarat di sana.
         return $this->backWithStatus(__('messages.loan_renewed', [
@@ -253,13 +307,23 @@ class LoanController extends Controller
      * lalu pustakawan menekan tombol ini supaya status "belum lunas" hilang
      * dari daftar.
      */
-    public function payFine(Loan $loan): RedirectResponse
+    public function payFine(Request $request, Loan $loan): RedirectResponse
     {
         if (! $loan->hasUnpaidFine()) {
             return back()->with('error', __('messages.fine_not_payable'));
         }
 
         $loan->update(['fine_paid_at' => now()]);
+
+        $this->notifySelf(
+            $request->user(),
+            'fine_paid',
+            [
+                'subject' => $loan->book?->title ?? __('loans.book_deleted'),
+                'fine' => $loan->fine,
+            ],
+            route('loans.index'),
+        );
 
         return $this->backWithStatus(__('messages.fine_paid'));
     }
@@ -314,11 +378,12 @@ class LoanController extends Controller
     /**
      * Hapus catatan peminjaman (koreksi administratif pustakawan).
      */
-    public function destroy(Loan $loan): RedirectResponse
+    public function destroy(Request $request, Loan $loan): RedirectResponse
     {
         // Penerima notifikasi ditentukan SEBELUM barisnya dihapus, supaya
         // alurnya tidak bergantung pada relasi yang barisnya sudah tidak ada.
         $borrower = $loan->user;
+        $bookTitle = $loan->book?->title ?? __('loans.book_deleted');
 
         DB::transaction(function () use ($loan) {
             $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
@@ -351,6 +416,15 @@ class LoanController extends Controller
          * dan akan mengira datanya rusak.
          */
         $borrower?->notify(new LoanRejected($loan, LoanRejected::REASON_ADMIN_DELETED));
+
+        // Jejak pelaku (pustakawan): anggota sudah dikabari "dibatalkan",
+        // pencatat penghapusannya sendiri baru melihat pesan flash.
+        $this->notifySelf(
+            $request->user(),
+            'loan_record_deleted',
+            ['subject' => $bookTitle],
+            route('loans.index'),
+        );
 
         return $this->success('loans.index', __('messages.loan_deleted'));
     }

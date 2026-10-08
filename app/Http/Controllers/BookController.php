@@ -422,6 +422,13 @@ class BookController extends Controller
             $book->status,
         );
 
+        $this->notifySelf(
+            $request->user(),
+            'book_created',
+            ['subject' => $book->title],
+            route('books.show', $book),
+        );
+
         return $this->success('books.show', __('messages.book_created'), ['book' => $book]);
     }
 
@@ -440,6 +447,13 @@ class BookController extends Controller
         $book->update($this->bookPayload($request, $book));
         $status = $book->status;
 
+        /*
+         * `getChanges()` hanya mencerminkan save TERAKHIR. Karena method ini
+         * menyimpan dua kali (payload lalu status turunan), perubahan payload
+         * harus ditangkap di sini — sebelum save kedua menimpanya.
+         */
+        $payloadChanged = collect($book->getChanges())->except('updated_at')->isNotEmpty();
+
         if ($status === Book::STATUS_INACTIVE) {
             $book->availableCopies()->update(['status' => BookCopy::STATUS_INACTIVE]);
             $this->createCopies($book, $request->integer('add_copies'), BookCopy::STATUS_INACTIVE);
@@ -455,6 +469,20 @@ class BookController extends Controller
                     ? Book::STATUS_AVAILABLE
                     : Book::STATUS_BORROWED,
             ]);
+        }
+
+        // Hanya catat jejak kalau benar-benar ada kolom yang berubah. Form
+        // edit yang dikirim tanpa perubahan apa pun tidak boleh menghasilkan
+        // notifikasi "Buku diperbarui" yang menyesatkan.
+        $statusChanged = collect($book->getChanges())->except('updated_at')->isNotEmpty();
+
+        if ($payloadChanged || $statusChanged) {
+            $this->notifySelf(
+                $request->user(),
+                'book_updated',
+                ['subject' => $book->title],
+                route('books.show', $book),
+            );
         }
 
         return $this->success('books.show', __('messages.book_updated'), ['book' => $book]);
@@ -514,14 +542,23 @@ class BookController extends Controller
         }
     }
 
-    public function destroy(Book $book): RedirectResponse
+    public function destroy(Request $request, Book $book): RedirectResponse
     {
         // Hapus berkas fisik dulu supaya tidak ada file yatim di storage
         // walau proses hapus baris database gagal di tengah jalan.
         $this->deleteUpload($book->cover, $book::coverDisk());
         $this->deleteUpload($book->file, $book::bookFileDisk());
 
+        $title = $book->title;
+
         $book->delete();
+
+        $this->notifySelf(
+            $request->user(),
+            'book_deleted',
+            ['subject' => $title],
+            route('books.index'),
+        );
 
         return $this->success('books.index', __('messages.book_deleted'));
     }

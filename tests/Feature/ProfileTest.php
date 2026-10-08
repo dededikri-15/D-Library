@@ -256,7 +256,7 @@ class ProfileTest extends TestCase
         $this->actingAs($user)
             ->get(route('profile.show'))
             ->assertOk()
-            ->assertSee('avatar-sprite.png', false)
+            ->assertSee('avatar-portraits/', false)
             ->assertSee('B', false);
     }
 
@@ -278,10 +278,15 @@ class ProfileTest extends TestCase
             'gender' => User::GENDER_PEREMPUAN,
         ]);
 
+        // Potret gender dipilih dari daftar indeks yang sama dengan
+        // komponen avatar — pastikan halaman menampilkan potret perempuan.
+        $femalePortraits = [1, 3, 5, 7, 9, 10, 12, 14, 16, 18];
+        $expected = $femalePortraits[intdiv($user->getKey(), 2) % count($femalePortraits)];
+
         $this->actingAs($user)
             ->get(route('profile.show'))
             ->assertOk()
-            ->assertSee('background-position: 25% 0%;', false)
+            ->assertSee("avatar-portraits/{$expected}.png", false)
             ->assertSee('value="perempuan" selected', false)
             ->assertSee('Perempuan');
     }

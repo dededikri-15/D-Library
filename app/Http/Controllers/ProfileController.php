@@ -63,8 +63,63 @@ class ProfileController extends Controller
 
         $user->update([...$data, ...$avatar]);
 
+        // Jejak aksi ke pelakunya sendiri (lonceng). Tiga peristiwa bisa
+        // terjadi dalam satu simpan, jadi masing-masing dinotifikasi terpisah
+        // supaya judulnya jujur terhadap apa yang benar-benar berubah.
+        $changes = collect($user->getChanges())->except(['updated_at', 'remember_token']);
+
+        if ($changes->has('password')) {
+            $this->notifySelf($user, 'password_changed', [], route('profile.show'));
+        }
+
+        if ($changes->has('avatar') && filled($user->avatar)) {
+            $this->notifySelf($user, 'avatar_replaced', [], route('profile.show'));
+        }
+
+        if ($changes->has('avatar') && blank($user->avatar)) {
+            $this->notifySelf($user, 'avatar_removed', [], route('profile.show'));
+        }
+
+        if ($changes->except(['password', 'avatar'])->isNotEmpty()) {
+            $this->notifySelf($user, 'profile_updated', [], route('profile.show'));
+        }
+
         return redirect()
             ->route('profile.show')
             ->with('status', __('messages.profile_updated'));
+    }
+
+    /**
+     * Hapus foto profil lewat tombol khusus (tanpa lewat form update).
+     *
+     * Kenapa route terpisah, bukan cuma checkbox `remove_avatar` di form:
+     * menghapus foto adalah tindakan yang berdiri sendiri dan tidak perlu
+     * ikut mengirim seluruh field profil. Satu klik + dialog konfirmasi
+     * lebih jelas daripada centang checkbox lalu menekan "Simpan Perubahan".
+     *
+     * Berkas dihapus dari disk lebih dulu, baru kolom dikosongkan — kalau
+     * penghapusan file gagal (ditangkap `deleteUpload`), kolom tetap diisi
+     * dan tampilan tidak pernah menunjukkan foto yang sudah tidak ada.
+     * Setelah ini tampilan kembali ke avatar jenis kelamin.
+     */
+    public function destroyAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        // Sudah tidak ada foto: jangan menampilkan "berhasil" untuk aksi
+        // yang tidak melakukan apa-apa (mis. tab kedua yang sudah basi).
+        if (blank($user->avatar)) {
+            return redirect()->route('profile.show');
+        }
+
+        $this->deleteUpload($user->avatar, User::avatarDisk());
+
+        $user->update(['avatar' => null]);
+
+        $this->notifySelf($user, 'avatar_removed', [], route('profile.show'));
+
+        return redirect()
+            ->route('profile.show')
+            ->with('status', __('messages.photo_removed'));
     }
 }

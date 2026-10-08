@@ -39,10 +39,20 @@ class FavoriteController extends Controller
 
         // updateOrCreate membuat aksi ini idempoten: klik dua kali tidak
         // akan melanggar unique constraint (user_id, book_id).
-        Favorite::updateOrCreate(
+        $favorite = Favorite::updateOrCreate(
             ['user_id' => $user->id, 'book_id' => $book->id],
             []
         );
+
+        // Klik kedua tidak mengubah apa pun — jangan gandakan jejak aksinya.
+        if ($favorite->wasRecentlyCreated) {
+            $this->notifySelf(
+                $user,
+                'favorite_added',
+                ['subject' => $book->title],
+                route('books.show', $book),
+            );
+        }
 
         return $this->respond(
             $request,
@@ -69,6 +79,15 @@ class FavoriteController extends Controller
          * buku sudah tidak ada di favorit — tapi yang perlu dibedakan adalah
          * apa yang terjadi, bukan-keadaan akhirnya.
          */
+        if ($deleted > 0) {
+            $this->notifySelf(
+                $user,
+                'favorite_removed',
+                ['subject' => $book->title],
+                route('books.show', $book),
+            );
+        }
+
         return $this->respond(
             $request,
             $deleted > 0

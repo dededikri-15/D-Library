@@ -208,6 +208,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
 
     /*
+     * Hapus foto profil (satu klik + dialog konfirmasi).
+     *
+     * Dipisah dari PATCH /profil supaya aksi hapus tidak perlu mengirim
+     * ulang seluruh field profil, dan tombolnya bisa berdiri sendiri di
+     * luar form update (form bersarang tidak valid di HTML).
+     */
+    Route::delete('/profil/avatar', [ProfileController::class, 'destroyAvatar'])
+        ->name('profile.avatar.destroy');
+
+    /*
      * Notifikasi dalam aplikasi (lonceng + halaman riwayat).
      *
      * Seperti profil, route ini berada di group `auth` polos: anggota dan

@@ -23,10 +23,39 @@
                     sedang dipilih tanpa harus menyimpan dulu. Kalau JS mati,
                     form tetap berfungsi penuh — hanya pratinjaunya yang hilang.
                 --}}
+                {{--
+                    Border-nya HANYA dari komponen `x-avatar`, tidak dari
+                    wrapper ini. `border-0` yang dulu ditulis di sini tidak
+                    pernah menang: di CSS hasil build, aturan `.border-0`
+                    ditulis sebelum `.border`, sehingga tetap kalah cascade
+                    dan muncul cincin ganda (border wrapper + border
+                    komponen) yang terlihat tidak rapi.
+                --}}
                 <div data-avatar-preview
-                     class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-hairline bg-tertiary/10 text-2xl font-semibold text-tertiary">
-                    <x-avatar :user="$user" size="lg" alt="" class="h-full w-full border-0" />
+                     class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-tertiary/10 text-2xl font-semibold text-tertiary">
+                    <x-avatar :user="$user" size="lg" alt="" class="h-full w-full" />
                 </div>
+
+                {{--
+                    Hapus foto: tombol tersendiri dengan dialog konfirmasi,
+                    bukan checkbox yang harus disimpan lewat "Simpan Perubahan".
+                    Formnya DI LUAR form update di sebelah kanan — form dalam
+                    form tidak valid di HTML dan browser akan mengabaikannya.
+
+                    Hanya muncul kalau memang ada foto: kalau tidak ada, tidak
+                    ada yang bisa dihapus, dan tombol merah hanya membingungkan.
+                    Setelah dihapus, avatar kembali mengikuti jenis kelamin.
+                --}}
+                @if ($user->avatar)
+                    <form method="POST" action="{{ route('profile.avatar.destroy') }}" class="mt-3 w-full"
+                          data-confirm="{{ __('profile.remove_photo_confirm') }}" data-submit-once>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm w-full">
+                            {{ __('profile.remove_photo') }}
+                        </button>
+                    </form>
+                @endif
 
                 <h2 class="mt-4 text-lg font-semibold text-primary">{{ $user->name }}</h2>
                 <p class="mt-1 break-all text-sm text-secondary">{{ $user->email }}</p>
@@ -99,18 +128,12 @@
                     @enderror
 
                     {{--
-                        Kontrol "hapus foto" hanya muncul kalau memang ada foto.
-                        Kalau tidak ada, checkbox-nya tidak perlu dihiraukan —
-                        dan menampilkan kotak kosong membuat user mengira ada
-                        sesuatu yang perlu dibersihkan.
+                        Penghapusan foto tidak lewat checkbox di form ini lagi:
+                        ada tombol "Hapus foto profil" khusus di kartu sebelah
+                        kiri (route `profile.avatar.destroy`), satu klik dengan
+                        dialog konfirmasi. `remove_avatar` tetap ditangani di
+                        server untuk kompatibilitas lama.
                     --}}
-                    @if ($user->avatar)
-                        <label class="mt-3 flex items-center gap-2 text-sm text-secondary">
-                            <input type="checkbox" name="remove_avatar" value="1"
-                                   class="rounded-sm border-secondary/30 text-overdue focus:ring-overdue/30">
-                            {{ __('profile.remove_photo') }}
-                        </label>
-                    @endif
                 </div>
 
                 <x-form.input name="name" :label="__('profile.name')" required autocomplete="name"

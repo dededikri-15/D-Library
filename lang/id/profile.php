@@ -8,6 +8,7 @@ return [
     'photo' => 'Foto profil',
     'photo_hint' => 'Opsional. JPG, PNG, atau WebP. Tanpa foto, avatar mengikuti jenis kelamin.',
     'remove_photo' => 'Hapus foto profil',
+    'remove_photo_confirm' => 'Hapus foto profil? Avatar akan kembali mengikuti jenis kelamin Anda.',
     'name' => 'Nama',
     'email' => 'Email',
     'gender' => 'Jenis kelamin',

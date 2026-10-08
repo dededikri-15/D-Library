@@ -37,7 +37,14 @@ class AuthorController extends Controller
             ? $this->storeUpload($upload, static::photoDisk(), 'authors')
             : null;
 
-        Author::create($data);
+        $author = Author::create($data);
+
+        $this->notifySelf(
+            $request->user(),
+            'author_created',
+            ['subject' => $author->name],
+            route('authors.index'),
+        );
 
         return $this->success('authors.index', __('messages.author_created'));
     }
@@ -67,18 +74,36 @@ class AuthorController extends Controller
 
         $author->update($data);
 
+        if (collect($author->getChanges())->except('updated_at')->isNotEmpty()) {
+            $this->notifySelf(
+                $request->user(),
+                'author_updated',
+                ['subject' => $author->name],
+                route('authors.index'),
+            );
+        }
+
         return $this->success('authors.index', __('messages.author_updated'));
     }
 
-    public function destroy(Author $author): RedirectResponse
+    public function destroy(Request $request, Author $author): RedirectResponse
     {
         // Foto ikut terhapus, tapi hanya kalau penulisnya benar-benar dihapus.
-        return $this->destroyMasterData(
+        $response = $this->destroyMasterData(
             $author,
             'penulis',
             'authors.index',
             fn () => $this->deleteUpload($author->photo, static::photoDisk()),
         );
+
+        $this->notifySelf(
+            $request->user(),
+            'author_deleted',
+            ['subject' => $author->name],
+            route('authors.index'),
+        );
+
+        return $response;
     }
 
     public function storeQuick(Request $request): JsonResponse
@@ -93,6 +118,13 @@ class AuthorController extends Controller
         );
 
         $author = Author::create(['name' => $validated['name']]);
+
+        $this->notifySelf(
+            $request->user(),
+            'author_created',
+            ['subject' => $author->name],
+            route('authors.index'),
+        );
 
         return Json::response([
             'id' => $author->id,

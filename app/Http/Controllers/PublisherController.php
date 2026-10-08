@@ -25,7 +25,14 @@ class PublisherController extends Controller
 
     public function store(PublisherRequest $request): RedirectResponse
     {
-        Publisher::create($request->validated());
+        $publisher = Publisher::create($request->validated());
+
+        $this->notifySelf(
+            $request->user(),
+            'publisher_created',
+            ['subject' => $publisher->name],
+            route('publishers.index'),
+        );
 
         return $this->success('publishers.index', __('messages.publisher_created'));
     }
@@ -43,12 +50,30 @@ class PublisherController extends Controller
     {
         $publisher->update($request->validated());
 
+        if (collect($publisher->getChanges())->except('updated_at')->isNotEmpty()) {
+            $this->notifySelf(
+                $request->user(),
+                'publisher_updated',
+                ['subject' => $publisher->name],
+                route('publishers.index'),
+            );
+        }
+
         return $this->success('publishers.index', __('messages.publisher_updated'));
     }
 
-    public function destroy(Publisher $publisher): RedirectResponse
+    public function destroy(Request $request, Publisher $publisher): RedirectResponse
     {
-        return $this->destroyMasterData($publisher, 'penerbit', 'publishers.index');
+        $response = $this->destroyMasterData($publisher, 'penerbit', 'publishers.index');
+
+        $this->notifySelf(
+            $request->user(),
+            'publisher_deleted',
+            ['subject' => $publisher->name],
+            route('publishers.index'),
+        );
+
+        return $response;
     }
 
     public function storeQuick(Request $request): JsonResponse
@@ -66,6 +91,13 @@ class PublisherController extends Controller
         );
 
         $publisher = Publisher::create(['name' => $validated['name']]);
+
+        $this->notifySelf(
+            $request->user(),
+            'publisher_created',
+            ['subject' => $publisher->name],
+            route('publishers.index'),
+        );
 
         return Json::response([
             'id' => $publisher->id,

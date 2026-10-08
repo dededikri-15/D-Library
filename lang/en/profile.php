@@ -8,6 +8,7 @@ return [
     'photo' => 'Profile photo',
     'photo_hint' => 'Optional. JPG, PNG, or WebP. Without a photo, your avatar follows your gender.',
     'remove_photo' => 'Remove profile photo',
+    'remove_photo_confirm' => 'Remove the profile photo? Your avatar will fall back to your gender.',
     'name' => 'Name',
     'email' => 'Email',
     'gender' => 'Gender',

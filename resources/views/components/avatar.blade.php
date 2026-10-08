@@ -35,9 +35,6 @@
         default => $userNumber % 2 === 0 ? $malePortraits : $femalePortraits,
     };
     $avatarIndex = $portraitOptions[intdiv($userNumber, 2) % count($portraitOptions)];
-    $avatarColumn = $avatarIndex % 5;
-    $avatarRow = intdiv($avatarIndex, 5);
-    $avatarPositionY = $avatarRow * (100 / 3);
 @endphp
 
 @if ($avatarUrl)
@@ -48,11 +45,20 @@
              'class' => $avatarClass.' shrink-0 rounded-full border border-hairline object-cover',
          ]) }}>
 @else
-    {{-- Pilih ilustrasi cowok atau cewek secara konsisten untuk tiap akun. --}}
-    <span aria-hidden="true"
-        {{ $attributes->merge([
-            'class' => $avatarClass.' shrink-0 overflow-hidden rounded-full border border-hairline bg-center bg-no-repeat',
-        ]) }}
-        style="background-image: url('{{ asset('images/avatar-sprite.png') }}'); background-size: 500% 400%; background-position: {{ $avatarColumn * 25 }}% {{ $avatarPositionY }}%;">
-    </span>
+    {{--
+        Fallback avatar: potret gender, satu file PNG per indeks di
+        `public/images/avatar-portraits/`. Dulu memakai satu sprite 5x4
+        dengan `background-position` — tapi grid sprite tidak presisi dan
+        cakramnya cuma ~84% lebar sel, jadi potret tidak pernah pas ke
+        bulat. Sekarang tiap potret sudah dipotong pas selebar cakramnya
+        (isi 97-99% dari file), sehingga `object-cover` membuatnya tepat
+        memenuhi lingkaran. `alt=""` + aria-hidden: ini dekoratif.
+    --}}
+    <img src="{{ asset('images/avatar-portraits/'.$avatarIndex.'.png') }}"
+         alt=""
+         aria-hidden="true"
+         loading="lazy"
+         {{ $attributes->merge([
+             'class' => $avatarClass.' shrink-0 rounded-full border border-hairline object-cover',
+         ]) }}>
 @endif

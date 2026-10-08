@@ -1685,12 +1685,17 @@ function initAvatarPreview() {
     input.addEventListener("change", () => {
         const file = input.files?.[0];
 
-        // Memilih ulang berkas yang sama TIDAK memicu event `change` kalau
-        // input tidak dikosongkan lebih dulu. Men_assign ulang `value`
-        // dengan string kosong membuat input menerima event itu lagi, jadi
-        // "hapus foto lalu pilih berkas yang sama" ikut terpakai.
-        input.value = "";
-
+        // `input.value` sengaja TIDAK dikosongkan. Mengosongkannya memang
+        // membuat "pilih berkas yang sama dua kali" memicu `change` lagi,
+        // tapi harga mahalnya: `<input type="file">` jadi kosong saat form
+        // disubmit, sehingga field `avatar` tidak pernah ikut terkirim ke
+        // server. Karena validasinya `nullable`, server menerima request
+        // tanpa file dan tetap membalas "profil diperbarui" — foto tidak
+        // pernah tersimpan tapi tidak ada error yang terlihat.
+        //
+        // Memilih berkas identik dua kali beruntun tidak memicu `change`,
+        // dan memang tidak perlu: pratinjau sudah menampilkan berkas itu,
+        // dan `input.files` juga sudah berisi berkas yang sama.
         if (!file) return;
 
         if (!file.type.startsWith("image/")) return;

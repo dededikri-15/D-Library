@@ -41,7 +41,14 @@ class UserController extends Controller
 
     public function store(UserRequest $request): RedirectResponse
     {
-        User::create($request->validated());
+        $user = User::create($request->validated());
+
+        $this->notifySelf(
+            $request->user(),
+            'user_created',
+            ['subject' => $user->name],
+            route('users.index'),
+        );
 
         return $this->success('users.index', __('messages.user_created'));
     }
@@ -66,6 +73,15 @@ class UserController extends Controller
 
         $user->update($data);
 
+        if (collect($user->getChanges())->except('updated_at')->isNotEmpty()) {
+            $this->notifySelf(
+                $request->user(),
+                'user_updated',
+                ['subject' => $user->name],
+                route('users.index'),
+            );
+        }
+
         return $this->success('users.index', __('messages.user_updated'));
     }
 
@@ -82,7 +98,16 @@ class UserController extends Controller
         // tidak ada yang bisa membersihkannya nanti.
         $this->deleteUpload($user->avatar, User::avatarDisk());
 
+        $name = $user->name;
+
         $user->delete();
+
+        $this->notifySelf(
+            $request->user(),
+            'user_deleted',
+            ['subject' => $name],
+            route('users.index'),
+        );
 
         return $this->success('users.index', __('messages.user_deleted'));
     }

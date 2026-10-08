@@ -53,6 +53,16 @@ class ReadingHistoryController extends Controller
 
         $this->recordReading->savePage($user, $book, $request->integer('last_page'));
 
+        $this->notifySelf(
+            $user,
+            'reading_saved',
+            [
+                'subject' => $book->title,
+                'last_page' => $request->integer('last_page'),
+            ],
+            route('reading-histories.index'),
+        );
+
         return $this->backWithStatus(__('messages.reading_position_saved'));
     }
 
@@ -61,7 +71,16 @@ class ReadingHistoryController extends Controller
         // Hanya pemilik yang boleh menghapus riwayatnya sendiri.
         abort_unless($readingHistory->user_id === $request->user()?->id, 403);
 
+        $title = $readingHistory->book?->title ?? __('loans.book_deleted');
+
         $readingHistory->delete();
+
+        $this->notifySelf(
+            $request->user(),
+            'reading_removed',
+            ['subject' => $title],
+            route('reading-histories.index'),
+        );
 
         return $this->success('reading-histories.index', __('messages.reading_history_deleted'));
     }

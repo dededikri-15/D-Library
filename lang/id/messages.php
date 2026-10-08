@@ -28,6 +28,7 @@ return [
     'user_created' => 'Pengguna berhasil ditambahkan.',
     'user_updated' => 'Pengguna berhasil diperbarui.',
     'profile_updated' => 'Profil berhasil diperbarui.',
+    'photo_removed' => 'Foto profil dihapus. Avatar mengikuti jenis kelamin.',
     'cannot_delete_self' => 'Anda tidak dapat menghapus akun sendiri.',
     'user_deleted' => 'Pengguna berhasil dihapus.',
     'favorite_added' => 'Buku ditambahkan ke favorit.',

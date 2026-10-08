@@ -56,6 +56,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Asset URL
+    |--------------------------------------------------------------------------
+    |
+    | Default '/' = URL aset dibuat relatif (tanpa host), supaya mengikuti
+    | alamat yang benar-benar dibuka user berapa pun port-nya (php artisan
+    | serve memakai 8000, APP_URL memakai 80). Sama seperti keputusan
+    | filesystems.public.url = '/storage'. Override lewat ASSET_URL bila
+    | ingin CDN / domain terpisah.
+    |
+    */
+
+    'asset_url' => env('ASSET_URL', '/'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

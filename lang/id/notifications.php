@@ -12,7 +12,7 @@
 
 return [
     'title' => 'Notifikasi',
-    'description' => 'Pemberitahuan peminjaman, pengembalian, dan keterlambatan.',
+    'description' => 'Pemberitahuan peminjaman, pengembalian, keterlambatan, dan jejak aksi Anda.',
     'menu_label' => 'Notifikasi',
     'bell_label' => 'Buka menu notifikasi',
     'bell_unread' => ':count notifikasi belum dibaca',
@@ -24,7 +24,7 @@ return [
     'unread_marker' => 'belum dibaca',
     'empty_short' => 'Belum ada notifikasi',
     'empty_title' => 'Belum ada notifikasi',
-    'empty_description' => 'Pemberitahuan peminjaman, pengembalian, dan keterlambatan akan muncul di sini.',
+    'empty_description' => 'Pemberitahuan peminjaman, pengembalian, keterlambatan, dan jejak aksi Anda akan muncul di sini.',
     'generic_title' => 'Notifikasi baru',
     'fine_notice' => 'Denda sementara Rp :fine.',
 
@@ -78,6 +78,132 @@ return [
             'title' => 'Keterlambatan pengembalian',
             'body' => ':user_name terlambat mengembalikan :book_title sejak :due_at — :overdue_days hari.',
             'fine_notice' => 'Denda sementara Rp :fine.',
+        ],
+
+        /*
+        | Jejak aksi (ActionLogged): dikirim ke PELAKUNYA sendiri ketika
+        | dia menambah, mengubah, atau menghapus data. Placeholder `:subject`
+        | berisi nama objek yang disentuh (judul buku, nama kategori, dst.).
+        */
+        'profile_updated' => [
+            'title' => 'Profil diperbarui',
+            'body' => 'Data profil Anda diperbarui.',
+        ],
+        'password_changed' => [
+            'title' => 'Kata sandi diganti',
+            'body' => 'Kata sandi akun Anda berhasil diganti.',
+        ],
+        'avatar_replaced' => [
+            'title' => 'Foto profil diperbarui',
+            'body' => 'Foto profil Anda berhasil diperbarui.',
+        ],
+        'avatar_removed' => [
+            'title' => 'Foto profil dihapus',
+            'body' => 'Foto profil Anda dihapus. Avatar kini mengikuti jenis kelamin.',
+        ],
+        'book_created' => [
+            'title' => 'Buku ditambahkan',
+            'body' => 'Buku :subject berhasil ditambahkan ke katalog.',
+        ],
+        'book_updated' => [
+            'title' => 'Buku diperbarui',
+            'body' => 'Perubahan pada buku :subject tersimpan.',
+        ],
+        'book_deleted' => [
+            'title' => 'Buku dihapus',
+            'body' => 'Buku :subject dihapus dari katalog.',
+        ],
+        'category_created' => [
+            'title' => 'Kategori ditambahkan',
+            'body' => 'Kategori :subject berhasil ditambahkan.',
+        ],
+        'category_updated' => [
+            'title' => 'Kategori diperbarui',
+            'body' => 'Perubahan pada kategori :subject tersimpan.',
+        ],
+        'category_deleted' => [
+            'title' => 'Kategori dihapus',
+            'body' => 'Kategori :subject dihapus.',
+        ],
+        'author_created' => [
+            'title' => 'Penulis ditambahkan',
+            'body' => 'Penulis :subject berhasil ditambahkan.',
+        ],
+        'author_updated' => [
+            'title' => 'Penulis diperbarui',
+            'body' => 'Perubahan pada penulis :subject tersimpan.',
+        ],
+        'author_deleted' => [
+            'title' => 'Penulis dihapus',
+            'body' => 'Penulis :subject dihapus.',
+        ],
+        'publisher_created' => [
+            'title' => 'Penerbit ditambahkan',
+            'body' => 'Penerbit :subject berhasil ditambahkan.',
+        ],
+        'publisher_updated' => [
+            'title' => 'Penerbit diperbarui',
+            'body' => 'Perubahan pada penerbit :subject tersimpan.',
+        ],
+        'publisher_deleted' => [
+            'title' => 'Penerbit dihapus',
+            'body' => 'Penerbit :subject dihapus.',
+        ],
+        'user_created' => [
+            'title' => 'Pengguna ditambahkan',
+            'body' => 'Pengguna :subject berhasil ditambahkan.',
+        ],
+        'user_updated' => [
+            'title' => 'Pengguna diperbarui',
+            'body' => 'Perubahan pada pengguna :subject tersimpan.',
+        ],
+        'user_deleted' => [
+            'title' => 'Pengguna dihapus',
+            'body' => 'Pengguna :subject dihapus.',
+        ],
+        'favorite_added' => [
+            'title' => 'Ditambahkan ke favorit',
+            'body' => ':subject ditambahkan ke daftar favorit Anda.',
+        ],
+        'favorite_removed' => [
+            'title' => 'Dihapus dari favorit',
+            'body' => ':subject dihapus dari daftar favorit Anda.',
+        ],
+        'reading_saved' => [
+            'title' => 'Posisi baca tersimpan',
+            'body' => 'Posisi baca :subject tersimpan di halaman :last_page.',
+        ],
+        'reading_removed' => [
+            'title' => 'Riwayat baca dihapus',
+            'body' => 'Riwayat baca :subject dihapus.',
+        ],
+        'loan_recorded' => [
+            'title' => 'Peminjaman tercatat',
+            'body' => 'Anda mencatat peminjaman :subject atas nama :user_name.',
+        ],
+        'loan_renewed' => [
+            'title' => 'Peminjaman diperpanjang',
+            'body' => 'Tenggat :subject diperpanjang hingga :due_at.',
+        ],
+        'return_recorded' => [
+            'title' => 'Pengembalian tercatat',
+            'body' => 'Pengembalian :subject tercatat pada :returned_at.',
+        ],
+        'return_requested_self' => [
+            'title' => 'Permintaan pengembalian terkirim',
+            'body' => 'Permintaan pengembalian :subject dikirim ke pustakawan (tenggat :due_at).',
+        ],
+        'fine_paid' => [
+            'title' => 'Denda ditandai lunas',
+            'body' => 'Denda untuk :subject (Rp :fine) ditandai sudah dibayar.',
+        ],
+        'loan_record_deleted' => [
+            'title' => 'Catatan peminjaman dihapus',
+            'body' => 'Catatan peminjaman :subject dihapus.',
+        ],
+        'mail_deleted' => [
+            'title' => 'Email dihapus',
+            'body' => 'Email bersubjek :subject dihapus dari kotak masuk.',
         ],
     ],
 ];

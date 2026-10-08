@@ -22,16 +22,32 @@ class MailboxController extends Controller
 
     public function show(int $id): View
     {
-        $message = DB::table('mail_messages')->findOrFail($id);
+        // Query Builder polos tidak punya `findOrFail` (lihat catatan di destroy).
+        $message = DB::table('mail_messages')->where('id', $id)->first();
+
+        abort_if($message === null, 404);
 
         return view('mailbox.show', [
             'message' => $message,
         ]);
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse
     {
+        // `DB::table` memakai Query Builder polos, bukan Eloquent — `findOrFail`
+        // tidak tersedia di sana. `first()` lalu dicek manual.
+        $message = DB::table('mail_messages')->where('id', $id)->first();
+
+        abort_if($message === null, 404);
+
         DB::table('mail_messages')->where('id', $id)->delete();
+
+        $this->notifySelf(
+            $request->user(),
+            'mail_deleted',
+            ['subject' => $message->subject],
+            route('mailbox.index'),
+        );
 
         return redirect()->route('mailbox.index')->with('success', 'Email berhasil dihapus.');
     }

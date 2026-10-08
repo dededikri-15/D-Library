@@ -28,6 +28,7 @@ return [
     'user_created' => 'User added successfully.',
     'user_updated' => 'User updated successfully.',
     'profile_updated' => 'Profile updated successfully.',
+    'photo_removed' => 'Profile photo removed. The avatar follows your gender.',
     'cannot_delete_self' => 'You cannot delete your own account.',
     'user_deleted' => 'User deleted successfully.',
     'favorite_added' => 'Book added to favorites.',

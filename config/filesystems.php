@@ -41,7 +41,13 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // Path relatif, BUKAN APP_URL.'/storage'. Dengan URL absolut,
+            // gambar selalu menunjuk host:port di APP_URL (mis. port 80),
+            // sehingga ketika aplikasi dibuka lewat alamat lain
+            // (localhost:8000,127.0.0.1, atau domain produksi) <img> meminta
+            // gambar ke alamat yang salah dan tidak termuat. Path relatif
+            // mengikuti alamat yang sedang dibuka user, di port mana pun.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

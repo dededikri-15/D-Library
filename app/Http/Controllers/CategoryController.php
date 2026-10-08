@@ -47,7 +47,14 @@ class CategoryController extends Controller
 
     public function store(CategoryRequest $request): RedirectResponse
     {
-        Category::create($request->validated());
+        $category = Category::create($request->validated());
+
+        $this->notifySelf(
+            $request->user(),
+            'category_created',
+            ['subject' => $category->name],
+            route('categories.index'),
+        );
 
         return $this->success('categories.index', __('messages.category_created'));
     }
@@ -65,12 +72,30 @@ class CategoryController extends Controller
     {
         $category->update($request->validated());
 
+        if (collect($category->getChanges())->except('updated_at')->isNotEmpty()) {
+            $this->notifySelf(
+                $request->user(),
+                'category_updated',
+                ['subject' => $category->name],
+                route('categories.index'),
+            );
+        }
+
         return $this->success('categories.index', __('messages.category_updated'));
     }
 
-    public function destroy(Category $category): RedirectResponse
+    public function destroy(Request $request, Category $category): RedirectResponse
     {
-        return $this->destroyMasterData($category, 'kategori', 'categories.index');
+        $response = $this->destroyMasterData($category, 'kategori', 'categories.index');
+
+        $this->notifySelf(
+            $request->user(),
+            'category_deleted',
+            ['subject' => $category->name],
+            route('categories.index'),
+        );
+
+        return $response;
     }
 
     public function storeQuick(Request $request): JsonResponse
@@ -91,6 +116,13 @@ class CategoryController extends Controller
             'name' => $validated['name'],
             'slug' => Category::slugFor($validated['name']),
         ]);
+
+        $this->notifySelf(
+            $request->user(),
+            'category_created',
+            ['subject' => $category->name],
+            route('categories.index'),
+        );
 
         return Json::response([
             'id' => $category->id,
