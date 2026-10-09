@@ -9,7 +9,7 @@
             <p class="mt-1 text-sm text-secondary">{{ __('notifications.description') }}</p>
             @if ($unreadCount > 0)
                 <p class="mt-2 text-label font-semibold tracking-wide text-tertiary uppercase">
-                    {{ trans_choice(__('notifications.unread_count'), $unreadCount) }}
+                    {{ trans_choice('notifications.unread_count', $unreadCount) }}
                 </p>
             @endif
         </div>

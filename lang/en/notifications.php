@@ -15,7 +15,7 @@ return [
     'description' => 'Updates about borrowing, returning, overdue loans, and your own actions.',
     'menu_label' => 'Notifications',
     'bell_label' => 'Open notifications menu',
-    'bell_unread' => ':count unread notifications',
+    'bell_unread' => ':count unread notification|:count unread notifications',
     'bell_none' => 'nothing unread',
     'view_all' => 'View all notifications',
     'mark_all' => 'Mark all as read',

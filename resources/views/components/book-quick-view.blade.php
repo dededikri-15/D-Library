@@ -1,4 +1,4 @@
-@props(['book'])
+@props(['book', 'modeParams' => []])
 
 @php
     $modalId = 'pratinjau-buku-' . $book->id;
@@ -38,7 +38,9 @@
             <div class="flex flex-wrap items-center gap-2">
                 <x-status-badge :status="$book->status" />
                 @if ($book->category)
-                    <a href="{{ route('books.index', ['category' => $book->category->slug]) }}"
+                    {{-- `modeParams` menjaga chip kategori tetap di mode yang
+                         sama dengan halaman asalnya (lihat x-book-card). --}}
+                    <a href="{{ route('books.index', array_merge($modeParams, ['category' => $book->category->slug])) }}"
                        class="badge border border-tertiary/25 bg-tertiary/10 text-tertiary transition-colors
                               hover:border-tertiary/50 hover:bg-tertiary/15 dark:bg-tertiary/15">
                         {{ $book->category->name }}

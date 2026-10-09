@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Book;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -98,6 +99,58 @@ class StaffMenuTest extends TestCase
         // Di halaman kelola, sebaliknya.
         $this->assertSame(1, $this->countActiveLinks($onManage, route('categories.index')));
         $this->assertSame(0, $this->countActiveLinks($onManage, route('categories.public')));
+    }
+
+    /**
+     * Menu "Katalog" dan "Kelola Buku" dulu sama-sama menunjuk `/buku` dan
+     * sama-sama memakai pola `books.*`, jadi keduanya menyala bersamaan
+     * entah pengguna masuk dari menu yang mana. Sekarang URL-nya dipisah:
+     * katalog milik staf memakai `?lihat=katalog`, kelola memakai `/buku`.
+     *
+     * Diuji dengan menghitung link aktif per URL — bukan per label — karena
+     * keduanya tetap memakai nama route `books.index`.
+     */
+    public function test_hanya_satu_menu_buku_yang_menyala(): void
+    {
+        $librarian = User::factory()->pustakawan()->create();
+
+        $onManage = $this->actingAs($librarian)->get(route('books.index'))->getContent();
+        $onCatalog = $this->actingAs($librarian)
+            ->get(route('books.index', ['lihat' => 'katalog']))
+            ->getContent();
+
+        $manageUrl = route('books.index');
+        $catalogUrl = route('books.index', ['lihat' => 'katalog']);
+
+        // Di halaman kelola, hanya "Kelola Buku" yang menyala.
+        $this->assertSame(1, $this->countActiveLinks($onManage, $manageUrl));
+        $this->assertSame(0, $this->countActiveLinks($onManage, $catalogUrl));
+
+        // Di halaman katalog, sebaliknya.
+        $this->assertSame(1, $this->countActiveLinks($onCatalog, $catalogUrl));
+        $this->assertSame(0, $this->countActiveLinks($onCatalog, $manageUrl));
+    }
+
+    /**
+     * Halaman detail, create, dan edit juga harus menyala tepat satu menu.
+     */
+    public function test_halaman_form_buku_hanya_menyala_menu_kelola(): void
+    {
+        $book = Book::factory()->create();
+        $librarian = User::factory()->pustakawan()->create();
+
+        $create = $this->actingAs($librarian)->get(route('books.create'))->getContent();
+        $edit = $this->actingAs($librarian)->get(route('books.edit', $book))->getContent();
+
+        foreach ([$create, $edit] as $html) {
+            // Yang menyala harus menu kelola (href `/buku`), bukan katalog.
+            $this->assertSame(1, $this->countActiveLinks($html, route('books.index')));
+            $this->assertSame(0, $this->countActiveLinks($html, route('books.index', ['lihat' => 'katalog'])));
+        }
+
+        $detail = $this->actingAs($librarian)->get(route('books.show', $book))->getContent();
+        $this->assertSame(1, $this->countActiveLinks($detail, route('books.index', ['lihat' => 'katalog'])));
+        $this->assertSame(0, $this->countActiveLinks($detail, route('books.index')));
     }
 
     /**

@@ -55,7 +55,7 @@
         <span class="sr-only" data-notification-unread-text>
             {{ __('notifications.bell_label') }} —
             {{ $unreadCount > 0
-                ? trans_choice(__('notifications.bell_unread'), $unreadCount)
+                ? trans_choice('notifications.bell_unread', $unreadCount)
                 : __('notifications.bell_none') }}
         </span>
     </x-slot:trigger>

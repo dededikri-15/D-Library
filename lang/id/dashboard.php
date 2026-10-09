@@ -46,4 +46,18 @@ return [
     'open_digital_book' => 'Buka buku digital dan riwayat halaman akan tercatat di sini.',
     'recommendations' => 'Rekomendasi untuk Anda',
     'recommendation_description' => 'Berdasarkan kategori yang sering Anda baca.',
+
+    // Laporan grafik dasbor pustakawan (Task 26.2)
+    'loans_chart_title' => 'Peminjaman per Bulan',
+    'loans_chart_total' => 'Total :count peminjaman',
+    'loans_chart_alt' => 'Grafik batang jumlah peminjaman :months bulan terakhir, total :count peminjaman',
+    'loans_chart_empty' => 'Belum ada peminjaman',
+    'loans_chart_empty_description' => 'Grafik akan terisi begitu ada anggota yang meminjam buku.',
+    'chart_month' => 'Bulan',
+    'chart_loans' => 'Jumlah peminjaman',
+    'top_books' => 'Buku Paling Sering Dipinjam',
+    'top_members' => 'Anggota Paling Aktif',
+    'loan_count' => ':count pinjaman',
+    'rank_empty' => 'Belum ada peminjaman',
+    'rank_empty_description' => 'Peringkat akan muncul setelah ada anggota yang meminjam buku.',
 ];

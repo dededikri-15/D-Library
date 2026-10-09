@@ -8,13 +8,16 @@ use App\Models\Category;
 use App\Models\Loan;
 use App\Models\ReadingHistory;
 use App\Models\User;
+use App\Support\LoanReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
-    public function __construct(protected MarkOverdueLoans $markOverdueLoans)
-    {
+    public function __construct(
+        protected MarkOverdueLoans $markOverdueLoans,
+        protected LoanReport $loanReport,
+    ) {
         //
     }
 
@@ -110,6 +113,13 @@ class HomeController extends Controller
                 'recentLoans' => Loan::with(['user', 'book'])->latest('borrowed_at')->limit(5)->get(),
                 'recentBooks' => Book::with(['category', 'author'])->latest()->limit(5)->get(),
                 'recentActivity' => ReadingHistory::with(['user', 'book'])->latest('last_read_at')->limit(5)->get(),
+
+                // Data grafik laporan. Sengaja di cabang staf: anggota dan
+                // tamu tidak pernah melihat grafik ini, jadi tiga query
+                // tambahan tidak boleh dibayar oleh mereka.
+                'loansPerMonth' => $this->loanReport->perMonth(),
+                'topBorrowedBooks' => $this->loanReport->topBooks(),
+                'topBorrowers' => $this->loanReport->topBorrowers(),
             ]);
         }
 

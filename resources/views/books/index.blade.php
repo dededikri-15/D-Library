@@ -25,9 +25,20 @@
         @endif
     </header>
 
-    {{-- Form pencarian & filter --}}
+    {{--
+        Form pencarian & filter.
+
+        `modeParams` dikirim sebagai input tersembunyi, bukan ditanam di
+        `action`. Saat method GET, browser MENGHAPUS query yang sudah ada di
+        action lalu menggantinya dengan isi form — jadi `?lihat=katalog` di
+        action akan hilang begitu tombol "Terapkan" ditekan dan staf terlempar
+        ke mode kelola. Input tersembunyi ikut terkirim apa adanya.
+    --}}
     <form method="GET" action="{{ route('books.index') }}"
           class="card mt-7 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+        @foreach ($modeParams as $name => $value)
+            <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+        @endforeach
 
         <div class="sm:col-span-2 lg:col-span-4">
             <label for="q" class="field-label">{{ __('catalog.keyword') }}</label>
@@ -137,7 +148,7 @@
                 </svg>
                 {{ __('catalog.apply_filters') }}
             </button>
-            <a href="{{ route('books.index') }}" class="btn btn-ghost">{{ __('catalog.reset') }}</a>
+            <a href="{{ route('books.index', $modeParams) }}" class="btn btn-ghost">{{ __('catalog.reset') }}</a>
         </div>
     </form>
 
@@ -165,15 +176,15 @@
             @if ($isManagement)
                 <a href="{{ route('books.create') }}" class="btn btn-primary btn-sm">{{ __('catalog.add_book') }}</a>
             @else
-                <a href="{{ route('books.index') }}" class="btn btn-secondary btn-sm">{{ __('catalog.reset_filters') }}</a>
+                <a href="{{ route('books.index', $modeParams) }}" class="btn btn-secondary btn-sm">{{ __('catalog.reset_filters') }}</a>
             @endif
         </x-empty-state>
     @else
         <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($books as $book)
                 <div class="flex min-w-0 flex-col gap-3">
-                    <x-book-card :book="$book" />
-                    <x-book-quick-view :book="$book" />
+                    <x-book-card :book="$book" :mode-params="$modeParams" />
+                    <x-book-quick-view :book="$book" :mode-params="$modeParams" />
                     @if ($isManagement)
                         <a href="{{ route('books.edit', $book) }}" class="btn btn-secondary btn-sm w-full">
                             {{ __('catalog.edit_book') }}

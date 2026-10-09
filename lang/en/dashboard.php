@@ -46,4 +46,18 @@ return [
     'open_digital_book' => 'Open a digital book and your page history will appear here.',
     'recommendations' => 'Recommended for you',
     'recommendation_description' => 'Based on the categories you read most often.',
+
+    // Librarian dashboard report charts (Task 26.2)
+    'loans_chart_title' => 'Loans per Month',
+    'loans_chart_total' => ':count loans in total',
+    'loans_chart_alt' => 'Bar chart of loans for the last :months months, :count loans in total',
+    'loans_chart_empty' => 'No loans yet',
+    'loans_chart_empty_description' => 'The chart will fill in as soon as a member borrows a book.',
+    'chart_month' => 'Month',
+    'chart_loans' => 'Number of loans',
+    'top_books' => 'Most Borrowed Books',
+    'top_members' => 'Most Active Members',
+    'loan_count' => ':count loan|:count loans',
+    'rank_empty' => 'No loans yet',
+    'rank_empty_description' => 'The ranking will appear once a member borrows a book.',
 ];

@@ -1,4 +1,4 @@
-@props(['book'])
+@props(['book', 'modeParams' => []])
 
 {{--
     Kartu buku untuk katalog, homepage, dan daftar "buku terkait".
@@ -37,7 +37,13 @@
 
     <div class="flex flex-1 flex-col p-4">
         @if ($book->category)
-            <a href="{{ route('books.index', ['category' => $book->category->slug]) }}"
+            {{--
+                `modeParams` hanya berisi `lihat=katalog` saat kartu ini dirender
+                di halaman katalog milik staf. Tanpanya, mengklik chip kategori
+                akan membuang parameter itu dan staf tiba-tiba pindah ke mode
+                kelola padahal tadinya sedang membaca katalog.
+            --}}
+            <a href="{{ route('books.index', array_merge($modeParams, ['category' => $book->category->slug])) }}"
                class="badge border border-tertiary/25 bg-tertiary/10 text-tertiary transition-colors
                       hover:border-tertiary/50 hover:bg-tertiary/15 dark:bg-tertiary/15">
                 {{ $book->category->name }}

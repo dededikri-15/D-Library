@@ -278,6 +278,27 @@
                 </x-dashboard.stats>
             </div>
 
+            {{--
+                Laporan grafik (Task 26.3).
+
+                Grafik bulanan butuh lebar penuh untuk 12 batang, jadi
+                diletakkan sendiri di baris atas bersama dua peringkat.
+                `xl:` (bukan `lg:`) karena di `lg` grafik dan dua peringkat
+                akan berebut ruang di satu baris dan label sumbu X mengecil
+                sampai tidak terbaca.
+            --}}
+            <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <x-dashboard.monthly-chart :items="$loansPerMonth"
+                                           :title="__('dashboard.loans_chart_title')" />
+
+                <div class="grid content-start gap-6">
+                    <x-dashboard.rank-bars :items="$topBorrowedBooks" type="book"
+                                           :title="__('dashboard.top_books')" />
+                    <x-dashboard.rank-bars :items="$topBorrowers" type="member"
+                                           :title="__('dashboard.top_members')" />
+                </div>
+            </div>
+
             <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <div class="card p-5">
                     <h2 class="font-semibold text-primary">{{ __('dashboard.recent_loans') }}</h2>

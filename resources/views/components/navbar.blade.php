@@ -1,5 +1,25 @@
 @php
     $user = auth()->user();
+    $isStaff = (bool) $user?->isStaff();
+
+    /*
+     * Sorotan menu buku (Katalog vs Kelola Buku).
+     *
+     * Dulu keduanya memakai pola `books.*` yang sama, padahal URL-nya juga
+     * sama persis (/buku) — akibatnya keduanya menyala bersamaan, entah dari
+     * menu mana pengguna masuk. Sekarang URL-nya dipisah: staf membuka
+     * katalog lewat `/buku?lihat=katalog` dan kelola lewat `/buku`, jadi
+     * cukup dihitung dari mode halaman yang sedang dibuka. Halaman detail,
+     * baca, create, dan edit ikut dihitung supaya tidak ada halaman buku
+     * yang menyala dua menu sekaligus.
+     */
+    $onBooksIndex = request()->routeIs('books.index');
+    $onCatalogBooks = request()->routeIs(['books.show', 'books.read'])
+        || ($onBooksIndex && (! $isStaff || request()->query('lihat') === 'katalog'));
+    $onManageBooks = $isStaff && (
+        ($onBooksIndex && request()->query('lihat') !== 'katalog')
+        || request()->routeIs(['books.create', 'books.edit'])
+    );
 
     $links = array_values(
         array_filter([
@@ -11,7 +31,8 @@
             ],
             [
                 'route' => 'books.index',
-                'pattern' => 'books.*',
+                'params' => $isStaff ? ['lihat' => 'katalog'] : [],
+                'active' => $onCatalogBooks,
                 'label' => __('navigation.catalog'),
                 'icon' =>
                     'M12 6.25S10.5 4.75 8 4.75c-1.1 0-2 .35-2.75.75v12.5c.75-.4 1.65-.75 2.75-.75 2.5 0 4 1.5 4 1.5s1.5-1.5 4-1.5c1.1 0 2 .35 2.75.75V5.5c-.75-.4-1.65-.75-2.75-.75-2.5 0-4 1.5-4 1.5Zm0 0V18.75',
@@ -27,7 +48,7 @@
             $user?->isStaff()
                 ? [
                     'route' => 'books.index',
-                    'pattern' => 'books.*',
+                    'active' => $onManageBooks,
                     'label' => __('navigation.manage_books'),
                     'icon' =>
                         'M4.5 5.25A2.25 2.25 0 0 1 6.75 3h12A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21h-12A2.25 2.25 0 0 1 4.5 18.75zM8 7.5h9m-9 4.5h9m-9 4.5h5',
@@ -199,9 +220,9 @@
                         {{ $link['heading'] }}
                     </p>
                 @endif
-                <a href="{{ route($link['route']) }}" title="{{ $link['label'] }}" @class([
+                <a href="{{ route($link['route'], $link['params'] ?? []) }}" title="{{ $link['label'] }}" @class([
                     'sidebar-link',
-                    'sidebar-link-active' => request()->routeIs($link['pattern']),
+                    'sidebar-link-active' => $link['active'] ?? request()->routeIs($link['pattern']),
                 ])>
                     <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                         stroke-width="1.7" aria-hidden="true">

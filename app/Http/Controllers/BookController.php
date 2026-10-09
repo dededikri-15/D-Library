@@ -51,7 +51,23 @@ class BookController extends Controller
      */
     public function index(Request $request): View
     {
-        $isManagement = $request->user()?->isStaff() ?? false;
+        /*
+         * Mode kelola vs mode katalog untuk staf.
+         *
+         * `/buku` tanpa parameter tetap halaman kelola staf (semua status +
+         * aksi tambah/edit), sesuai perilaku yang sudah diuji. Tapi menu
+         * "Katalog" di sidebar butuh halaman yang benar-benar berbeda,
+         * bukan URL yang sama dengan menu "Kelola Buku" — kalau sama,
+         * keduanya menyala bersamaan dan pengguna tidak bisa tahu mana
+         * yang sedang dibuka. `?lihat=katalog` membuka tampilan katalog
+         * publik: kartu, hanya buku aktif, tanpa aksi staf.
+         *
+         * Untuk tamu/anggota parameter ini diabaikan — mereka selalu melihat
+         * katalog, jadi tidak ada mode yang perlu dipisah.
+         */
+        $isStaff = (bool) ($request->user()?->isStaff());
+        $catalogMode = $isStaff && $request->query('lihat') === 'katalog';
+        $isManagement = $isStaff && ! $catalogMode;
 
         /*
          * Filter katalog divalidasi. Tanpa ini `?status=ngawur` hanya
@@ -107,6 +123,9 @@ class BookController extends Controller
             'filters' => $filters,
             'sort' => $sort['key'],
             'isManagement' => $isManagement,
+            // Query yang harus ikut menempel supaya halaman tidak pindah mode
+            // saat filter di-reset atau chip kategori diklik dari kartu buku.
+            'modeParams' => $catalogMode ? ['lihat' => 'katalog'] : [],
         ]);
     }
 
