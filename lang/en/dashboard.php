@@ -60,4 +60,22 @@ return [
     'loan_count' => ':count loan|:count loans',
     'rank_empty' => 'No loans yet',
     'rank_empty_description' => 'The ranking will appear once a member borrows a book.',
+
+    /*
+    | Member dashboard charts (Task 27.2).
+    |
+    | The "my loans" chart reuses `loans_chart_total`, `loans_chart_alt`,
+    | `loans_chart_empty`, `chart_month`, and `chart_loans` — those texts are
+    | neutral. Only the title and the empty description differ, because the
+    | Task 26 wording addresses a librarian ("as soon as a member borrows"),
+    | while these charts belong to the member reading them.
+    */
+    'my_loans_chart_title' => 'My Loans per Month',
+    'my_loans_chart_empty_description' => 'The chart will fill in as soon as you borrow a book.',
+    'reading_chart_title' => 'Books Started per Month',
+    'reading_chart_total' => ':count books in total',
+    'reading_chart_alt' => 'Bar chart of books started in the last :months months, :count books in total',
+    'reading_chart_empty' => 'No books read yet',
+    'reading_chart_empty_description' => 'The chart will fill in as soon as you open a digital book.',
+    'chart_reading' => 'Books started',
 ];

@@ -375,8 +375,15 @@
     | memakai utility `flex`/`block`, atribut `hidden` kalah dan menu tidak
     | pernah tertutup. Karena itu `.dropdown-menu[hidden]` ditulis eksplisit.
     */
+    /*
+    | `max-w` menjaga panel tidak pernah lebih lebar dari layarnya sendiri —
+    | kombinasi `min-w-56` + isi `w-72` (lonceng notifikasi) membuat panel
+    | 300px, yang masih muat di layar 320px hanya kalau lewatannya dibatasi.
+    | Penjepitan posisi (supaya tidak keluar tepi kiri/kanan) ada di
+    | `initDropdowns()` pada resources/js/app.js.
+    */
     .dropdown-menu {
-        @apply absolute z-50 mt-2 min-w-56 overflow-hidden rounded-lg border border-hairline bg-surface p-1.5 shadow-lift;
+        @apply absolute z-50 mt-2 min-w-56 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-lg border border-hairline bg-surface p-1.5 shadow-lift;
     }
 
     .dropdown-menu[hidden] {
@@ -806,6 +813,30 @@
     /* Ellipsis. Bukan tombol: diklik tidak ada yang terjadi, jadi hanya teks. */
     .pagination-gap {
         @apply inline-flex h-9 min-w-6 items-center justify-center px-1 text-secondary/60;
+    }
+
+    /*
+    | Viewport pembaca PDF (Task 11.9).
+    |
+    | Tingginya dikunci di sini (bukan di `<object>`) supaya satu tempat untuk
+    | mengatur ukuran dasar: kotak `<object>` memakai kelipatan variabel
+    | `--reader-zoom`, jadi saat zoom 150% objeknya tumbuh jadi 112.5vh dan
+    | viewport-nya yang menggulir — bukan `transform: scale()`, yang tidak
+    | memengaruhi layout sehingga scrollbar tidak pernah mengikuti isi.
+    |
+    | Viewer PDF di dalam `<object>` menggambar ulang sesuai lebar kotaknya
+    | (fit-to-width), jadi membesarkan kotak = membesarkan teks di layar.
+    */
+    .reader-viewport {
+        --reader-zoom: 1;
+        height: 75vh;
+        overflow: auto;
+    }
+
+    .reader-viewport > object {
+        display: block;
+        width: calc(100% * var(--reader-zoom));
+        height: calc(75vh * var(--reader-zoom));
     }
 }
 

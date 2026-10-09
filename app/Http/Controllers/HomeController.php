@@ -9,6 +9,7 @@ use App\Models\Loan;
 use App\Models\ReadingHistory;
 use App\Models\User;
 use App\Support\LoanReport;
+use App\Support\MemberReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,7 @@ class HomeController extends Controller
     public function __construct(
         protected MarkOverdueLoans $markOverdueLoans,
         protected LoanReport $loanReport,
+        protected MemberReport $memberReport,
     ) {
         //
     }
@@ -151,6 +153,13 @@ class HomeController extends Controller
                 'favoriteCount' => $user->favorites()->count(),
                 'readingHistory' => $user->readingHistories()->with('book')->latest('last_read_at')->take(5)->get(),
                 'recommendations' => $recommendations,
+
+                // Data grafik pribadi anggota (Task 27.3). Sama seperti grafik
+                // staf, ini berada di dalam cabang role: anggota hanya melihat
+                // miliknya sendiri, dan tamu/pustakawan tidak membayar dua
+                // query ini sama sekali.
+                'myLoansPerMonth' => $this->memberReport->loansPerMonth($user),
+                'myReadingStartsPerMonth' => $this->memberReport->readingStartsPerMonth($user),
             ]);
         }
 

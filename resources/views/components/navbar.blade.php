@@ -161,8 +161,20 @@
 @endphp
 
 <header>
+    {{--
+        Sidebar sengaja `z-50` hanya di MOBILE: di sana ia berfungsi sebagai
+        drawer yang harus menutupi topbar dan konten. Di desktop (`lg:`) ia
+        diturunkan ke `z-20` SUPAYA KALAH dari topbar (`z-30`).
+
+        Alasannya bug lonceng notifikasi: panel dropdown ada di dalam topbar,
+        jadi walaupun panelnya `z-50`, stacking context-nya tetap topbar.
+        Dengan sidebar `z-50`, panel yang melebar ke kiri melewati batas
+        `ml-64` (tempat lonceng berada) ditindih sidebar dan yang terlihat
+        hanya potongan kanannya — persis laporan "notifikasi pas dibuka
+        setengah/ga keliatan".
+    --}}
     <aside id="app-sidebar" data-sidebar aria-label="{{ __('navigation.primary_navigation') }}"
-        class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-hairline bg-surface px-3 py-4 shadow-glass transition-[width,transform] duration-200 lg:translate-x-0">
+        class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-hairline bg-surface px-3 py-4 shadow-glass transition-[width,transform] duration-200 lg:translate-x-0 lg:z-20">
         <a href="{{ route('home') }}" title="D-Library" class="group flex min-h-12 items-center gap-3 rounded-md px-2.5">
             <span class="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-brand text-on-brand shadow-lift"
                 aria-hidden="true">

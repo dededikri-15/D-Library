@@ -84,27 +84,105 @@
 
     <div class="mt-4 overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
         {{--
-            `data-reader-target` ditimpa oleh app.js: ia hanya mengubah
-            bagian setelah tanda pagar, jadi PDF tidak diunduh ulang setiap kali
-            pindah halaman. Tanpa JavaScript, perpindahan halaman tetap jalan
-            lewat form GET di atas (halaman dimuat ulang penuh).
+            Kontrol zoom (Task 11.9). Tombolnya sengaja dibuat MUNCUL OLEH JS:
+            tanpa JavaScript mereka tidak bisa berbuat apa-apa, dan tombol mati
+            di layar hanya membingungkan. Selain itu viewer bawaan browser
+            tetap punya zoom sendiri, jadi tanpa JS pembaca tidak kehilangan
+            apa pun.
+
+            Caranya bukan `transform: scale()` — transformasi tidak ikut
+            memengaruhi layout, sehingga scrollbar tidak akan mengikuti isi
+            yang membesar. Ukuran kotak `<object>`-nya yang diperbesar lewat
+            variabel CSS, dan viewer PDF di dalamnya menggambar ulang mengikuti
+            lebar kotak itu (fit-to-width) — itulah arti "zoom".
+        --}}
+        <div class="hidden items-center justify-between gap-3 border-b border-hairline px-4 py-2.5"
+             data-reader-zoom-controls>
+            <p class="text-label font-medium tracking-wide text-secondary uppercase">
+                {{ __('reader.zoom_group') }}
+            </p>
+
+            <div class="flex items-center gap-1.5">
+                <button type="button" class="btn btn-secondary btn-sm px-2.5"
+                        data-reader-zoom-out aria-label="{{ __('reader.zoom_out') }}">
+                    &minus;
+                </button>
+
+                <span class="w-14 text-center text-sm font-semibold tabular-nums text-primary"
+                      data-reader-zoom-level aria-live="polite">100%</span>
+
+                <button type="button" class="btn btn-secondary btn-sm px-2.5"
+                        data-reader-zoom-in aria-label="{{ __('reader.zoom_in') }}">
+                    +
+                </button>
+
+                <button type="button" class="btn btn-ghost btn-sm" data-reader-zoom-reset>
+                    {{ __('reader.zoom_reset') }}
+                </button>
+
+                <span class="mx-1 h-5 w-px bg-hairline" aria-hidden="true"></span>
+
+                {{--
+                    "Tutup PDF" hanya menyembunyikan tampilannya — dokumen tidak
+                    dibuang, jadi saat dibuka lagi posisi terakhir yang diketahui
+                    (input halaman / fragment `#page=`) langsung dipasang kembali
+                    oleh `initReaderClose()`.
+                --}}
+                <button type="button" class="btn btn-ghost btn-sm" data-reader-close>
+                    {{ __('reader.close_pdf') }}
+                </button>
+            </div>
+        </div>
+
+        {{--
+            Elemen ini diganti barunya oleh app.js saat user menekan "Buka
+            halaman" (lihat `reloadReaderTo()`). Menimpa atribut `data` yang
+            hanya berbeda pada fragmen `#page=` TIDAK menggerakkan viewer PDF
+            bawaan browser — perubahan begitu dianggap sebagai perubahan URL di
+            dalam dokumen yang sama — jadi tombolnya jadi terasa mati. Elemen
+            baru selalu dimuat dari nol dan menghormati `#page=`; biaya
+            unduhannya dijaga murah oleh cache + ETag dari `books.file`.
+
+            Tanpa JavaScript, perpindahan halaman tetap jalan lewat form GET di
+            atas (halaman dimuat ulang penuh dengan `?page=N`).
 
             Fallback di dalam <object> dipakai browser yang tidak punya plugin
-            PDF bawaan.
+            PDF bawaan. Catatan penting: isi CSP halaman ini harus memuat
+            `object-src 'self'` — `object-src 'none'` memblokir sematan ini dan
+            fallback akan tampil terus walau file-nya sehat (dijaga test di
+            SecurityTest).
         --}}
-        <object data="{{ route('books.file', $book) }}#page={{ $page }}" type="application/pdf"
-                class="h-[75vh] w-full"
-                data-reader-target
-                data-reader-file-url="{{ route('books.file', $book) }}">
-            <div class="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-                <p class="text-sm text-secondary">
-                    {{ __('reader.pdf_not_supported') }}
-                </p>
-                <a href="{{ route('books.file', $book) }}#page={{ $page }}" class="btn btn-primary">
-                    {{ __('reader.open_pdf') }}
-                </a>
-            </div>
-        </object>
+        <div class="reader-viewport" data-reader-viewport>
+            <object data="{{ route('books.file', $book) }}#page={{ $page }}" type="application/pdf"
+                    data-reader-target
+                    data-reader-file-url="{{ route('books.file', $book) }}">
+                <div class="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+                    <p class="text-sm text-secondary">
+                        {{ __('reader.pdf_not_supported') }}
+                    </p>
+                    <a href="{{ route('books.file', $book) }}#page={{ $page }}" class="btn btn-primary">
+                        {{ __('reader.open_pdf') }}
+                    </a>
+                </div>
+            </object>
+        </div>
+
+        {{--
+            Panel "sudah ditutup". Tersembunyi sampai JS menutup PDF; berisi
+            nomor halaman terakhir yang diketahui dan tombol membukanya lagi.
+            Tanpa JS panel ini tidak pernah muncul dan tombol "Tutup PDF" juga
+            tidak ada, jadi tidak ada tombol mati di layar.
+        --}}
+        <div class="hidden flex-col items-center justify-center gap-2 p-10 text-center" data-reader-closed>
+            <p class="text-sm font-medium text-primary">{{ __('reader.pdf_closed') }}</p>
+            <p class="text-label text-secondary" data-reader-closed-page
+               data-page-template="{{ __('reader.pdf_closed_page', ['page' => ':page']) }}">
+                {{ __('reader.pdf_closed_page', ['page' => $page]) }}
+            </p>
+            <button type="button" class="btn btn-primary btn-sm mt-2" data-reader-open>
+                {{ __('reader.open_pdf_again') }}
+            </button>
+        </div>
     </div>
 
     <p class="mt-3 text-xs text-secondary">

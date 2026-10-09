@@ -39,7 +39,10 @@ class DigitalReadingTest extends TestCase
         UploadedFile::fake()->create('buku.pdf', 100, 'application/pdf')
             ->storeAs('books', $book->id.'.pdf', 'local');
 
-        $book->update(['file' => $book->id.'.pdf']);
+        // Path-nya harus sama dengan yang ada di kolom `file` — kalau tidak,
+        // `books.file` menjawab 404 (berkasnya "hilang") dan jalur stream PDF
+        // tidak pernah teruji oleh helper ini.
+        $book->update(['file' => 'books/'.$book->id.'.pdf']);
 
         Loan::factory()->create([
             'book_id' => $book->id,
@@ -96,6 +99,55 @@ class DigitalReadingTest extends TestCase
             ->assertSee(route('books.file', $book).'#page=42', false);
     }
 
+    /**
+     * Task 11.9 — kontrol zoom harus ikut terkirim bersama viewport-nya.
+     *
+     * Yang diuji di sini hanya keberadaan kontrol (perilaku kliknya ada di
+     * browser, tidak dicakup test PHP). Yang lebih penting justru di
+     * SecurityTest: CSP harus `object-src 'self'`, kalau tidak `<object>`
+     * PDF-nya diblokir dan halaman ini selalu menampilkan fallback.
+     */
+    public function test_pembaca_menampilkan_kontrol_zoom_dan_viewport(): void
+    {
+        $member = User::factory()->anggota()->create();
+        $book = $this->borrowedBook($member, 120);
+
+        $this->actingAs($member)
+            ->get(route('books.read', $book))
+            ->assertOk()
+            ->assertSee('data-reader-viewport', false)
+            ->assertSee('data-reader-zoom-controls', false)
+            ->assertSee('data-reader-zoom-in', false)
+            ->assertSee('data-reader-zoom-out', false)
+            ->assertSee('data-reader-zoom-reset', false)
+            ->assertSee(__('reader.zoom_in'))
+            ->assertSee(__('reader.zoom_reset'));
+    }
+
+    /**
+     * Task 11.10 — tutup/buka lagi PDF.
+     *
+     * Tombol "Tutup PDF" hidup di toolbar (yang tersembunyi sampai JS aktif),
+     * panel "sudah ditutup" sudah dirender tersembunyi lengkap dengan templated
+     * teks halamannya, dan tombol buka ulang menunggu di sana.
+     */
+    public function test_pembaca_menampilkan_kontrol_tutup_dan_buka_ulang(): void
+    {
+        $member = User::factory()->anggota()->create();
+        $book = $this->borrowedBook($member, 89);
+
+        $this->actingAs($member)
+            ->get(route('books.read', $book))
+            ->assertOk()
+            ->assertSee('data-reader-close', false)
+            ->assertSee('data-reader-open', false)
+            ->assertSee('data-reader-closed', false)
+            ->assertSee('data-page-template', false)
+            ->assertSee(__('reader.close_pdf'))
+            ->assertSee(__('reader.open_pdf_again'))
+            ->assertSee(__('reader.pdf_closed'));
+    }
+
     /*
     |--------------------------------------------------------------------------
     | 11.3 / 11.4 - Pembatasan akses
@@ -130,6 +182,96 @@ class DigitalReadingTest extends TestCase
         $this->actingAs(User::factory()->anggota()->create())
             ->get(route('books.file', $book))
             ->assertForbidden();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 11.11 - Tombol "Buka halaman" dan cache berkas PDF
+    |--------------------------------------------------------------------------
+    */
+
+    public function test_tombol_buka_halaman_memuat_ulang_elemen_object(): void
+    {
+        // Regresi (laporan user): tombol "Buka halaman" tidak bergerak sama
+        // sekali. Penyebabnya menimpa atribut `data` yang hanya berbeda pada
+        // fragmen `#page=` — browser menganggapnya perubahan URL di dalam
+        // dokumen yang sama, dan viewer PDF bawaan tidak meresponsnya.
+        // Satu-satunya jalur pindah halaman yang pasti dihormati viewer adalah
+        // elemen baru yang dimuat dari nol.
+        $js = file_get_contents(resource_path('js/app.js'));
+
+        $this->assertStringContainsString(
+            'function reloadReaderTo(page)',
+            $js,
+            'Pindah halaman harus lewat reloadReaderTo() yang mengganti elemen <object>.',
+        );
+        $this->assertStringContainsString('current.replaceWith(fresh)', $js);
+        $this->assertStringContainsString(
+            'fresh.setAttribute(\'data\', `${fileUrl}#page=${page}`)',
+            $js,
+            'Elemen baru harus dibuka pada halaman tujuan lewat fragment #page=.',
+        );
+
+        // Tidak boleh ada jalur lama yang menyentuh atribut `data` langsung:
+        // jalur itulah yang terdeteksi tidak menggerakkan viewer.
+        $this->assertSame(
+            1,
+            substr_count($js, "setAttribute('data'"),
+            'Hanya reloadReaderTo() yang boleh mengubah atribut data pembaca.',
+        );
+    }
+
+    public function test_berkas_pdf_mengirim_header_cache_supaya_pindah_halaman_tidak_mengunduh_ulang(): void
+    {
+        // Tiap kali user menekan "Buka halaman", <object> dimuat ulang. Tanpa
+        // header ini berkasnya diunduh penuh setiap kali dan kuota rate limit
+        // 30 permintaan per menit cepat habis untuk satu sesi baca.
+        $member = User::factory()->anggota()->create();
+        $book = $this->borrowedBook($member);
+
+        $response = $this->actingAs($member)->get(route('books.file', $book));
+
+        $response->assertOk();
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('private', $cacheControl, 'Berkas berbayar akses tidak boleh masuk cache bersama.');
+        $this->assertStringContainsString('max-age=', $cacheControl);
+        $this->assertNotEmpty($response->headers->get('ETag'));
+        $this->assertNotEmpty($response->headers->get('Last-Modified'));
+    }
+
+    public function test_klien_yang_sudah_punya_salinan_dijawab_304_tanpa_isi(): void
+    {
+        $member = User::factory()->anggota()->create();
+        $book = $this->borrowedBook($member);
+
+        $first = $this->actingAs($member)->get(route('books.file', $book));
+        $first->assertOk();
+
+        $etag = (string) $first->headers->get('ETag');
+
+        $second = $this->actingAs($member)
+            ->withHeaders(['If-None-Match' => $etag])
+            ->get(route('books.file', $book));
+
+        $second->assertStatus(304)->assertHeader('ETag', $etag);
+        $this->assertEmpty($second->getContent(), 'Respons 304 tidak boleh mengulang isi PDF.');
+    }
+
+    public function test_if_modified_sesuai_waktu_file_juga_dijawab_304(): void
+    {
+        // Klien lama yang hanya mengirim If-Modified-Since (tanpa ETag)
+        // tetap harus dijawab hemat, bukan diberi isi penuh lagi.
+        $member = User::factory()->anggota()->create();
+        $book = $this->borrowedBook($member);
+
+        $first = $this->actingAs($member)->get(route('books.file', $book));
+        $first->assertOk();
+
+        $this->actingAs($member)
+            ->withHeaders(['If-Modified-Since' => (string) $first->headers->get('Last-Modified')])
+            ->get(route('books.file', $book))
+            ->assertStatus(304);
     }
 
     /*

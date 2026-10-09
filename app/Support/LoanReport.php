@@ -39,6 +39,8 @@ class LoanReport
      * Bulan yang kosong tetap dikembalikan dengan nilai 0. Tanpa ini sumbu X
      * grafik akan melompat melewati bulan tanpa peminjaman, dan pembaca bisa
      * salah mengira peminjaman bulan Maret terjadi di bulan April.
+     * Pengisian bulan kosongnya dilakukan `MonthlySeries`, dipakai bersama
+     * grafik dasbor anggota (Task 27) supaya keduanya tidak bisa berbeda.
      *
      * Tanggal acuan `borrowed_at` (saat buku dipinjam), bukan `created_at`
      * (saat baris dibuat di database) dan bukan `returned_at`. Peminjaman yang
@@ -58,19 +60,7 @@ class LoanReport
             ->pluck('borrowed_at')
             ->countBy(fn ($borrowedAt) => $borrowedAt->format('Y-m'));
 
-        return collect(range(0, $months - 1))
-            ->map(function (int $offset) use ($start, $counts) {
-                $date = $start->copy()->addMonths($offset);
-                $key = $date->format('Y-m');
-
-                return [
-                    'key' => $key,
-                    'short' => $date->format('M'),
-                    'label' => $date->format('M Y'),
-                    'value' => (int) $counts->get($key, 0),
-                ];
-            })
-            ->values();
+        return MonthlySeries::build($start, $months, $counts);
     }
 
     /**

@@ -60,4 +60,22 @@ return [
     'loan_count' => ':count pinjaman',
     'rank_empty' => 'Belum ada peminjaman',
     'rank_empty_description' => 'Peringkat akan muncul setelah ada anggota yang meminjam buku.',
+
+    /*
+    | Grafik dasbor anggota (Task 27.2).
+    |
+    | Grafik "peminjaman saya" memakai ulang `loans_chart_total`,
+    | `loans_chart_alt`, `loans_chart_empty`, `chart_month`, dan `chart_loans`
+    | — teksnya sudah netral. Yang diganti hanya judul dan deskripsi kosongnya,
+    | karena milik Task 26 ditujukan ke pustakawan ("begitu ada anggota yang
+    | meminjam"), sementara grafik ini milik anggota yang sedang melihatnya.
+    */
+    'my_loans_chart_title' => 'Peminjaman Saya per Bulan',
+    'my_loans_chart_empty_description' => 'Grafik akan terisi begitu Anda meminjam buku.',
+    'reading_chart_title' => 'Buku yang Mulai Dibaca per Bulan',
+    'reading_chart_total' => 'Total :count buku',
+    'reading_chart_alt' => 'Grafik batang jumlah buku yang mulai dibaca :months bulan terakhir, total :count buku',
+    'reading_chart_empty' => 'Belum ada buku yang dibaca',
+    'reading_chart_empty_description' => 'Grafik akan terisi begitu Anda membuka buku digital.',
+    'chart_reading' => 'Buku mulai dibaca',
 ];

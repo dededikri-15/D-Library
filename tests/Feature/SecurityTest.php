@@ -199,8 +199,18 @@ class SecurityTest extends TestCase
         $this->assertNotEmpty($nonce);
         $this->assertStringContainsString("script-src 'self' 'nonce-{$nonce}'", $policy);
         $this->assertStringContainsString("frame-ancestors 'self'", $policy);
-        $this->assertStringContainsString('nonce="'.$nonce.'"', $response->getContent());
         $this->assertStringNotContainsString("script-src 'self' 'unsafe-inline'", $policy);
+
+        /*
+         * Regresi Task 11.9: `object-src 'none'` memblokir SEMUA <object>,
+         * termasuk sematan PDF same-origin di halaman `books.read` — akibatnya
+         * pembaca selalu menampilkan fallback "Browser ini tidak menampilkan
+         * PDF secara langsung" walau stream-nya sehat (application/pdf +
+         * Content-Disposition: inline). 'self' tetap menutup sumber luar.
+         */
+        $this->assertStringContainsString("object-src 'self'", $policy);
+        $this->assertStringNotContainsString("object-src 'none'", $policy);
+        $this->assertStringContainsString('nonce="'.$nonce.'"', $response->getContent());
     }
 
     public function test_login_endpoint_uses_configured_named_rate_limit(): void

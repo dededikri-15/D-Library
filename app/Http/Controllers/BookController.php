@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class BookController extends Controller
 {
@@ -429,7 +429,18 @@ class BookController extends Controller
      * PDF tampil di tab browser sesuai keputusan, dan file tetap di-stream
      * dari disk privat — tidak pernah ada URL publik yang bisa ditebak.
      */
-    public function file(Request $request, Book $book): StreamedResponse
+    /**
+     * Stream berkas PDF untuk pembaca.
+     *
+     * Karena tombol "Buka halaman" memuat ulang elemen `<object>` di sisi
+     * browser (lihat `reloadReaderTo()` di resources/js/app.js), endpoint ini
+     * selalu dikunjungi setiap berpindah halaman. Tanpa header cache, tiap
+     * kunjungan berarti unduhan penuh sekaligus memakai kuota rate limit 30
+     * permintaan per menit. `private` + `max-age` pendek membuat browser boleh
+     * memakai salinannya sendiri selama cache berlaku, dan ETag/Last-Modified
+     * memungkinkan jawaban 304 (tanpa isi) setelahnya.
+     */
+    public function file(Request $request, Book $book): Response
     {
         if (! $book->canBeReadBy($request->user())) {
             abort(403, 'Anda tidak punya izin membaca buku ini.');
@@ -441,12 +452,50 @@ class BookController extends Controller
             abort(404, 'File digital buku ini tidak ditemukan.');
         }
 
+        $lastModified = (int) $disk->lastModified($book->file);
+        $etag = '"'.md5($lastModified.':'.$disk->size($book->file)).'"';
+        $cacheControl = 'private, max-age=300, must-revalidate';
+        $lastModifiedHttp = gmdate('D, d M Y H:i:s', $lastModified).' GMT';
+
+        if ($this->isNotModified($request, $etag, $lastModified)) {
+            return new Response('', 304, [
+                'ETag' => $etag,
+                'Last-Modified' => $lastModifiedHttp,
+                'Cache-Control' => $cacheControl,
+            ]);
+        }
+
         return $disk->response(
             $book->file,
             $book->title.'.pdf',
-            // inline = tampil di browser, attachment = diunduh.
-            ['Content-Disposition' => 'inline; filename="'.addslashes($book->title).'.pdf"'],
+            [
+                // inline = tampil di browser, attachment = diunduh.
+                'Content-Disposition' => 'inline; filename="'.addslashes($book->title).'.pdf"',
+                'ETag' => $etag,
+                'Last-Modified' => $lastModifiedHttp,
+                'Cache-Control' => $cacheControl,
+            ],
         );
+    }
+
+    /**
+     * Apakah klien sudah menyimpan salinan yang sama persis dengan milik kita?
+     *
+     * `If-None-Match` (ETag) menang atas `If-Modified-Since` — begitu
+     * prioritasnya di RFC 9110, dan ETag kami berubah begitu berkasnya
+     * diganti, sedangkan waktu bisa sama meski isinya beda.
+     */
+    private function isNotModified(Request $request, string $etag, int $lastModified): bool
+    {
+        if ($request->headers->has('If-None-Match')) {
+            $candidates = array_map(trim(...), explode(',', (string) $request->headers->get('If-None-Match')));
+
+            return in_array('*', $candidates, true) || in_array($etag, $candidates, true);
+        }
+
+        $since = strtotime((string) $request->headers->get('If-Modified-Since'));
+
+        return $since !== false && $since >= $lastModified;
     }
 
     public function create(): View

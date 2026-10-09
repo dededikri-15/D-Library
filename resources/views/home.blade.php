@@ -80,6 +80,35 @@
         @endforeach
     </section>
 
+    {{--
+        Grafik aktivitas pribadi anggota (Task 27.3, posisi diminta pengguna).
+
+        Diletakkan tepat di bawah kartu statistik umum supaya anggota langsung
+        melihat aktivitasnya sendiri setelah ringkasan perpustakaan, tanpa
+        harus menggulir melewati katalog. Grid memakai `xl:grid-cols-2` (bukan
+        `lg:`) untuk alasan yang sama dengan grafik staf: di `lg` 12 batang
+        berebut ruang sampai label sumbu X tidak terbaca.
+
+        Guard `$isMember` (bukan sekadar `@auth`): `$myLoansPerMonth` hanya
+        diisi oleh cabang anggota di controller, jadi pustakawan yang ikut
+        melihat blok ini akan kena error variabel tak terdefinisi.
+    --}}
+    @if ($isMember)
+        <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <x-dashboard.monthly-chart :items="$myLoansPerMonth"
+                                       :title="__('dashboard.my_loans_chart_title')"
+                                       empty-description-key="dashboard.my_loans_chart_empty_description" />
+
+            <x-dashboard.monthly-chart :items="$myReadingStartsPerMonth"
+                                       :title="__('dashboard.reading_chart_title')"
+                                       total-key="dashboard.reading_chart_total"
+                                       alt-key="dashboard.reading_chart_alt"
+                                       empty-title-key="dashboard.reading_chart_empty"
+                                       empty-description-key="dashboard.reading_chart_empty_description"
+                                       column-key="dashboard.chart_reading" />
+        </div>
+    @endif
+
     {{-- Buku terbaru (umum) --}}
     <section class="mt-14">
         <div class="flex flex-wrap items-end justify-between gap-3">
@@ -172,6 +201,13 @@
                     </div>
                 @endforeach
             </div>
+
+            {{--
+                Grafik aktivitas pribadi sudah dipindahkan ke atas, tepat di
+                bawah kartu statistik umum (permintaan pengguna, Task 27) —
+                anggota tidak perlu menggulir sampai sini hanya untuk melihat
+                grafiknya.
+            --}}
 
             <div class="card mt-8 p-5">
                 <div class="flex flex-wrap items-center justify-between gap-3">

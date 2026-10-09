@@ -720,13 +720,48 @@ function setBusy(element, isBusy) {
 }
 
 /**
+ * Pindahkan pembaca ke halaman tertentu dengan MEMUAT ULANG elemen
+ * `<object>`-nya (Task 11.11).
+ *
+ * Kenapa elemennya diganti, bukan sekadar atribut `data`-nya ditimpa?
+ * Mengubah `data` yang isinya hanya berbeda pada fragmen `#page=` diperlakukan
+ * browser sebagai perubahan URL di dalam dokumen yang sama — perubahan yang
+ * tidak menyentuh isi yang diunduh. Viewer PDF bawaan browser tidak merespons
+ * perubahan semacam itu, jadi tombol "Buka halaman" jadi terasa mati (itulah
+ * laporan yang memicu perbaikan ini). Elemen baru berarti pemuatan dari nol,
+ * dan pemuatan pertama selalu menghormati `#page=` — itu pula yang dipakai
+ * saat halaman pembaca dibuka pertama kali.
+ *
+ * Biayanya dijaga murah oleh header `Cache-Control` + ETag dari route
+ * `books.file`: selama cache masih berlaku browser memakai salinan lokalnya
+ * tanpa menghubungi server, sehingga rate limit 30 permintaan per menit tidak
+ * terbakar hanya karena berpindah halaman; setelah lewat batas, server hanya
+ * diminta ulang dengan header kondisional dan menjawab 304 tanpa isi.
+ *
+ * Fungsi ini selalu mencari elemennya dari DOM — hasilnya harus disimpan
+ * oleh pemanggil kalau dipakai lagi, karena elemennya berganti tiap pindah.
+ */
+function reloadReaderTo(page) {
+    const current = document.querySelector('[data-reader-target]');
+    const fileUrl = current?.dataset.readerFileUrl;
+
+    if (!current || !fileUrl) return null;
+
+    // cloneNode(true) ikut menyalin fallback di dalam <object>; nilai `data`
+    // yang lama langsung ditimpa sesudahnya.
+    const fresh = current.cloneNode(true);
+    fresh.setAttribute('data', `${fileUrl}#page=${page}`);
+    current.replaceWith(fresh);
+
+    return fresh;
+}
+
+/**
  * Pembaca PDF (Task 11.2).
  *
- * Yang dikerjakan di sini HANYA memindahkan viewport viewer ke halaman lain
- * dengan mengubah bagian setelah tanda pagar pada URL. Berkas PDF-nya sendiri
- * tidak diunduh ulang, karena `books.file` punya rate limit 30 permintaan per
- * menit — memuat ulang berkasnya setiap pindah halaman akan menghabiskan kuota
- * itu hanya untuk satu sesi baca.
+ * Pindah halaman dilakukan lewat `reloadReaderTo()` (lihat penjelasan di
+ * atasnya). Berkas PDF-nya tidak selalu diunduh ulang berkat cache + ETag
+ * dari `books.file`, jadi pindah halaman tidak menghabiskan kuota rate limit.
  *
  * Kenapa tidak melacak posisi scroll secara otomatis? Viewer PDF bawaan browser
  * berjalan di dalam plugin terpisah yang tidak bisa dibaca dari halaman ini.
@@ -740,13 +775,14 @@ function setBusy(element, isBusy) {
 function initReader() {
     const form = document.querySelector('[data-reader-jump]');
     const input = document.querySelector('[data-reader-page]');
-    const target = document.querySelector('[data-reader-target]');
     const saveField = document.querySelector('[data-reader-save]');
 
-    if (!form || !input || !target) return;
+    if (!form || !input) return;
 
-    const fileUrl = target.dataset.readerFileUrl;
-    if (!fileUrl) return;
+    // Cukup keberadaannya. Elemen `<object>`-nya sendiri TIDAK disimpan di
+    // variabel: ia berganti tiap kali user pindah halaman, jadi referensi lama
+    // akan menunjuk elemen yang sudah terlepas dari DOM.
+    if (!document.querySelector('[data-reader-target]')) return;
 
     const max = input.max ? Number(input.max) : null;
 
@@ -767,9 +803,7 @@ function initReader() {
 
         const page = resolvePage();
 
-        // Hanya bagian fragment yang berubah, jadi browser tidak meminta
-        // ulang berkasnya.
-        target.setAttribute('data', `${fileUrl}#page=${page}`);
+        reloadReaderTo(page);
 
         // Sinkronkan input "Simpan posisi" supaya tombolnya menyimpan halaman
         // yang baru saja dibuka, bukan yang lama.
@@ -782,6 +816,172 @@ function initReader() {
         url.searchParams.set('page', String(page));
         window.history.replaceState({}, '', url);
     });
+}
+
+/**
+ * Zoom pembaca PDF (Task 11.9).
+ *
+ * Kontrolnya hanya memperbesar/memperkecil KOTAK `<object>` lewat variabel CSS
+ * `--reader-zoom` (lihat `.reader-viewport` di app.css). Viewer PDF di dalamnya
+ * menggambar ulang mengikuti lebar kotak, sehingga teks benar-benar membesar —
+ * bukan sekadar di-scale secara visual yang membuat teks pecah.
+ *
+ * Rentang 50%–200% dengan langkah 10%. Tanpa JavaScript, toolbar tetap
+ * tersembunyi (`hidden` di Blade dilepas di sini) karena tombolnya tidak akan
+ * berbuat apa-apa; pembaca yang mematikan JS tetap punya zoom bawaan browser
+ * dan form pindah halaman.
+ */
+function initReaderZoom() {
+    const controls = document.querySelector('[data-reader-zoom-controls]');
+    const viewport = document.querySelector('[data-reader-viewport]');
+
+    if (!controls || !viewport) return;
+
+    const decrease = controls.querySelector('[data-reader-zoom-out]');
+    const increase = controls.querySelector('[data-reader-zoom-in]');
+    const reset = controls.querySelector('[data-reader-zoom-reset]');
+    const level = controls.querySelector('[data-reader-zoom-level]');
+
+    if (!decrease || !increase || !reset || !level) return;
+
+    const MIN = 0.5;
+    const MAX = 2;
+    const STEP = 0.1;
+    let zoom = 1;
+
+    const apply = () => {
+        viewport.style.setProperty('--reader-zoom', String(zoom));
+        level.textContent = `${Math.round(zoom * 100)}%`;
+
+        // Batas dijepit, bukan dilempar error: tombol yang sudah di ujung
+        // rentang dinonaktifkan supaya klik terasa menjawab.
+        decrease.disabled = zoom <= MIN;
+        increase.disabled = zoom >= MAX;
+    };
+
+    decrease.addEventListener('click', () => {
+        zoom = Math.max(MIN, Number((zoom - STEP).toFixed(2)));
+        apply();
+    });
+
+    increase.addEventListener('click', () => {
+        zoom = Math.min(MAX, Number((zoom + STEP).toFixed(2)));
+        apply();
+    });
+
+    reset.addEventListener('click', () => {
+        zoom = 1;
+        apply();
+    });
+
+    apply();
+
+    // Toolbar muncul setelah JS siap menanganinya.
+    controls.classList.remove('hidden');
+    controls.classList.add('flex');
+}
+
+/**
+ * Tutup/buka lagi tampilan PDF (Task 11.10).
+ *
+ * "Tutup" hanya MENYEMBUNYIKAN viewport — elemen `<object>` tidak dilepas dari
+ * DOM, supaya kebanyakan browser masih menyimpan dokumennya (dan posisi
+ * internalnya) selama halaman tetap terbuka.
+ *
+ * Saat dibuka lagi, halaman terakhir yang diketahui halaman ini dipasang
+ * kembali: nilai input "Halaman" (selalu disinkronkan `initReader`), fallback
+ * ke fragment `#page=` pada atribut `data`. Elemen `<object>` hanya diganti
+ * lewat `reloadReaderTo()` kalau halamannya memang berbeda — selama masih
+ * sama, dokumennya dibiarkan utuh supaya posisi internal yang tersimpan di
+ * memori tidak hilang.
+ *
+ * Batasan yang sama dengan pelacakan posisi biasa: viewer bawaan browser
+ * tidak memberi tahu halaman yang sedang dilihat, jadi kalau user hanya
+ * menggeser di dalam viewer (tanpa form), yang dipulihkan adalah halaman
+ * terakhir dari kontrol halaman milik halaman ini.
+ */
+function initReaderClose() {
+    const close = document.querySelector('[data-reader-close]');
+    const open = document.querySelector('[data-reader-open]');
+    const viewport = document.querySelector('[data-reader-viewport]');
+    const closed = document.querySelector('[data-reader-closed]');
+    const closedPage = document.querySelector('[data-reader-closed-page]');
+    const controls = document.querySelector('[data-reader-zoom-controls]');
+
+    if (!close || !open || !viewport || !closed) return;
+
+    const input = document.querySelector('[data-reader-page]');
+    const saveField = document.querySelector('[data-reader-save]');
+
+    // Elemen `<object>` boleh berganti (lihat `reloadReaderTo`), jadi nilainya
+    // dibaca dari DOM setiap kali dibutuhkan, bukan disimpan sekali di sini.
+    const readerData = () => document.querySelector('[data-reader-target]')?.getAttribute('data') ?? '';
+
+    let lastPage = 1;
+
+    const knownPage = () => {
+        const fromInput = Number.parseInt(input?.value ?? '', 10);
+        if (Number.isFinite(fromInput) && fromInput > 0) return fromInput;
+
+        const data = readerData();
+        if (!data) return 1;
+
+        const hash = new URL(data, window.location.href).hash;
+        const fromFragment = Number.parseInt(hash.replace('#page=', ''), 10);
+
+        return Number.isFinite(fromFragment) && fromFragment > 0 ? fromFragment : 1;
+    };
+
+    const show = () => {
+        const data = readerData();
+        const fragment = data ? new URL(data, window.location.href).hash : '';
+
+        if (fragment !== `#page=${lastPage}`) {
+            reloadReaderTo(lastPage);
+        }
+
+        if (input) input.value = String(lastPage);
+        if (saveField) saveField.value = String(lastPage);
+
+        // Alamat bar tetap sinkron supaya refresh setelah membuka ulang
+        // tetap memuat halaman yang sama.
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', String(lastPage));
+        window.history.replaceState({}, '', url);
+
+        closed.classList.add('hidden');
+        closed.classList.remove('flex');
+        viewport.classList.remove('hidden');
+
+        if (controls) {
+            controls.classList.remove('hidden');
+            controls.classList.add('flex');
+        }
+
+        close.focus();
+    };
+
+    close.addEventListener('click', () => {
+        lastPage = knownPage();
+
+        if (closedPage?.dataset.pageTemplate) {
+            closedPage.textContent = closedPage.dataset.pageTemplate.replace(':page', String(lastPage));
+        }
+
+        viewport.classList.add('hidden');
+
+        if (controls) {
+            controls.classList.add('hidden');
+            controls.classList.remove('flex');
+        }
+
+        closed.classList.remove('hidden');
+        closed.classList.add('flex');
+
+        open.focus();
+    });
+
+    open.addEventListener('click', show);
 }
 
 /**
@@ -801,6 +1001,8 @@ function initReader() {
  */
 function initDropdowns() {
     const registry = [];
+    // Jarak minimum panel dari tepi layar, dalam piksel.
+    const GUTTER = 12;
 
     document.querySelectorAll('[data-dropdown]').forEach((trigger, index) => {
         const menu =
@@ -819,6 +1021,52 @@ function initDropdowns() {
             trigger.setAttribute('aria-expanded', 'false');
         };
 
+        /*
+        | Kunci panel ke dalam layar (laporan bug: panel notifikasi terbuka
+        | "setengah" / tidak kelihatan).
+        |
+        | Posisi dasar panel berasal dari class `right-0` / `left-0` yang
+        | menempel pada pemicu. Kalau pemicu itu dekat tepi kiri — lonceng
+        | notifikasi pindah ke baris kedua topbar saat layar sempit, atau
+        | desktop tempat panel melebar melewati batas konten — panel selebar
+        | ~300px keluar dari viewport dan isinya terpotong. Panelnya karena
+        | itu digeser sejauh kelebihannya, memakai jangkar yang sama supaya
+        | tetap menempel pemicunya.
+        |
+        | Ukurannya memakai `offsetWidth` + rect pembungkus, BUKAN
+        | `getBoundingClientRect()` panel: begitu dibuka, keyframe `pop`
+        | (scale 0.92) masih berjalan sehingga rect panel sedang menyusut dan
+        | hasil ukurnya meleset.
+        */
+        const clamp = () => {
+            menu.style.removeProperty('right');
+            menu.style.removeProperty('left');
+
+            if (menu.hidden) return;
+
+            const anchor = menu.parentElement?.getBoundingClientRect();
+            if (!anchor) return;
+
+            const width = menu.offsetWidth;
+            const anchoredRight = getComputedStyle(menu).right !== 'auto';
+            const left = anchoredRight ? anchor.right - width : anchor.left;
+
+            let shift = 0;
+
+            if (left < GUTTER) {
+                shift = GUTTER - left;
+            } else if (left + width > window.innerWidth - GUTTER) {
+                shift = window.innerWidth - GUTTER - (left + width);
+            }
+
+            if (shift === 0) return;
+
+            // `right` positif menggeser panel ke kiri, jadi ke kanan
+            // diberi nilai negatif; `left` kebalikannya.
+            if (anchoredRight) menu.style.right = `${-shift}px`;
+            else menu.style.left = `${shift}px`;
+        };
+
         const open = (focus = null) => {
             registry.forEach((entry) => {
                 if (entry.menu !== menu) entry.close();
@@ -826,6 +1074,8 @@ function initDropdowns() {
 
             menu.hidden = false;
             trigger.setAttribute('aria-expanded', 'true');
+
+            clamp();
 
             const list = items();
             if (focus === 'first') list[0]?.focus();
@@ -838,7 +1088,7 @@ function initDropdowns() {
         trigger.setAttribute('aria-expanded', 'false');
         menu.hidden = true;
 
-        registry.push({ trigger, menu, close, open });
+        registry.push({ trigger, menu, close, open, clamp });
 
         trigger.addEventListener('click', (event) => {
             event.preventDefault();
@@ -907,6 +1157,14 @@ function initDropdowns() {
             if (entry.menu.hidden) return;
             entry.close();
             entry.trigger.focus();
+        });
+    });
+
+    // Layar berubah ukuran (rotasi HP, memperkecil jendela): panel yang sedang
+    // terbuka ikut dikunci ulang, kalau tidak bisa tersisa di luar layar.
+    window.addEventListener('resize', () => {
+        registry.forEach((entry) => {
+            if (!entry.menu.hidden) entry.clamp();
         });
     });
 }
@@ -1802,6 +2060,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initSubmitGuards();
     initAjaxForms();
     initReader();
+    initReaderZoom();
+    initReaderClose();
     initDropdowns();
     initNotificationBell();
     initModals();

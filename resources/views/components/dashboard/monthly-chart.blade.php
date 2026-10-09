@@ -1,10 +1,19 @@
 @props([
     'items',
     'title',
+
+    // Kunci terjemahan, bukan teks jadi: angka (total, jumlah bulan) tetap
+    // dihitung komponen supaya formatnya seragam di semua grafik, dan teksnya
+    // tetap hidup di `lang/*` sesuai aturan proyek.
+    'totalKey' => 'dashboard.loans_chart_total',
+    'altKey' => 'dashboard.loans_chart_alt',
+    'emptyTitleKey' => 'dashboard.loans_chart_empty',
+    'emptyDescriptionKey' => 'dashboard.loans_chart_empty_description',
+    'columnKey' => 'dashboard.chart_loans',
 ])
 
 {{--
-    Grafik batang jumlah peminjaman per bulan (Task 26.2).
+    Grafik batang per bulan (Task 26.2 untuk pustakawan, Task 27.2 untuk anggota).
 
     Dirender sepenuhnya di server sebagai HTML + CSS, bukan SVG yang digambar
     JS: dasbor harus tetap terbaca kalau JavaScript gagal dimuat, dan angkanya
@@ -19,11 +28,17 @@
     Warna batang memakai token `tertiary`, bukan hijau/kuning/merah: ketiga
     warna itu sudah dibooking untuk status buku (tersedia/dipinjam/terlambat)
     dan dipakai badge di halaman yang sama.
+
+    Kelima prop kunci terjemahan bersifat OPSIONAL dan default-nya tetap teks
+    peminjaman milik Task 26, jadi dasbor pustakawan tampil identik. Grafik
+    anggota hanya perlu mengganti kuncinya — logika batang, tabel sr-only, dan
+    aria-label tidak ditulis ulang.
 --}}
 @php
     $total = (int) $items->sum('value');
     $max = max(1, (int) $items->max('value'));
     $hasData = $total > 0;
+    $count = number_format($total, 0, ',', '.');
 @endphp
 
 <div {{ $attributes->merge(['class' => 'card p-5']) }}>
@@ -32,15 +47,15 @@
 
         @if ($hasData)
             <span class="badge badge-muted tabular-nums">
-                {{ __('dashboard.loans_chart_total', ['count' => number_format($total, 0, ',', '.')]) }}
+                {{ __($totalKey, ['count' => $count]) }}
             </span>
         @endif
     </div>
 
     @unless ($hasData)
         <x-empty-state class="mt-4"
-                       :title="__('dashboard.loans_chart_empty')"
-                       :description="__('dashboard.loans_chart_empty_description')" />
+                       :title="__($emptyTitleKey)"
+                       :description="__($emptyDescriptionKey)" />
     @else
         {{--
             `role="img"` + `aria-label` membuat pembaca layar menyebut ringkasan
@@ -50,7 +65,7 @@
         --}}
         <div class="mt-5 flex h-44 items-end gap-1.5 border-b border-hairline"
              role="img"
-             aria-label="{{ __('dashboard.loans_chart_alt', ['months' => $items->count(), 'count' => number_format($total, 0, ',', '.')]) }}">
+             aria-label="{{ __($altKey, ['months' => $items->count(), 'count' => $count]) }}">
             @foreach ($items as $item)
                 @php
                     $height = (int) round($item['value'] / $max * 100);
@@ -74,7 +89,7 @@
             <thead>
                 <tr>
                     <th scope="col">{{ __('dashboard.chart_month') }}</th>
-                    <th scope="col">{{ __('dashboard.chart_loans') }}</th>
+                    <th scope="col">{{ __($columnKey) }}</th>
                 </tr>
             </thead>
             <tbody>

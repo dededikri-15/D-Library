@@ -33,7 +33,13 @@ class AddSecurityHeaders
             "form-action 'self'",
             "frame-ancestors 'self'",
             "frame-src 'self'",
-            "object-src 'none'",
+            // 'self', bukan 'none': halaman membaca (`books.read`) menyematkan
+            // PDF-nya sendiri lewat `<object type="application/pdf">`, dan
+            // `object-src 'none'` memblokir SEMUA sematan — termasuk yang
+            // same-origin — sehingga pembaca selalu jatuh ke pesan fallback
+            // "Browser ini tidak menampilkan PDF secara langsung" walaupun
+            // stream-nya benar. 'self' tetap menutup sumber eksternal.
+            "object-src 'self'",
             "script-src 'self' 'nonce-{$nonce}'{$viteDevSources}",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$viteDevSources}",
             "font-src 'self' data: https://fonts.gstatic.com",
