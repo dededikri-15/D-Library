@@ -31,24 +31,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Daftar Tunggu (Waiting List)
+    | Kartu Perpustakaan Digital
     |--------------------------------------------------------------------------
     |
-    | Anggota boleh mengantre buku yang sedang habis dipinjam. Begitu buku
-    | kembali tersedia, seluruh yang mengantre menerima notifikasi lonceng.
+    | Setiap anggota punya satu kartu digital dengan nomor unik dan masa
+    | berlaku. Kartu dibuat otomatis saat anggota pertama kali membuka
+    | halaman kartunya.
     |
     */
 
-    'waiting_list' => [
-        // Batas jumlah buku yang bisa diantre satu anggota sekaligus.
-        // Tanpa batas, satu akun bisa mengantre seluruh katalog dan
-        // membanjiri loncengnya sendiri saat pengembalian massal.
-        'max_per_user' => (int) env('PERPUSTAKAAN_WAITING_LIST_MAX_PER_USER', 5),
+    'library_card' => [
+        // Lama berlaku kartu, dalam bulan. Default 12 bulan (1 tahun).
+        'validity_months' => (int) env('PERPUSTAKAAN_LIBRARY_CARD_VALIDITY_MONTHS', 12),
 
-        // Berapa jam setelah notifikasi "buku tersedia" sebuah entri
-        // dianggap kedaluwarsa dan dihapus. Anggota yang tidak bertindak
-        // diberi kesempatan lagi pada ronde berikutnya dengan antre ulang.
-        'notify_window_hours' => (int) env('PERPUSTAKAAN_WAITING_LIST_NOTIFY_WINDOW_HOURS', 24),
+        // Awalan nomor kartu. Nomor = prefix + ID user (nol di depan).
+        'prefix' => env('PERPUSTAKAAN_LIBRARY_CARD_PREFIX', 'DLP'),
     ],
 
     /*

@@ -9,6 +9,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LibraryCardController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailboxController;
@@ -17,7 +18,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\ReadingHistoryController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\WaitingListController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -269,21 +269,9 @@ Route::middleware(['auth', 'role:anggota'])->group(function () {
     Route::post('/favorit/{book}', [FavoriteController::class, 'store'])->whereNumber('book')->name('favorites.store');
     Route::delete('/favorit/{book}', [FavoriteController::class, 'destroy'])->whereNumber('book')->name('favorites.destroy');
 
-    /*
-     * Daftar tunggu buku yang sedang habis dipinjam.
-     *
-     * `whereNumber('book')` WAJIB di semua route berparameter model
-     * (jebakan PostgreSQL vs SQLite — lihat AGENTS.md): tanpa itu
-     * `/antrean/abc` mencapai `where id = 'abc'` dan membuat PostgreSQL
-     * melempar QueryException -> HTTP 500.
-     */
-    Route::get('/antrean', [WaitingListController::class, 'index'])->name('waiting-lists.index');
-    Route::post('/antrean/{book}', [WaitingListController::class, 'store'])
-        ->whereNumber('book')
-        ->name('waiting-lists.store');
-    Route::delete('/antrean/{book}', [WaitingListController::class, 'destroy'])
-        ->whereNumber('book')
-        ->name('waiting-lists.destroy');
+    // Kartu perpustakaan digital. Satu anggota hanya bisa melihat
+    // kartunya sendiri — tidak ada parameter user di route ini.
+    Route::get('/kartu', [LibraryCardController::class, 'show'])->name('library-cards.show');
 
     Route::get('/riwayat-baca', [ReadingHistoryController::class, 'index'])->name('reading-histories.index');
     Route::post('/riwayat-baca', [ReadingHistoryController::class, 'store'])->name('reading-histories.store');

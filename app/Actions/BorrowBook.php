@@ -7,7 +7,6 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Loan;
 use App\Models\User;
-use App\Models\WaitingList;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -99,31 +98,6 @@ class BorrowBook
                     ? Book::STATUS_AVAILABLE
                     : Book::STATUS_BORROWED,
             ]);
-
-            /*
-             * Daftar tunggu: dua penyesuaian dalam satu transaksi.
-             *
-             * 1. Peminjam sendiri keluar dari antrean buku ini — dia sudah
-             *    dapat yang dia tunggu, barisnya tidak boleh tersisa sebagai
-             *    sisa klaim notifikasi.
-             * 2. Sisa entri di-reset `notified_at`-nya: penanda itu menandai
-             *    SATU ronde ketersediaan, dan ronde baru dimulai begitu buku
-             *    kembali keluar dari rak. Tanpa reset, pengembalian
-             *    berikutnya tidak pernah mengabari mereka lagi karena semua
-             *    baris sudah terlanjur "diklaim".
-             *
-             * Di-reset di sini (bukan di pengembalian) karena titik ini
-             * selalu tercapai: BorrowBook adalah satu-satunya pintu buku
-             * keluar dari rak.
-             */
-            WaitingList::query()
-                ->where('book_id', $book->id)
-                ->where('user_id', $member->id)
-                ->delete();
-
-            WaitingList::query()
-                ->where('book_id', $book->id)
-                ->update(['notified_at' => null]);
 
             return $loan;
         });

@@ -161,36 +161,6 @@
                                       title="{{ $borrowState['reason'] }}">
                                     {{ __('book.borrow') }}
                                 </span>
-
-                                {{-- Daftar tunggu (Task 24.6). Hanya muncul kalau
-                                     satu-satunya alasan tombol pinjam mati adalah
-                                     tidak ada eksemplar tersisa — kasus lain
-                                     (buku tidak aktif / sedang dipinjam sendiri)
-                                     memang ditolak server, jadi tidak ditawarkan. --}}
-                                @if ($borrowState['queueable'])
-                                    <form method="POST"
-                                          data-ajax
-                                          data-ajax-fallback
-                                          data-waiting-toggle
-                                          data-store-url="{{ route('waiting-lists.store', $book) }}"
-                                          data-destroy-url="{{ route('waiting-lists.destroy', $book) }}"
-                                          action="{{ $waitingListed ? route('waiting-lists.destroy', $book) : route('waiting-lists.store', $book) }}">
-                                        @csrf
-                                        @if ($waitingListed) @method('DELETE') @endif
-                                        <button type="submit" class="btn btn-secondary btn-lg {{ $waitingListed ? 'text-tertiary' : '' }}" data-toggle-button
-                                                data-label-add="{{ __('book.join_waiting') }}"
-                                                data-label-remove="{{ __('book.leave_waiting') }}"
-                                                aria-pressed="{{ $waitingListed ? 'true' : 'false' }}">
-                                            <svg class="h-4 w-4" data-toggle-icon
-                                                 fill="{{ $waitingListed ? 'currentColor' : 'none' }}"
-                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                            </svg>
-                                            <span data-toggle-label>{{ $waitingListed ? __('book.leave_waiting') : __('book.join_waiting') }}</span>
-                                        </button>
-                                    </form>
-                                @endif
                             @endif
                         @elseif (auth()->user()->isStaff())
                             <a href="{{ route('books.edit', $book) }}" class="btn btn-secondary btn-lg">

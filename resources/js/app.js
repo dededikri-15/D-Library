@@ -403,10 +403,9 @@ function initSubmitGuards() {
  *    selamanya.
  *
  * 4. Form yang sama melakukan dua aksi berbeda. `form[data-favorite-toggle]`
- *    dan `form[data-waiting-toggle]` menukar `action` DAN field `_method`
- *    (POST -> DELETE) sekaligus. Kalau hanya `action` yang ditukar, klik
- *    kedua akan mengirim POST ke endpoint hapus, dan server akan membalas
- *    "route tidak cocok".
+ *    menukar `action` DAN field `_method` (POST -> DELETE) sekaligus. Kalau
+ *    hanya `action` yang ditukar, klik kedua akan mengirim POST ke endpoint
+ *    hapus, dan server akan membalas "route tidak cocok".
  *
  * 5. Tombol harus dinonaktifkan selama request. Tanpa itu, klik ganda mengirim
  *    dua request; untuk favorit yang idempoten tidak merusak apa pun, tapi
@@ -583,16 +582,12 @@ function firstErrorMessage(errors) {
  * Dipisah dari pengiriman request supaya "apa yang berubah kalau sukses"
  * bisa dibaca tanpa harus menelusuri rantai `.then()` yang panjang.
  *
- * Dua toggle memakai logika yang persis sama — bedanya hanya kunci payload
- * dari server dan kelas warna yang menandai keadaan aktif. Favorit memakai
- * `is_favorite` / `text-overdue`; daftar tunggu memakai `queued` /
- * `text-tertiary` (indigo, aksen yang sama dengan badge antrean).
+ * Toggle favorit memakai payload `is_favorite` dan kelas `text-overdue`
+ * sebagai penanda keadaan aktif.
  */
 function applyAjaxResult(form, body) {
     if (form.matches('[data-favorite-toggle]')) {
         applyToggleResult(form, body.is_favorite === true, 'text-overdue');
-    } else if (form.matches('[data-waiting-toggle]')) {
-        applyToggleResult(form, body.queued === true, 'text-tertiary');
     }
 }
 
@@ -2048,6 +2043,42 @@ function clearNotificationUnreadState(root) {
     if (text) text.textContent = root.dataset.emptyText;
 }
 
+/**
+ * Filter katalog diterapkan begitu dropdownnya diganti (Task 28.8).
+ *
+ * Alur lama: ubah dropdown → ingat menekan "Terapkan filter" → tunggu reload.
+ * Langkah "ingat menekan tombol" itulah yang membuat panel filter terasa
+ * berat, dan gejalanya sering muncul sebagai "saya sudah pilih kategorinya,
+ * kok hasilnya tidak berubah?". Dengan submit otomatis, satu pilihan = satu
+ * hasil, dan pengguna tetap bisa memilih beberapa filter berurutan karena
+ * nilai form ikut terkirim pada tiap pengiriman.
+ *
+ * Tombol "Terapkan filter" TIDAK dihapus: pencarian lewat Enter dan pengguna
+ * yang lebih suka memilih dulu baru menerapkan tetap terlayani.
+ *
+ * Delegated ke `document` supaya form yang dirender ulang (misalnya setelah
+ * login) otomatis tercakup tanpa perlu mendaftarkan ulang tiap select.
+ */
+function initFilterAutosubmit() {
+    document.addEventListener('change', (event) => {
+        const select = event.target;
+
+        if (!(select instanceof HTMLSelectElement)) return;
+
+        const form = select.form;
+        if (!form || !form.matches('form[data-submit-on-change]')) return;
+
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+            return;
+        }
+
+        // `submit()` lompati handler `submit` biasa; cukup sebagai cadangan
+        // untuk browser yang belum mendukung `requestSubmit()`.
+        form.submit();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initNavToggle();
@@ -2067,6 +2098,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initModals();
     initSidebar();
     initSearch();
+    initFilterAutosubmit();
     initQuickAdd();
     initGlobalStatusAndClock();
     initBackToTop();

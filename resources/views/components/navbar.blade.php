@@ -131,17 +131,6 @@
                 : null,
             $user?->isMember()
                 ? [
-                    'route' => 'waiting-lists.index',
-                    'pattern' => 'waiting-lists.*',
-                    'label' => __('navigation.waiting_list'),
-                    // Ikon daftar bergaris: antrean adalah daftar, bukan jam —
-                    // jam sudah dipakai "Riwayat Pinjam" di menu yang sama.
-                    'icon' =>
-                        'M8.25 6.75h12M8.25 12h12M8.25 17.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z',
-                ]
-                : null,
-            $user?->isMember()
-                ? [
                     'route' => 'reading-histories.index',
                     'pattern' => 'reading-histories.*',
                     'label' => __('navigation.reading_history'),
@@ -150,10 +139,10 @@
                 : null,
             $user?->isMember()
                 ? [
-                    'route' => 'mailbox.index',
-                    'pattern' => 'mailbox.*',
-                    'label' => __('navigation.mailbox'),
-                    'icon' => 'M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 5.625a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75',
+                    'route' => 'library-cards.show',
+                    'pattern' => 'library-cards.*',
+                    'label' => __('navigation.library_card'),
+                    'icon' => 'M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z',
                 ]
                 : null,
         ]),

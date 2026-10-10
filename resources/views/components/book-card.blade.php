@@ -25,12 +25,34 @@
                      transition-opacity duration-300 group-hover:opacity-100 motion-reduce:opacity-0"
               aria-hidden="true"></span>
 
+        {{--
+            Penanda file digital di sisi cover. Dua keadaan, dua penampilan,
+            supaya pembaca tidak perlu menebak:
+              • ada file  → pill solid "PDF online"
+              • tidak ada → pill putus-putus "PDF belum tersedia" (abu, redup)
+            Sengaja TIDAK memakai warna status (hijau/kuning/merah) supaya tidak
+            diartikan sebagai ketersediaan pinjaman — di sini topiknya akses
+            baca, bukan antrean. Label status tetap milik <x-status-badge>.
+        --}}
         @if ($book->hasFile())
-            <span class="absolute top-3 right-3 badge bg-primary/80 text-on-brand backdrop-blur-sm">
-                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
+            <span class="absolute top-3 right-3 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-hairline-strong
+                         bg-surface/90 px-2.5 py-1 text-label font-semibold text-primary shadow-card backdrop-blur"
+                  title="{{ __('book.pdf_online_hint') }}">
+                <svg class="h-3.5 w-3.5 text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19.5 14.25v-2.63c0-1.14-.46-2.23-1.28-3.03l-2.4-2.4a4.28 4.28 0 0 0-3.04-1.26H7.5m10.5 9.04v2.63c0 1.14-.46 2.23-1.28 3.03l-2.4 2.4a4.28 4.28 0 0 1-3.04 1.26H7.5m10.5-9.04H4.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5h3.09a1.5 1.5 0 0 0 1.06-.44l1.69-1.7a1.5 1.5 0 0 1 1.06-.44h3.6a1.5 1.5 0 0 1 1.5 1.5v3.09a1.5 1.5 0 0 0 .44 1.06l1.7 1.69a1.5 1.5 0 0 0 1.06.44h1.5a1.5 1.5 0 0 1 1.5 1.5Z"/>
                 </svg>
-                PDF
+                {{ __('book.pdf_online') }}
+            </span>
+        @else
+            <span class="absolute top-3 right-3 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-dashed
+                         border-hairline-strong bg-surface/70 px-2.5 py-1 text-label font-medium text-secondary backdrop-blur"
+                  title="{{ __('book.pdf_missing_hint') }}">
+                <svg class="h-3.5 w-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19.5 14.25v-2.63c0-1.14-.46-2.23-1.28-3.03l-2.4-2.4a4.28 4.28 0 0 0-3.04-1.26H7.5m10.5 9.04v2.63c0 1.14-.46 2.23-1.28 3.03l-2.4 2.4a4.28 4.28 0 0 1-3.04 1.26H7.5m10.5-9.04H4.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5h3.09a1.5 1.5 0 0 0 1.06-.44l1.69-1.7a1.5 1.5 0 0 1 1.06-.44h3.6a1.5 1.5 0 0 1 1.5 1.5v3.09a1.5 1.5 0 0 0 .44 1.06l1.7 1.69a1.5 1.5 0 0 0 1.06.44h1.5a1.5 1.5 0 0 1 1.5 1.5Z"/>
+                </svg>
+                {{ __('book.pdf_missing') }}
             </span>
         @endif
     </a>
@@ -71,5 +93,18 @@
                 {{ $book->publication_year ?? '—' }}
             </span>
         </div>
+
+        {{--
+            Slot aksi di dalam kartu. Katalog memakainya untuk "Pratinjau cepat"
+            dan tombol Edit, supaya tombol yang membuka kartu ini tidak terpisah
+            jadi elemen tersendiri di bawahnya. Halaman lain yang tidak mengirim
+            isi slot tetap mendapat kartu tanpa bagian ini (`$slot` tidak pernah
+            null pada komponen Blade, jadi yang dicek kekosongannya).
+        --}}
+        @if (! $slot->isEmpty())
+            <div class="mt-3 space-y-2 border-t border-hairline pt-3">
+                {{ $slot }}
+            </div>
+        @endif
     </div>
 </article>

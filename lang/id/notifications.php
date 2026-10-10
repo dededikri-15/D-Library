@@ -79,10 +79,6 @@ return [
             'body' => ':user_name terlambat mengembalikan :book_title sejak :due_at — :overdue_days hari.',
             'fine_notice' => 'Denda sementara Rp :fine.',
         ],
-        'book_available' => [
-            'title' => 'Buku yang Anda tunggu tersedia',
-            'body' => ':book_title kembali tersedia dan siap dipinjam. Buruan sebelum diambil orang lain.',
-        ],
 
         /*
         | Jejak aksi (ActionLogged): dikirim ke PELAKUNYA sendiri ketika
@@ -172,14 +168,6 @@ return [
         'favorite_removed' => [
             'title' => 'Dihapus dari favorit',
             'body' => ':subject dihapus dari daftar favorit Anda.',
-        ],
-        'waiting_list_joined' => [
-            'title' => 'Masuk daftar tunggu',
-            'body' => 'Anda mengantre buku :subject. Kami akan memberi tahu begitu tersedia.',
-        ],
-        'waiting_list_left' => [
-            'title' => 'Keluar daftar tunggu',
-            'body' => 'Anda membatalkan antrean buku :subject.',
         ],
         'reading_saved' => [
             'title' => 'Posisi baca tersimpan',

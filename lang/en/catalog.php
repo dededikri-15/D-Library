@@ -31,6 +31,7 @@ return [
     'reset' => 'Reset',
     'results_count' => 'Found :count books.',
     'sorted_as' => 'Sorted by: :sort',
+    'remove_filter' => 'Remove this filter',
     'book_not_found' => 'No books found',
     'empty_description' => 'Try another keyword or reset the active filters.',
     'reset_filters' => 'Reset filters',

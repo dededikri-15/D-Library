@@ -31,6 +31,7 @@ return [
     'reset' => 'Reset',
     'results_count' => 'Menampilkan :count buku ditemukan.',
     'sorted_as' => 'Diurutkan: :sort',
+    'remove_filter' => 'Hapus filter ini',
     'book_not_found' => 'Buku tidak ditemukan',
     'empty_description' => 'Coba kata kunci lain, atau reset filter yang sedang aktif.',
     'reset_filters' => 'Reset filter',

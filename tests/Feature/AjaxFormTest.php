@@ -185,8 +185,9 @@ class AjaxFormTest extends TestCase
 
         $this->assertStringContainsString('data-ajax', $content);
         $this->assertStringContainsString('data-favorite-toggle', $content);
-        // Tombol dalam form toggle memakai atribut generik (`data-toggle-*`),
-        // karena daftar tunggu memakai bentuk form yang persis sama.
+        // Tombol dalam form toggle memakai atribut generik (`data-toggle-*`)
+        // supaya `applyToggleResult()` bisa dipakai ulang oleh form toggle
+        // lain tanpa mengubah JS-nya.
         $this->assertStringContainsString('data-toggle-button', $content);
         $this->assertStringContainsString('data-toggle-label', $content);
         $this->assertStringContainsString('data-toggle-icon', $content);

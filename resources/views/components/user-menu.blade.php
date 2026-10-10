@@ -59,17 +59,6 @@
                 : null,
             $user?->isMember()
                 ? [
-                    'route' => 'waiting-lists.index',
-                    'pattern' => 'waiting-lists.*',
-                    'label' => __('navigation.waiting_list'),
-                    // Ikon daftar bergaris, bukan jam — jam sudah dipakai
-                    // "Riwayat Pinjam" di menu yang sama.
-                    'icon' =>
-                        'M8.25 6.75h12M8.25 12h12M8.25 17.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z',
-                ]
-                : null,
-            $user?->isMember()
-                ? [
                     'route' => 'reading-histories.index',
                     'pattern' => 'reading-histories.*',
                     'label' => __('navigation.reading_history'),
