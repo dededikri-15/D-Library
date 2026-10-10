@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Notifications\ActionLogged;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -469,30 +468,6 @@ class ActionNotificationTest extends TestCase
         $this->actingAs($staff)->delete(route('loans.destroy', $loan))->assertRedirect();
 
         $this->assertActionLogged($staff, 'loan_record_deleted');
-    }
-
-    /* ------------------------------------------------------------------
-     | Kotak masuk
-     * ----------------------------------------------------------------- */
-
-    public function test_menghapus_email_mailbox_mengirim_jejak_aksi(): void
-    {
-        Notification::fake();
-        $member = $this->member();
-
-        $id = DB::table('mail_messages')->insertGetId([
-            'from_address' => 'kirim@perpustakaan.test',
-            'from_name' => 'Perpustakaan',
-            'to_address' => $member->email,
-            'subject' => 'Uji Hapus Email',
-            'body' => 'Isi email.',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->actingAs($member)->delete(route('mailbox.destroy', $id))->assertRedirect();
-
-        $this->assertActionLogged($member, 'mail_deleted');
     }
 
     /* ------------------------------------------------------------------

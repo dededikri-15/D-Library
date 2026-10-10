@@ -17,7 +17,6 @@ return [
     'favorites' => 'Favorit',
     'reading_history' => 'Riwayat Baca',
     'library_card' => 'Kartu Perpustakaan',
-    'mailbox' => 'Kotak Masuk',
     'logout' => 'Keluar',
     'login' => 'Masuk',
     'register' => 'Daftar anggota',

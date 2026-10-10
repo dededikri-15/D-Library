@@ -201,9 +201,5 @@ return [
             'title' => 'Loan record deleted',
             'body' => 'The loan record for :subject was deleted.',
         ],
-        'mail_deleted' => [
-            'title' => 'Email deleted',
-            'body' => 'The email with subject :subject was deleted from the inbox.',
-        ],
     ],
 ];

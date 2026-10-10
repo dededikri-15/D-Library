@@ -43,9 +43,6 @@ return [
     'library_card' => [
         // Lama berlaku kartu, dalam bulan. Default 12 bulan (1 tahun).
         'validity_months' => (int) env('PERPUSTAKAAN_LIBRARY_CARD_VALIDITY_MONTHS', 12),
-
-        // Awalan nomor kartu. Nomor = prefix + ID user (nol di depan).
-        'prefix' => env('PERPUSTAKAAN_LIBRARY_CARD_PREFIX', 'DLP'),
     ],
 
     /*

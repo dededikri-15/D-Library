@@ -33,14 +33,13 @@ class LibraryCard extends Model
     /**
      * Nomor kartu untuk user tertentu.
      *
-     * Format: DLP-000001 (prefix + ID user, nol di depan sampai 6 digit).
-     * Deterministik — satu user selalu menghasilkan nomor yang sama.
+     * Format: TAHUN-URUTAN (contoh: 2026-0008). Deterministik — satu user
+     * selalu menghasilkan nomor yang sama. Tahun di depan membuat nomor
+     * terasa seperti kartu keanggotaan sungguhan, bukan sekadar ID database.
      */
     public static function numberFor(User $user): string
     {
-        $prefix = (string) config('perpustakaan.library_card.prefix', 'DLP');
-
-        return $prefix.'-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT);
+        return now()->year.'-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT);
     }
 
     /**

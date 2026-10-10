@@ -2079,6 +2079,20 @@ function initFilterAutosubmit() {
     });
 }
 
+/**
+ * Tombol cetak kartu perpustakaan. `onclick` inline diblokir CSP
+ * (`script-src 'nonce-…'` tanpa `unsafe-inline`), jadi dipasang di sini
+ * sebagai delegated listener berbasis atribut `data-print`.
+ */
+function initPrint() {
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-print]');
+        if (!button) return;
+
+        window.print();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initNavToggle();
@@ -2103,4 +2117,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initGlobalStatusAndClock();
     initBackToTop();
     initAvatarPreview();
+    initPrint();
 });

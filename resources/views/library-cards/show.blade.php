@@ -108,8 +108,9 @@
             {{ __('member.library_card_hint') }}
         </p>
 
-        {{-- Tombol cetak --}}
-        <button type="button" onclick="window.print()"
+        {{-- Tombol cetak. Handler di `app.js` (initPrint) — `onclick` inline
+             diblokir CSP. --}}
+        <button type="button" data-print
                 class="btn btn-secondary btn-sm mt-4 print:hidden">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"

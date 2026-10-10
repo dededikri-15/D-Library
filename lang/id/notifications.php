@@ -201,9 +201,5 @@ return [
             'title' => 'Catatan peminjaman dihapus',
             'body' => 'Catatan peminjaman :subject dihapus.',
         ],
-        'mail_deleted' => [
-            'title' => 'Email dihapus',
-            'body' => 'Email bersubjek :subject dihapus dari kotak masuk.',
-        ],
     ],
 ];

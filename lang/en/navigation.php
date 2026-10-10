@@ -17,7 +17,6 @@ return [
     'favorites' => 'Favorites',
     'reading_history' => 'Reading History',
     'library_card' => 'Library Card',
-    'mailbox' => 'Inbox',
     'logout' => 'Log out',
     'login' => 'Log in',
     'register' => 'Join as a member',

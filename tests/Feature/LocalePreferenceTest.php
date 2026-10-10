@@ -202,12 +202,6 @@ class LocalePreferenceTest extends TestCase
             ->assertSee('Continue reading');
 
         $this->actingAs($member)->withSession(['locale' => 'en'])
-            ->get(route('mailbox.index'))
-            ->assertOk()
-            ->assertSee('Sent notification emails')
-            ->assertSee('No emails yet');
-
-        $this->actingAs($member)->withSession(['locale' => 'en'])
             ->get(route('books.read', $book))
             ->assertOk()
             ->assertSee('Back to book details')

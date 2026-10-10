@@ -20,7 +20,7 @@ class LibraryCardFactory extends Factory
     {
         return [
             'user_id' => User::factory()->anggota(),
-            'card_number' => 'DLP-'.$this->faker->unique()->numberBetween(1, 999999),
+            'card_number' => now()->year.'-'.$this->faker->unique()->numberBetween(1, 9999),
             'valid_until' => now()->addYear()->toDateString(),
         ];
     }

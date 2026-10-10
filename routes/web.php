@@ -12,7 +12,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LibraryCardController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\MailboxController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublisherController;
@@ -278,10 +277,4 @@ Route::middleware(['auth', 'role:anggota'])->group(function () {
     Route::delete('/riwayat-baca/{readingHistory}', [ReadingHistoryController::class, 'destroy'])
         ->whereNumber('readingHistory')
         ->name('reading-histories.destroy');
-});
-
-Route::middleware(['auth', 'role:anggota'])->group(function () {
-    Route::get('/mailbox', [MailboxController::class, 'index'])->name('mailbox.index');
-    Route::get('/mailbox/{id}', [MailboxController::class, 'show'])->name('mailbox.show');
-    Route::delete('/mailbox/{id}', [MailboxController::class, 'destroy'])->name('mailbox.destroy');
 });
