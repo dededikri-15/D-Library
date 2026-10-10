@@ -154,6 +154,7 @@ class ValidationErrorTest extends TestCase
             'name' => 'Budi Santoso',
             'email' => 'Budi@Contoh.test',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1995-06-15',
             'password' => 'rahasia123',
             'password_confirmation' => 'rahasia123',
         ])->assertSessionHasNoErrors();

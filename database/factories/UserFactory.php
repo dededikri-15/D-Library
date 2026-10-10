@@ -58,4 +58,14 @@ class UserFactory extends Factory
             'role' => User::ROLE_ANGGOTA,
         ]);
     }
+
+    /**
+     * User dengan tanggal lahir (dipakai test kartu perpustakaan).
+     */
+    public function withBirthDate(?string $date = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'date_of_birth' => $date ?? fake()->dateTimeBetween('-50 years', '-10 years')->format('Y-m-d'),
+        ]);
+    }
 }

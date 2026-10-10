@@ -31,4 +31,7 @@ return [
     'card_expired' => 'Kartu sudah kedaluwarsa',
     'library_card_hint' => 'Kartu ini dibuat otomatis dan berlaku selama 1 tahun. Hubungi pustakawan untuk perpanjangan.',
     'print_card' => 'Cetak kartu',
+    'complete_profile_first' => 'Lengkapi tanggal lahir terlebih dahulu',
+    'complete_profile_hint' => 'Nomor kartu perpustakaan dibuat dari tanggal lahir Anda. Silakan isi tanggal lahir di halaman profil, lalu kembali ke sini.',
+    'go_to_profile' => 'Buka halaman profil',
 ];

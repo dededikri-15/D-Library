@@ -16,6 +16,7 @@ return [
     'gender_female' => 'Perempuan',
     'choose_gender' => 'Pilih jenis kelamin',
     'gender_not_set' => 'Belum diisi',
+    'date_of_birth' => 'Tanggal lahir',
     'role' => 'Role',
     'action' => 'Aksi',
     'you' => 'Anda',

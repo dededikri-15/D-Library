@@ -13,7 +13,7 @@ class LibraryCardTest extends TestCase
 
     private function anggota(): User
     {
-        return User::factory()->anggota()->create();
+        return User::factory()->anggota()->withBirthDate('1995-06-15')->create();
     }
 
     /* ------------------------------------------------------------------
@@ -59,12 +59,20 @@ class LibraryCardTest extends TestCase
         ]);
     }
 
-    public function test_nomor_kartu_deterministik_dari_id_user(): void
+    public function test_nomor_kartu_format_ddmmyy_dari_tanggal_lahir(): void
     {
         $member = $this->anggota();
 
-        $expected = now()->year.'-'.str_pad((string) $member->id, 4, '0', STR_PAD_LEFT);
-        $this->assertSame($expected, LibraryCard::numberFor($member));
+        // Lahir 15 Jun 1995 → 150695
+        $this->assertSame('150695', LibraryCard::numberFor($member));
+    }
+
+    public function test_nomor_kartu_tanpa_tanggal_lahir_memicu_exception(): void
+    {
+        $member = User::factory()->anggota()->create();
+
+        $this->expectException(\RuntimeException::class);
+        LibraryCard::numberFor($member);
     }
 
     public function test_membuka_kartu_dua_kali_tidak_membuat_baris_ganda(): void
@@ -87,6 +95,23 @@ class LibraryCardTest extends TestCase
     }
 
     /* ------------------------------------------------------------------
+     | Guard: tanggal lahir belum diisi
+     * ----------------------------------------------------------------- */
+
+    public function test_kartu_tidak_dibuat_jika_tanggal_lahir_kosong(): void
+    {
+        $member = User::factory()->anggota()->create();
+
+        $this->actingAs($member)
+            ->get('/kartu')
+            ->assertOk()
+            ->assertSee('Lengkapi tanggal lahir terlebih dahulu')
+            ->assertSee('Buka halaman profil');
+
+        $this->assertDatabaseCount('library_cards', 0);
+    }
+
+    /* ------------------------------------------------------------------
      | Tampilan
      * ----------------------------------------------------------------- */
 
@@ -97,7 +122,7 @@ class LibraryCardTest extends TestCase
         $this->actingAs($member)
             ->get('/kartu')
             ->assertOk()
-            ->assertSee(LibraryCard::numberFor($member))
+            ->assertSee('150695')
             ->assertSee($member->name)
             ->assertSee('Kartu aktif');
     }

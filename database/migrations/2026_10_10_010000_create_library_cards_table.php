@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
             /*
-             * Nomor kartu, format DLP-000001 (berbasis ID user).
+             * Nomor kartu, format TAHUN-URUTAN (contoh: 2026-0008).
              *
              * Deterministik: satu user selalu menghasilkan nomor yang sama,
              * jadi tidak ada risiko tabrakan nomor saat pembuatan bersamaan.

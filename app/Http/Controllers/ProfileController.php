@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileRequest;
+use App\Models\LibraryCard;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,18 @@ class ProfileController extends Controller
         );
 
         $user->update([...$data, ...$avatar]);
+
+        /*
+         * Jika tanggal lahir baru diisi atau berubah, dan kartu perpustakaan
+         * sudah ada, nomor kartu di-update ke format baru (DDMMYY dari
+         * tanggal lahir). Tanpa ini, user lama yang baru mengisi tanggal
+         * lahir akan tetap punya nomor kartu lama (tahun-ID).
+         */
+        if ($user->wasChanged('date_of_birth') && $user->hasBirthDate()) {
+            $user->libraryCard?->update([
+                'card_number' => LibraryCard::numberFor($user),
+            ]);
+        }
 
         // Jejak aksi ke pelakunya sendiri (lonceng). Tiga peristiwa bisa
         // terjadi dalam satu simpan, jadi masing-masing dinotifikasi terpisah

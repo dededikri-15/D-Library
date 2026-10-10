@@ -295,6 +295,7 @@ class MasterDataCrudTest extends TestCase
                 'name' => 'Anggota Baru',
                 'email' => 'anggota.baru@example.com',
                 'gender' => User::GENDER_PEREMPUAN,
+                'date_of_birth' => '1998-08-15',
                 'password' => 'rahasia-kuat-123',
                 'password_confirmation' => 'rahasia-kuat-123',
                 'role' => User::ROLE_ANGGOTA,
@@ -319,13 +320,15 @@ class MasterDataCrudTest extends TestCase
             ->get(route('users.create'))
             ->assertOk()
             ->assertSee('name="gender"', false)
+            ->assertSee('name="date_of_birth"', false)
             ->assertSee('Laki-laki')
             ->assertSee('Perempuan');
 
         $this->actingAs($staff)
             ->get(route('users.edit', $member))
             ->assertOk()
-            ->assertSee('value="perempuan" selected', false);
+            ->assertSee('value="perempuan" selected', false)
+            ->assertSee('name="date_of_birth"', false);
     }
 
     public function test_pustakawan_cannot_assign_removed_admin_role(): void

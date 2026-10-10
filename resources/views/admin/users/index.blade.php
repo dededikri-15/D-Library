@@ -42,6 +42,7 @@
                     <th>{{ __('users.name') }}</th>
                     <th>{{ __('users.email') }}</th>
                     <th>{{ __('users.gender') }}</th>
+                    <th>{{ __('users.date_of_birth') }}</th>
                     <th class="w-40">{{ __('users.role') }}</th>
                     <th class="w-40 text-right">{{ __('users.action') }}</th>
                 </tr>
@@ -65,6 +66,9 @@
                         </td>
                         <td class="text-secondary">{{ $user->email }}</td>
                         <td class="text-secondary">{{ $user->genderLabel() ?? __('users.gender_not_set') }}</td>
+                        <td class="text-secondary">
+                            {{ $user->date_of_birth?->translatedFormat('d M Y') ?? __('users.gender_not_set') }}
+                        </td>
                         <td>
                             <span class="badge bg-tertiary/10 text-tertiary">{{ $user->roleLabel() }}</span>
                         </td>
@@ -86,7 +90,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="p-0">
+                        <td colspan="6" class="p-0">
                             <x-empty-state class="border-0"
                                            :title="__('users.no_match')"
                                            :description="__('users.try_search_again')" />

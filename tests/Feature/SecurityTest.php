@@ -245,6 +245,7 @@ class SecurityTest extends TestCase
             'name' => 'Anggota Baru',
             'email' => 'baru@perpustakaan.test',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1995-01-01',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);

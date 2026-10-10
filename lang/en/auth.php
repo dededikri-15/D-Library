@@ -5,6 +5,7 @@ return [
     'login_description' => 'Use your registered account to access the library.',
     'email' => 'Email',
     'gender' => 'Gender',
+    'date_of_birth' => 'Date of birth',
     'password' => 'Password',
     'remember_me' => 'Remember me',
     'forgot_password' => 'Forgot password?',

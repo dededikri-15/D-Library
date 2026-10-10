@@ -24,6 +24,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'gender' => ['required', Rule::in(User::genders())],
+            'date_of_birth' => ['required', 'date', 'before:today'],
             'password' => ['required', 'confirmed', Password::defaults()],
 
             /*
@@ -51,6 +52,9 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'date_of_birth.required' => 'Tanggal lahir wajib diisi.',
+            'date_of_birth.date' => 'Tanggal lahir tidak valid.',
+            'date_of_birth.before' => 'Tanggal lahir harus sebelum hari ini.',
             'avatar.image' => 'Foto profil harus berupa gambar.',
             'avatar.mimes' => 'Foto profil harus berformat JPG, PNG, atau WebP.',
             'avatar.max' => 'Ukuran foto profil maksimal :max kilobyte.',
@@ -66,6 +70,7 @@ class RegisterRequest extends FormRequest
             'name' => 'nama',
             'email' => 'email',
             'gender' => 'jenis kelamin',
+            'date_of_birth' => 'tanggal lahir',
             'password' => 'kata sandi',
             'avatar' => 'foto profil',
         ];

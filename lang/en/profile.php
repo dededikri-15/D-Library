@@ -12,6 +12,7 @@ return [
     'name' => 'Name',
     'email' => 'Email',
     'gender' => 'Gender',
+    'date_of_birth' => 'Date of birth',
     'change_password' => 'Change password (optional)',
     'leave_password_blank' => 'Leave both fields blank to keep the current password.',
     'password' => 'New password',

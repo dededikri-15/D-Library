@@ -31,4 +31,7 @@ return [
     'card_expired' => 'Card has expired',
     'library_card_hint' => 'This card is created automatically and is valid for 1 year. Contact the librarian for renewal.',
     'print_card' => 'Print card',
+    'complete_profile_first' => 'Please complete your date of birth first',
+    'complete_profile_hint' => 'Your library card number is derived from your date of birth. Please fill in your date of birth on the profile page, then return here.',
+    'go_to_profile' => 'Open profile page',
 ];

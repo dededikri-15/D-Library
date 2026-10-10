@@ -16,6 +16,7 @@ return [
     'gender_female' => 'Female',
     'choose_gender' => 'Choose gender',
     'gender_not_set' => 'Not provided',
+    'date_of_birth' => 'Date of birth',
     'role' => 'Role',
     'action' => 'Action',
     'you' => 'You',

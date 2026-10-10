@@ -12,6 +12,7 @@ return [
     'name' => 'Nama',
     'email' => 'Email',
     'gender' => 'Jenis kelamin',
+    'date_of_birth' => 'Tanggal lahir',
     'change_password' => 'Ganti kata sandi (opsional)',
     'leave_password_blank' => 'Kosongkan kedua kolom bila kata sandi tidak ingin diubah.',
     'password' => 'Kata sandi baru',

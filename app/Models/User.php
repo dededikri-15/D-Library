@@ -38,6 +38,7 @@ class User extends Authenticatable
         'password',
         'role',
         'gender',
+        'date_of_birth',
         'avatar',
     ];
 
@@ -61,6 +62,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'date_of_birth' => 'date',
         ];
     }
 
@@ -97,6 +99,17 @@ class User extends Authenticatable
             self::GENDER_PEREMPUAN => __('users.gender_female'),
             default => null,
         };
+    }
+
+    /**
+     * Apakah user sudah mengisi tanggal lahir?
+     *
+     * Dipakai untuk menentukan apakah nomor kartu perpustakaan bisa
+     * dibuat (format DDMMYY membutuhkan tanggal lahir).
+     */
+    public function hasBirthDate(): bool
+    {
+        return $this->date_of_birth !== null;
     }
 
     public function activities(): HasMany

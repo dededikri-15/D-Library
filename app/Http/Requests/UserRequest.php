@@ -29,6 +29,7 @@ class UserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             'gender' => ['required', Rule::in(User::genders())],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
             // Saat edit, kata sandi boleh dikosongkan (artinya tidak diubah).
             'password' => [$this->isMethod('POST') ? 'required' : 'nullable', 'confirmed', Password::defaults()],
             'role' => ['required', Rule::in(User::roles())],
@@ -46,6 +47,7 @@ class UserRequest extends FormRequest
             'password' => 'kata sandi',
             'role' => 'role',
             'gender' => 'jenis kelamin',
+            'date_of_birth' => 'tanggal lahir',
         ];
     }
 

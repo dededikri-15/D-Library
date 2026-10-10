@@ -18,6 +18,10 @@
                        :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()"
                        :value="$user->gender" />
 
+        <x-form.input name="date_of_birth" :label="__('users.date_of_birth')" type="date"
+                      :value="$user->date_of_birth?->format('Y-m-d')" max="{{ now()->format('Y-m-d') }}"
+                      autocomplete="bday" />
+
         <x-form.select name="role" :label="__('users.role')" required :allowEmpty="false"
                        :options="collect(App\Models\User::roles())
                             ->mapWithKeys(fn ($role) => [$role => __('roles.'.$role)])

@@ -33,13 +33,21 @@ class LibraryCard extends Model
     /**
      * Nomor kartu untuk user tertentu.
      *
-     * Format: TAHUN-URUTAN (contoh: 2026-0008). Deterministik — satu user
-     * selalu menghasilkan nomor yang sama. Tahun di depan membuat nomor
-     * terasa seperti kartu keanggotaan sungguhan, bukan sekadar ID database.
+     * Format: DDMMYY dari tanggal lahir (contoh: lahir 15 Jun 1995 → 150695).
+     * Deterministik — satu user selalu menghasilkan nomor yang sama.
+     *
+     * Membutuhkan `date_of_birth` sudah terisi; jika belum, throw exception
+     * karena tidak ada dasar untuk membentuk nomor.
      */
     public static function numberFor(User $user): string
     {
-        return now()->year.'-'.str_pad((string) $user->id, 4, '0', STR_PAD_LEFT);
+        if (! $user->hasBirthDate()) {
+            throw new \RuntimeException(
+                'Tanggal lahir wajib diisi sebelum nomor kartu perpustakaan bisa dibuat.',
+            );
+        }
+
+        return $user->date_of_birth->format('dmy');
     }
 
     /**

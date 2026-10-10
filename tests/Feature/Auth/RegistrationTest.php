@@ -30,6 +30,7 @@ class RegistrationTest extends TestCase
             'name' => 'Budi Santoso',
             'email' => 'budi@example.com',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1995-06-15',
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ]);
@@ -40,6 +41,7 @@ class RegistrationTest extends TestCase
         $user = User::where('email', 'budi@example.com')->firstOrFail();
         $this->assertSame(User::ROLE_ANGGOTA, $user->role);
         $this->assertSame(User::GENDER_LAKI_LAKI, $user->gender);
+        $this->assertTrue($user->hasBirthDate());
     }
 
     public function test_password_is_stored_hashed_not_plain_text(): void
@@ -48,6 +50,7 @@ class RegistrationTest extends TestCase
             'name' => 'Siti Aminah',
             'email' => 'siti@example.com',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1998-03-20',
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ]);
@@ -91,6 +94,7 @@ class RegistrationTest extends TestCase
             'name' => 'Penyusup',
             'email' => 'penyusup@example.com',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1990-01-01',
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
             'role' => User::ROLE_PUSTAKAWAN,
@@ -130,6 +134,7 @@ class RegistrationTest extends TestCase
             'name' => 'Tanpa Foto',
             'email' => 'tanpafoto@example.com',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '2000-12-01',
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
         ])->assertRedirect(route('anggota.dashboard'));
@@ -146,6 +151,7 @@ class RegistrationTest extends TestCase
             'name' => 'Dengan Foto',
             'email' => 'denganfoto@example.com',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1999-07-10',
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
             'avatar' => UploadedFile::fake()->image('foto.jpg', 300, 300),
@@ -164,6 +170,7 @@ class RegistrationTest extends TestCase
             'name' => 'Jebakan',
             'email' => 'jebakan@example.com',
             'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => '1995-05-05',
             'password' => 'rahasia-kuat-123',
             'password_confirmation' => 'rahasia-kuat-123',
             'avatar' => UploadedFile::fake()->create('dokumen.pdf', 20, 'application/pdf'),
@@ -171,5 +178,36 @@ class RegistrationTest extends TestCase
 
         $this->assertGuest();
         $this->assertDatabaseMissing('users', ['email' => 'jebakan@example.com']);
+    }
+
+    /* ------------------------------------------------------------------
+     | Tanggal lahir (wajib saat pendaftaran)
+     * ----------------------------------------------------------------- */
+
+    public function test_registration_requires_date_of_birth(): void
+    {
+        $this->post('/register', [
+            'name' => 'Tanpa Tanggal Lahir',
+            'email' => 'tanpalt@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
+            'password' => 'rahasia-kuat-123',
+            'password_confirmation' => 'rahasia-kuat-123',
+        ])->assertSessionHasErrors('date_of_birth');
+
+        $this->assertGuest();
+    }
+
+    public function test_registration_rejects_future_date_of_birth(): void
+    {
+        $this->post('/register', [
+            'name' => 'Masa Depan',
+            'email' => 'masadepan@example.com',
+            'gender' => User::GENDER_LAKI_LAKI,
+            'date_of_birth' => now()->addYear()->format('Y-m-d'),
+            'password' => 'rahasia-kuat-123',
+            'password_confirmation' => 'rahasia-kuat-123',
+        ])->assertSessionHasErrors('date_of_birth');
+
+        $this->assertGuest();
     }
 }

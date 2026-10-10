@@ -41,6 +41,7 @@ class ProfileRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->user()?->id),
             ],
             'gender' => ['required', Rule::in(User::genders())],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
             // Dikosongkan = kata sandi lama dipertahankan.
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'avatar' => [
@@ -74,6 +75,7 @@ class ProfileRequest extends FormRequest
             'name' => 'nama',
             'email' => 'email',
             'gender' => 'jenis kelamin',
+            'date_of_birth' => 'tanggal lahir',
             'password' => 'kata sandi',
             'avatar' => 'foto profil',
         ];

@@ -18,7 +18,16 @@ class LibraryCardController extends Controller
      */
     public function show(Request $request): View
     {
-        $card = LibraryCard::createFor($request->user());
+        $user = $request->user();
+
+        /*
+         * Kartu hanya bisa dibuat jika tanggal lahir sudah terisi — nomor
+         * kartu (DDMMYY) membutuhkan tanggal lahir. Jika belum, view akan
+         * menampilkan pesan "lengkapi profil dulu" alih-alih kartu rusak.
+         */
+        $card = $user->hasBirthDate()
+            ? LibraryCard::createFor($user)
+            : null;
 
         return view('library-cards.show', [
             'card' => $card,

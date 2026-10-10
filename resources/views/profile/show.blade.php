@@ -71,6 +71,12 @@
                     </dd>
                 </div>
                 <div class="flex items-center justify-between gap-3">
+                    <dt class="text-secondary">{{ __('profile.date_of_birth') }}</dt>
+                    <dd class="text-right font-medium text-primary">
+                        {{ $user->date_of_birth?->translatedFormat('d M Y') ?? __('users.gender_not_set') }}
+                    </dd>
+                </div>
+                <div class="flex items-center justify-between gap-3">
                     <dt class="text-secondary">{{ __('profile.member_since') }}</dt>
                     <dd class="text-right font-medium text-primary">
                         {{ $user->created_at?->translatedFormat('d M Y') }}
@@ -143,6 +149,9 @@
                 <x-form.select name="gender" :label="__('profile.gender')" required :allowEmpty="true"
                                :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()"
                                :value="$user->gender" />
+                <x-form.input name="date_of_birth" :label="__('profile.date_of_birth')" type="date"
+                              :value="$user->date_of_birth?->format('Y-m-d')" max="{{ now()->format('Y-m-d') }}"
+                              autocomplete="bday" />
 
                 {{--
                     Ganti kata sandi dipisah jadi blok tersendiri supaya jelas

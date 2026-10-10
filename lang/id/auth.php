@@ -5,6 +5,7 @@ return [
     'login_description' => 'Gunakan akun yang sudah terdaftar untuk mengakses layanan.',
     'email' => 'Email',
     'gender' => 'Jenis kelamin',
+    'date_of_birth' => 'Tanggal lahir',
     'password' => 'Kata sandi',
     'remember_me' => 'Ingat saya',
     'forgot_password' => 'Lupa sandi?',

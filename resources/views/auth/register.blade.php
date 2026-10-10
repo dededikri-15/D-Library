@@ -22,6 +22,8 @@
                 <x-form.input name="email" :label="__('auth.email')" type="email" required autocomplete="username" />
                 <x-form.select name="gender" :label="__('auth.gender')" required :allowEmpty="true"
                                :emptyLabel="__('users.choose_gender')" :options="App\Models\User::genderOptions()" />
+                <x-form.input name="date_of_birth" :label="__('auth.date_of_birth')" type="date" required
+                              max="{{ now()->format('Y-m-d') }}" autocomplete="bday" />
                 <x-form.input name="password" :label="__('auth.password')" type="password" required
                               autocomplete="new-password" :hint="__('auth.password_hint')" />
                 <x-form.input name="password_confirmation" :label="__('auth.confirm_password')" type="password" required
