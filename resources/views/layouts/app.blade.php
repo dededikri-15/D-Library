@@ -78,10 +78,18 @@
         <x-footer />
     </div>
 
+    {{--
+        Tombol gulir dibuat pil solid `bg-brand` + panah putih, bukan pil gelap
+        berikon tipis: dua versi sebelumnya (abu `text-secondary`, lalu indigo
+        `text-tertiary`) tetap saja sulit dilihat di atas latar gelap — ikon di
+        dalam lingkaran gelap tidak pernah cukup kontras. Pil berwarna merek
+        meniru `.btn-primary`, jadi langsung terlihat sekaligus jelas maksudnya
+        (kembali ke atas) di tema terang maupun gelap.
+    --}}
     <button type="button" data-back-to-top hidden
-        class="fixed right-5 bottom-5 z-40 grid h-11 w-11 place-items-center rounded-full border border-hairline-strong bg-surface/95 text-secondary shadow-card backdrop-blur transition-colors hover:border-tertiary/40 hover:bg-surface hover:text-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary motion-reduce:transition-none"
+        class="fixed right-5 bottom-5 z-40 grid h-12 w-12 place-items-center rounded-full bg-brand text-on-brand shadow-lift transition-colors hover:bg-brand/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary motion-reduce:transition-none"
         aria-label="{{ __('ui.back_to_top') }}" title="{{ __('ui.back_to_top') }}">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"
             aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="m6 15 6-6 6 6" />
         </svg>

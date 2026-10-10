@@ -29,4 +29,8 @@ return [
     'start_reading' => 'Start reading today',
     'join_description' => 'Join as a member to save favorites, track reading history, and borrow from our digital collection.',
     'register_now' => 'Join now',
+    'membership_eyebrow' => 'Free membership',
+    'cta_favorites' => 'Save favorite books',
+    'cta_history' => 'Track reading history',
+    'cta_loans' => 'Borrow digital collection',
 ];

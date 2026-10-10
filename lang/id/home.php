@@ -29,4 +29,8 @@ return [
     'start_reading' => 'Mulai membaca hari ini',
     'join_description' => 'Daftar sebagai anggota untuk menyimpan buku ke favorit, memantau riwayat baca, dan meminjam koleksi digital kami.',
     'register_now' => 'Daftar sekarang',
+    'membership_eyebrow' => 'Keanggotaan gratis',
+    'cta_favorites' => 'Simpan buku favorit',
+    'cta_history' => 'Pantau riwayat baca',
+    'cta_loans' => 'Pinjam koleksi digital',
 ];

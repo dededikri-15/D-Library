@@ -166,16 +166,38 @@
                 </a>
             </div>
 
-            <div class="mt-6 flex flex-wrap gap-2.5">
+            {{--
+                Grid kartu, bukan baris pill: pill membungkus secara acak sehingga
+                baris terakhir sering menyisakan ruang kosong yang janggal. Kartu
+                memakai lebar sama rata, jadi jumlah buku tetap terbaca jelas dan
+                area klik lebih besar di layar sentuh.
+
+                Jeda animasi ditulis sebagai style inline, bukan
+                `[animation-delay:{{ ... }}ms]`: Tailwind memindai file sebagai
+                teks, jadi class yang dirangkai Blade tidak pernah menghasilkan CSS.
+            --}}
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 @foreach ($categories as $category)
-                    <a href="{{ route('books.index', ['category' => $category->slug]) }}" class="pill">
-                        <svg class="h-4 w-4 text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/>
-                        </svg>
-                        {{ $category->name }}
-                        <span class="rounded-full bg-secondary/10 px-2 py-0.5 text-label tabular-nums text-secondary dark:bg-secondary/20">
-                            {{ $category->books_count }}
+                    <a href="{{ route('books.index', ['category' => $category->slug]) }}"
+                       class="group card flex items-center gap-3.5 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-tertiary/40 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-tertiary/40 focus-visible:outline-none motion-reduce:hover:transform-none animate-fade-up"
+                       style="animation-delay: {{ $loop->index * 40 }}ms">
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-tertiary/10 text-tertiary transition-colors duration-300 group-hover:bg-tertiary/20">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z"/>
+                            </svg>
                         </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate font-semibold text-primary">{{ $category->name }}</span>
+                            <span class="mt-0.5 block text-sm text-secondary">
+                                {{ __('categories.book_count', ['count' => $category->books_count]) }}
+                            </span>
+                        </span>
+
+                        <svg class="h-4 w-4 shrink-0 -translate-x-1 text-tertiary opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+                        </svg>
                     </a>
                 @endforeach
             </div>
@@ -397,12 +419,59 @@
     {{-- Ajakan bertindak untuk tamu --}}
     @guest
         @if (config('perpustakaan.registration.enabled', true))
-            <section class="mt-14 overflow-hidden rounded-xl border border-tertiary/25 bg-tertiary/5 px-6 py-14 text-center">
-                <h2 class="text-h1 font-bold tracking-tight text-primary">{{ __('home.start_reading') }}</h2>
-                <p class="mx-auto mt-3 max-w-lg text-secondary">
-                    {{ __('home.join_description') }}
-                </p>
-                <a href="{{ route('register') }}" class="btn btn-primary btn-lg mt-8">{{ __('home.register_now') }}</a>
+            {{--
+                Panel ajakan memakai gradasi `bg-hero` yang sama dengan hero di
+                atas, supaya beranda punya dua "titik berat" visual yang seragam;
+                glowing mengikuti token --hero-glow sehingga otomatis ikut tema
+                terang/gelap. Chip manfaat menjawab pertanyaan "dapet apa kalau
+                daftar" tepat di sebelah tombolnya.
+            --}}
+            <section class="relative mt-14 overflow-hidden rounded-xl border border-tertiary/25 bg-hero">
+                <span class="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full blur-3xl" style="background-color: var(--hero-glow)" aria-hidden="true"></span>
+                <span class="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full blur-3xl" style="background-color: var(--hero-glow)" aria-hidden="true"></span>
+
+                <div class="relative mx-auto max-w-2xl px-6 py-14 text-center sm:px-10 sm:py-16">
+                    <p class="section-eyebrow animate-fade-in">{{ __('home.membership_eyebrow') }}</p>
+
+                    <h2 class="mt-4 text-h1 font-bold tracking-tight text-balance text-primary animate-fade-up">
+                        {{ __('home.start_reading') }}
+                    </h2>
+
+                    <p class="mx-auto mt-3 max-w-xl leading-relaxed text-secondary animate-fade-up [animation-delay:80ms]">
+                        {{ __('home.join_description') }}
+                    </p>
+
+                    <ul class="mt-7 flex flex-wrap items-center justify-center gap-2.5" role="list">
+                        @foreach ([__('home.cta_favorites'), __('home.cta_history'), __('home.cta_loans')] as $benefit)
+                            {{--
+                                Ikon centang dulunya `text-tertiary` polos: di atas chip
+                                gelap warnanya terbaca nyaris hitam. Sekarang centangnya
+                                putih (`text-primary`) di dalam bulatan lembut
+                                `bg-tertiary/25`, jadi tetap kontras di tema terang
+                                maupun gelap tanpa memakai warna status.
+                            --}}
+                            <li class="inline-flex items-center gap-2 rounded-full border border-hairline-strong bg-surface/70 py-1.5 pr-3.5 pl-2 text-sm font-medium text-primary shadow-card">
+                                <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-tertiary/25" aria-hidden="true">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                                    </svg>
+                                </span>
+                                {{ $benefit }}
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    {{--
+                        Tombol "Daftar sekarang"/"Masuk" sengaja TIDAK diulang di sini.
+                        Keduanya sudah ada di hero paling atas; mengulangnya membuat
+                        halaman punya dua pasang tombol identik. CTA ini berfungsi
+                        sebagai penutup ajakan (manfaat + balasan ke hero lewat link
+                        "Jelajahi katalog"), bukan pintu kedua.
+                    --}}
+                    <p class="mt-7">
+                        <a href="{{ route('books.index') }}" class="link-accent text-sm">{{ __('home.explore_catalog') }} &uarr;</a>
+                    </p>
+                </div>
             </section>
         @endif
     @endguest

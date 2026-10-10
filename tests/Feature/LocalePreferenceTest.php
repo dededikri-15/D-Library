@@ -27,8 +27,11 @@ class LocalePreferenceTest extends TestCase
             ->assertSee('Thousands of books,')
             ->assertSee('>Home</span>', false)
             ->assertSee('System active')
-            ->assertSee('Service Hours')
-            ->assertSee('Monday–Friday, 8:00 AM–4:00 PM');
+            // Footer: kolom informasi kini "Digital Services" (bukan jam buka
+            // fisik) — keduanya dipakai sebagai penanda locale karena bahasanya
+            // berbeda jelas antara en dan id.
+            ->assertSee('Digital Services')
+            ->assertSee('24-hour access, every day');
     }
 
     public function test_guest_can_select_indonesian(): void
@@ -43,7 +46,9 @@ class LocalePreferenceTest extends TestCase
             ->assertSee('<html lang="id"', false)
             ->assertSee('Akses ribuan buku,')
             ->assertSee('>Beranda</span>', false)
-            ->assertSee('Sistem Aktif');
+            ->assertSee('Sistem Aktif')
+            ->assertSee('Layanan Digital')
+            ->assertSee('Akses 24 jam, setiap hari');
     }
 
     public function test_unsupported_locale_is_rejected_without_changing_preference(): void

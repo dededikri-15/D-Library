@@ -767,6 +767,22 @@
     }
 
     /*
+    | Link daftar di footer. Ditulis sebagai komponen (bukan rantai utility di
+    | Blade) karena dipakai 7–8 kali dalam satu file dan setiap kembarannya
+    | rawan salah ubah satu per satu.
+    |
+    | `-mx-2 px-2` membuat area klik sedikit lebih lebar dari teksnya, dan
+    | `focus-visible:` wajib ada: efek hover tidak pernah muncul untuk
+    | pengguna keyboard, jadi tanpa ini tidak ada cara melihat link sedang
+    | dipilih.
+    */
+    .footer-link {
+        @apply -mx-2 block rounded-md px-2 py-1.5 text-secondary transition-colors
+            hover:bg-secondary/5 hover:text-tertiary focus-visible:ring-2
+            focus-visible:ring-tertiary/40 focus-visible:outline-none dark:hover:bg-secondary/10;
+    }
+
+    /*
     | Pagination (Task 14.9).
     |
     | View bawaan Laravel memakai abu-abu/biru stok yang tidak ada
