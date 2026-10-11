@@ -136,17 +136,22 @@
 
         {{--
             Baris paling bawah. Urutannya: copyright → "Dibangun dengan Laravel"
-            → bar Post Views (paling bawah). `built_with` ditumpuk di tengah
-            supaya tidak pernah bertabrakan dengan tombol "Kembali ke atas"
-            yang fixed di kanan bawah.
+            → bar Dilihat/Post Views (paling bawah). `built_with` ditumpuk di
+            tengah supaya tidak pernah bertabrakan dengan tombol "Kembali ke
+            atas" yang fixed di kanan bawah.
 
-            Bar Post Views: SATU angka saja (total kunjungan seluruh situs),
-            sesuai permintaan pengguna agar dijadikan satu fitur — tidak ada
-            lagi pemisah "Total kunjungan" terpisah. Ikon grafik batang di kiri.
-            Warnanya memakai pasangan inverse `bg-primary` + `text-surface` —
-            di tema terang bar-nya gelap, di tema gelap bar-nya terang — jadi
-            kontras selalu terjaga tanpa hex/token baru. Pemisah ribuan memakai
-            titik, konsisten dengan gaya Rupiah di seluruh aplikasi.
+            Bar Dilihat: menampilkan jumlah kunjungan HALAMAN/MENU yang SEDANG
+            dibuka (per rute), bukan total gabungan — tiap menu (Beranda,
+            Katalog, Kategori, Riwayat Pinjam, Favorit, Riwayat Baca, Kartu
+            Perpustakaan) punya hitungan sendiri-sendiri di tabel page_views.
+            Bentuk pill badge mengikuti gaya kartu statistik dasbor — chip ikon
+            berlatar `bg-tertiary/15` + ikon grafik batang. Label default bahasa
+            Indonesia ("Dilihat"); versi Inggris ("Post Views") aktif saat
+            locale session = en.
+
+            `current` null untuk halaman yang TIDAK dipantau (login, dasbor,
+            halaman staf) — di situ bar disembunyikan, karena tidak ada hitungan
+            menu yang berlaku untuk halaman tersebut.
         --}}
         <div class="mt-12 border-t border-hairline pt-6">
             <p class="text-center text-sm text-secondary">
@@ -157,21 +162,27 @@
                 {{ __('footer.built_with', ['version' => Illuminate\Foundation\Application::VERSION]) }}
             </p>
 
-            <div class="mt-4 flex justify-center">
-                <div
-                    class="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm text-surface shadow-card">
-                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M3 3v16a2 2 0 0 0 2 2h16" />
-                        <path d="M18 17V9" />
-                        <path d="M13 17V5" />
-                        <path d="M8 17v-3" />
-                    </svg>
-                    <span>
-                        {{ __('footer.post_views', ['count' => number_format($pageViewStats['total'] ?? 0, 0, ',', '.')]) }}
-                    </span>
+            @php($currentViews = $pageViewStats['current'] ?? null)
+            @if ($currentViews !== null)
+                <div class="mt-5 flex justify-center">
+                    <div
+                        class="group inline-flex items-center gap-3 rounded-full border border-hairline bg-surface py-2 pl-2 pr-5 shadow-card transition-colors duration-300 hover:border-tertiary/40">
+                        <span aria-hidden="true"
+                            class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-tertiary/15 text-tertiary transition-transform duration-300 group-hover:scale-110 motion-reduce:transform-none">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+                                <path d="M18 17V9" />
+                                <path d="M13 17V5" />
+                                <path d="M8 17v-3" />
+                            </svg>
+                        </span>
+                        <span class="text-sm font-semibold text-primary">
+                            {{ __('footer.post_views', ['count' => number_format($currentViews, 0, ',', '.')]) }}
+                        </span>
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 </footer>

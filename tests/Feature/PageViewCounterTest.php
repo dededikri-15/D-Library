@@ -16,7 +16,7 @@ class PageViewCounterTest extends TestCase
     {
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Post Views: 1', false);
+            ->assertSee('Dilihat: 1', false);
 
         $this->assertDatabaseHas('page_views', ['route_name' => 'home', 'view_count' => 1]);
     }
@@ -34,15 +34,25 @@ class PageViewCounterTest extends TestCase
         $this->assertDatabaseHas('page_views', ['route_name' => 'books.show', 'view_count' => 2]);
     }
 
-    public function test_total_counts_every_tracked_page(): void
+    public function test_each_page_shows_its_own_counter(): void
     {
-        $this->get(route('home'))->assertOk();
-        $this->get(route('books.index'))->assertOk();
-        $this->get(route('books.index'))->assertOk();
+        // Kunjungan tiap menu dihitung terpisah. Pencatatan middleware jalan
+        // SEBELUM view dirender, jadi kunjungan yang sedang berlangsung sudah
+        // termasuk di angka yang tampil.
+        $this->get(route('home'))->assertOk();          // beranda = 1
+        $this->get(route('books.index'))->assertOk();    // katalog = 1
+        $this->get(route('books.index'))->assertOk();    // katalog = 2
 
+        // Beranda dibuka lagi (kunjungan ke-2) → footer beranda tampil "Dilihat: 2".
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Post Views: 4', false);
+            ->assertSee('Dilihat: 2', false);
+
+        // Katalog dibuka lagi (kunjungan ke-3) → footer katalog tampil "Dilihat: 3".
+        // Angka beranda tetap 2 — tidak ikut naik karena katalog dikunjungi.
+        $this->get(route('books.index'))
+            ->assertOk()
+            ->assertSee('Dilihat: 3', false);
     }
 
     public function test_staff_pages_are_not_recorded(): void
@@ -55,13 +65,13 @@ class PageViewCounterTest extends TestCase
         $this->assertSame(0, (int) DB::table('page_views')->sum('view_count'));
     }
 
-    public function test_untracked_page_still_shows_total_counter(): void
+    public function test_untracked_page_hides_counter(): void
     {
-        // Halaman yang tidak dipantau (login) tidak menambah baris di tabel
-        // page_views, tapi bar Post Views tetap tampil dengan total situs.
+        // Halaman yang tidak dipantau (login) tidak punya hitungan menu, jadi
+        // bar Dilihat disembunyikan sama sekali di footer.
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('Post Views: 0', false);
+            ->assertDontSee('Dilihat', false);
     }
 
     public function test_failed_requests_are_not_counted(): void
@@ -85,8 +95,8 @@ class PageViewCounterTest extends TestCase
     public function test_english_footer_shows_post_views_bar(): void
     {
         // Sesuai LocalePreferenceTest: bahasa dipilih lewat session 'locale',
-        // yang dibaca middleware SetLocale sebelum footer dirender. Label
-        // "Post Views" sama di kedua bahasa.
+        // yang dibaca middleware SetLocale sebelum footer dirender. Default
+        // bahasa Indonesia "Dilihat"; saat locale en berubah jadi "Post Views".
         $this->withSession(['locale' => 'en'])
             ->get(route('home'))
             ->assertOk()
@@ -114,7 +124,7 @@ class PageViewCounterTest extends TestCase
 
         $this->actingAs($member)->get(route('favorites.index'))
             ->assertOk()
-            ->assertSee('Post Views: 1', false);
+            ->assertSee('Dilihat: 1', false);
     }
 
     public function test_guest_opening_member_page_is_not_counted(): void

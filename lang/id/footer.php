@@ -15,9 +15,9 @@ return [
     'signed_in_as' => 'Masuk sebagai :role',
     'built_with' => 'Dibangun dengan Laravel :version',
 
-    // Statistik kunjungan untuk bar Post Views di footer (lihat
-    // CountPublicPageView + FooterStatsComposer). Satu angka saja: total
-    // kunjungan seluruh situs. Label "Post Views" dipertahankan dalam bahasa
-    // Inggris — mengikuti referensi yang diminta pengguna.
-    'post_views' => 'Post Views: :count',
+    // Statistik kunjungan untuk bar Dilihat di footer (lihat CountPublicPageView
+    // + FooterStatsComposer). Menampilkan jumlah kunjungan HALAMAN/MENU yang
+    // sedang dibuka (per rute), bukan total gabungan. Default bahasa Indonesia
+    // ("Dilihat"); versi Inggris ada di lang/en/footer.php.
+    'post_views' => 'Dilihat: :count',
 ];

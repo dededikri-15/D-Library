@@ -15,8 +15,9 @@ return [
     'signed_in_as' => 'Signed in as :role',
     'built_with' => 'Built with Laravel :version',
 
-    // Visit statistics for the Post Views bar in the footer (see
-    // CountPublicPageView + FooterStatsComposer). A single figure: total
-    // visits across the whole site.
+    // Visit statistics for the Dilihat/Post Views bar in the footer (see
+    // CountPublicPageView + FooterStatsComposer). Shows the visit count of the
+    // CURRENT page/menu (per route), not a combined total. Indonesian default
+    // lives in lang/id/footer.php ("Dilihat").
     'post_views' => 'Post Views: :count',
 ];
