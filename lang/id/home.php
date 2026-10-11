@@ -19,6 +19,7 @@ return [
     'popular_books' => 'Buku Populer',
     'popular_description' => 'Paling sering dipinjam anggota.',
     'reader_favorites' => 'Favorit Pembaca',
+    'recommendation_eyebrow' => 'Untuk Anda',
     'topics' => 'Topik',
     'explore_categories' => 'Jelajahi Kategori',
     'categories_description' => 'Telusuri koleksi berdasarkan topik.',

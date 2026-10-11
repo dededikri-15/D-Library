@@ -81,130 +81,13 @@
     </section>
 
     {{--
-        Grafik aktivitas pribadi anggota (Task 27.3, posisi diminta pengguna).
-
-        Diletakkan tepat di bawah kartu statistik umum supaya anggota langsung
-        melihat aktivitasnya sendiri setelah ringkasan perpustakaan, tanpa
-        harus menggulir melewati katalog. Grid memakai `xl:grid-cols-2` (bukan
-        `lg:`) untuk alasan yang sama dengan grafik staf: di `lg` 12 batang
-        berebut ruang sampai label sumbu X tidak terbaca.
-
-        Guard `$isMember` (bukan sekadar `@auth`): `$myLoansPerMonth` hanya
-        diisi oleh cabang anggota di controller, jadi pustakawan yang ikut
-        melihat blok ini akan kena error variabel tak terdefinisi.
+        Blok dasbor (anggota + pustakawan) diletakkan SEBELUM seluruh bagian
+        katalog/buku (permintaan pengguna). Alasannya: ringkasan pribadi
+        (sapaan, pinjaman aktif, riwayat) adalah inti beranda anggota dan
+        harus langsung terlihat; koleksi buku (Terbaru, Populer, Rekomendasi,
+        Kategori) dikelompokkan rapat di bawahnya sebagai satu kesatuan katalog
+        sehingga tidak lagi terpisah jauh dan menyisakan jarak kosong.
     --}}
-    @if ($isMember)
-        <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <x-dashboard.monthly-chart :items="$myLoansPerMonth"
-                                       :title="__('dashboard.my_loans_chart_title')"
-                                       empty-description-key="dashboard.my_loans_chart_empty_description" />
-
-            <x-dashboard.monthly-chart :items="$myReadingStartsPerMonth"
-                                       :title="__('dashboard.reading_chart_title')"
-                                       total-key="dashboard.reading_chart_total"
-                                       alt-key="dashboard.reading_chart_alt"
-                                       empty-title-key="dashboard.reading_chart_empty"
-                                       empty-description-key="dashboard.reading_chart_empty_description"
-                                       column-key="dashboard.chart_reading" />
-        </div>
-    @endif
-
-    {{-- Buku terbaru (umum) --}}
-    <section class="mt-14">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <p class="section-eyebrow">{{ __('home.collection') }}</p>
-                <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.latest_books') }}</h2>
-                <p class="mt-1.5 text-sm text-secondary">{{ __('home.latest_description') }}</p>
-            </div>
-            <a href="{{ route('books.index') }}" class="link-accent text-sm">
-                {{ __('home.see_all') }} &rarr;
-            </a>
-        </div>
-
-        @if ($latestBooks->isEmpty())
-            <x-empty-state class="mt-6" :title="__('home.empty_catalog')" :description="__('home.empty_catalog_description')" />
-        @else
-            <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ($latestBooks as $book)
-                    <x-book-card :book="$book" />
-                @endforeach
-            </div>
-        @endif
-    </section>
-
-    {{-- Populer (umum) --}}
-    @if ($popularBooks->isNotEmpty() && $popularBooks->first()->loans_count > 0)
-        <section class="mt-14">
-            <div class="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <p class="section-eyebrow">{{ __('home.reader_favorites') }}</p>
-                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.popular_books') }}</h2>
-                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.popular_description') }}</p>
-                </div>
-            </div>
-
-            <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ($popularBooks as $book)
-                    <x-book-card :book="$book" />
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- Kategori (umum) --}}
-    @if ($categories->isNotEmpty())
-        <section class="mt-14">
-            <div class="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <p class="section-eyebrow">{{ __('home.topics') }}</p>
-                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.explore_categories') }}</h2>
-                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.categories_description') }}</p>
-                </div>
-                <a href="{{ route('categories.public') }}" class="link-accent text-sm">
-                    {{ __('home.all_categories') }} &rarr;
-                </a>
-            </div>
-
-            {{--
-                Grid kartu, bukan baris pill: pill membungkus secara acak sehingga
-                baris terakhir sering menyisakan ruang kosong yang janggal. Kartu
-                memakai lebar sama rata, jadi jumlah buku tetap terbaca jelas dan
-                area klik lebih besar di layar sentuh.
-
-                Jeda animasi ditulis sebagai style inline, bukan
-                `[animation-delay:{{ ... }}ms]`: Tailwind memindai file sebagai
-                teks, jadi class yang dirangkai Blade tidak pernah menghasilkan CSS.
-            --}}
-            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                @foreach ($categories as $category)
-                    <a href="{{ route('books.index', ['category' => $category->slug]) }}"
-                       class="group card flex items-center gap-3.5 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-tertiary/40 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-tertiary/40 focus-visible:outline-none motion-reduce:hover:transform-none animate-fade-up"
-                       style="animation-delay: {{ $loop->index * 40 }}ms">
-                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-tertiary/10 text-tertiary transition-colors duration-300 group-hover:bg-tertiary/20">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z"/>
-                            </svg>
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="block truncate font-semibold text-primary">{{ $category->name }}</span>
-                            <span class="mt-0.5 block text-sm text-secondary">
-                                {{ __('categories.book_count', ['count' => $category->books_count]) }}
-                            </span>
-                        </span>
-
-                        <svg class="h-4 w-4 shrink-0 -translate-x-1 text-tertiary opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
-                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
-                        </svg>
-                    </a>
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- Dasbor khusus anggota --}}
     @auth
         @if ($isMember)
             <section class="mt-14">
@@ -223,13 +106,6 @@
                     </div>
                 @endforeach
             </div>
-
-            {{--
-                Grafik aktivitas pribadi sudah dipindahkan ke atas, tepat di
-                bawah kartu statistik umum (permintaan pengguna, Task 27) —
-                anggota tidak perlu menggulir sampai sini hanya untuk melihat
-                grafiknya.
-            --}}
 
             <div class="card mt-8 p-5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -307,18 +183,6 @@
                     <x-empty-state class="mt-4 border-0" :title="__('dashboard.no_reading_history')" :description="__('dashboard.open_digital_book')" />
                 @endforelse
             </div>
-
-            @if ($recommendations->isNotEmpty())
-                <div class="mt-8">
-                    <h2 class="font-semibold text-primary">{{ __('dashboard.recommendations') }}</h2>
-                    <p class="mt-1 text-sm text-secondary">{{ __('dashboard.recommendation_description') }}</p>
-                    <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        @foreach ($recommendations as $book)
-                            <x-book-card :book="$book" />
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         @endif
 
         {{-- Dasbor khusus pustakawan --}}
@@ -415,6 +279,157 @@
             </div>
         @endif
     @endauth
+
+    {{--
+        Grafik aktivitas pribadi anggota — diletakkan DI BAWAH blok dasbor
+        (permintaan pengguna), tepat setelah sapaan "Halo, …" + pinjaman aktif
+        + riwayat, sehingga anggota melihat ringkasan pribadi lalu grafik
+        aktivitasnya. Grid memakai `xl:grid-cols-2` (bukan `lg:`) untuk alasan
+        yang sama dengan grafik staf: di `lg` 12 batang berebut ruang sampai
+        label sumbu X tidak terbaca.
+
+        Guard `$isMember` (bukan sekadar `@auth`): `$myLoansPerMonth` hanya
+        diisi oleh cabang anggota di controller, jadi pustakawan yang ikut
+        melihat blok ini akan kena error variabel tak terdefinisi.
+    --}}
+    @if ($isMember)
+        <div class="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <x-dashboard.monthly-chart :items="$myLoansPerMonth"
+                                       :title="__('dashboard.my_loans_chart_title')"
+                                       empty-description-key="dashboard.my_loans_chart_empty_description" />
+
+            <x-dashboard.monthly-chart :items="$myReadingStartsPerMonth"
+                                       :title="__('dashboard.reading_chart_title')"
+                                       total-key="dashboard.reading_chart_total"
+                                       alt-key="dashboard.reading_chart_alt"
+                                       empty-title-key="dashboard.reading_chart_empty"
+                                       empty-description-key="dashboard.reading_chart_empty_description"
+                                       column-key="dashboard.chart_reading" />
+        </div>
+    @endif
+
+    {{--
+        Koleksi buku (umum) — dikelompokkan rapat setelah blok dasbor
+        (permintaan pengguna). Urutannya: Buku Terbaru → Buku Populer →
+        Rekomendasi (anggota) → Kategori, tanpa jarak kosong yang memisahkan
+        fitur buku dari bagian lain.
+    --}}
+
+    {{-- Buku terbaru (umum) --}}
+    <section class="mt-14">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+                <p class="section-eyebrow">{{ __('home.collection') }}</p>
+                <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.latest_books') }}</h2>
+                <p class="mt-1.5 text-sm text-secondary">{{ __('home.latest_description') }}</p>
+            </div>
+            <a href="{{ route('books.index') }}" class="link-accent text-sm">
+                {{ __('home.see_all') }} &rarr;
+            </a>
+        </div>
+
+        @if ($latestBooks->isEmpty())
+            <x-empty-state class="mt-6" :title="__('home.empty_catalog')" :description="__('home.empty_catalog_description')" />
+        @else
+            <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($latestBooks as $book)
+                    <x-book-card :book="$book" />
+                @endforeach
+            </div>
+        @endif
+    </section>
+
+    {{-- Populer (umum) --}}
+    @if ($popularBooks->isNotEmpty() && $popularBooks->first()->loans_count > 0)
+        <section class="mt-14">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p class="section-eyebrow">{{ __('home.reader_favorites') }}</p>
+                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.popular_books') }}</h2>
+                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.popular_description') }}</p>
+                </div>
+            </div>
+
+            <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($popularBooks as $book)
+                    <x-book-card :book="$book" />
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    {{-- Rekomendasi (anggota) — digabung ke dalam grup katalog, bukan terdampar di bawah --}}
+    @auth
+        @if ($isMember && $recommendations->isNotEmpty())
+            <section class="mt-14">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="section-eyebrow">{{ __('home.recommendation_eyebrow') }}</p>
+                        <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('dashboard.recommendations') }}</h2>
+                        <p class="mt-1.5 text-sm text-secondary">{{ __('dashboard.recommendation_description') }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($recommendations as $book)
+                        <x-book-card :book="$book" />
+                    @endforeach
+                </div>
+            </section>
+        @endif
+    @endauth
+
+    {{-- Kategori (umum) --}}
+    @if ($categories->isNotEmpty())
+        <section class="mt-14">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p class="section-eyebrow">{{ __('home.topics') }}</p>
+                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.explore_categories') }}</h2>
+                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.categories_description') }}</p>
+                </div>
+                <a href="{{ route('categories.public') }}" class="link-accent text-sm">
+                    {{ __('home.all_categories') }} &rarr;
+                </a>
+            </div>
+
+            {{--
+                Grid kartu, bukan baris pill: pill membungkus secara acak sehingga
+                baris terakhir sering menyisakan ruang kosong yang janggal. Kartu
+                memakai lebar sama rata, jadi jumlah buku tetap terbaca jelas dan
+                area klik lebih besar di layar sentuh.
+
+                Jeda animasi ditulis sebagai style inline, bukan
+                `[animation-delay:{{ ... }}ms]`: Tailwind memindai file sebagai
+                teks, jadi class yang dirangkai Blade tidak pernah menghasilkan CSS.
+            --}}
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                @foreach ($categories as $category)
+                    <a href="{{ route('books.index', ['category' => $category->slug]) }}"
+                       class="group card flex items-center gap-3.5 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-tertiary/40 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-tertiary/40 focus-visible:outline-none motion-reduce:hover:transform-none animate-fade-up"
+                       style="animation-delay: {{ $loop->index * 40 }}ms">
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-tertiary/10 text-tertiary transition-colors duration-300 group-hover:bg-tertiary/20">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z"/>
+                            </svg>
+                        </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate font-semibold text-primary">{{ $category->name }}</span>
+                            <span class="mt-0.5 block text-sm text-secondary">
+                                {{ __('categories.book_count', ['count' => $category->books_count]) }}
+                            </span>
+                        </span>
+
+                        <svg class="h-4 w-4 shrink-0 -translate-x-1 text-tertiary opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Ajakan bertindak untuk tamu --}}
     @guest
