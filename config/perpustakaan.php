@@ -25,6 +25,10 @@ return [
         // angka bulat (tanpa desimal) karena Rupiah memang tidak memakai
         // pecahan di sini.
         'fine_per_day' => (int) env('PERPUSTAKAAN_LOAN_FINE_PER_DAY', 1000),
+
+        // Berapa hari ke depan sebuah peminjaman dianggap "jatuh tempo
+        // segera" dan ditampilkan di banner ringkasan halaman peminjaman.
+        'due_soon_days' => (int) env('PERPUSTAKAAN_LOAN_DUE_SOON_DAYS', 3),
     ],
 
     'display_timezone' => env('PERPUSTAKAAN_DISPLAY_TIMEZONE', 'Asia/Jakarta'),

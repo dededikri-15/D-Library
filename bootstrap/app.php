@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\CountPublicPageView;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\SetLocale;
 use App\Listeners\RecordUserActivity;
@@ -22,7 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AddSecurityHeaders::class);
-        $middleware->web(append: [SetLocale::class]);
+        // CountPublicPageView harus ikut web group (bukan global) karena
+        // ia membaca nama rute — sesuatu yang hanya sudah final setelah
+        // routing, bukan saat request masuk.
+        $middleware->web(append: [SetLocale::class, CountPublicPageView::class]);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,

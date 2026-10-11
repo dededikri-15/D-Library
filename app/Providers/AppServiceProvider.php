@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Http\View\Composers\FooterStatsComposer;
 use App\Mail\Transport\DatabaseTransport;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,6 +28,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Mail::extend('database', fn () => new DatabaseTransport);
+
+        /*
+         * Statistik kunjungan halaman publik disuntikkan ke footer lewat
+         * composer, bukan lewat controller — footer tampil di (hampir)
+         * semua halaman, jadi mengirim angkanya dari satu controller
+         * berarti menyalin kode yang sama ke banyak tempat sampai salah
+         * satu lupa dan angkanya jadi kosong.
+         */
+        View::composer('components.footer', FooterStatsComposer::class);
 
         /*
          * Named limiter, dipakai lewat `->middleware('throttle:login')` di

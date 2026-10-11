@@ -67,6 +67,30 @@ class LoanController extends Controller
          */
         $this->markOverdue->handle();
 
+        /*
+         * Ringkasan untuk banner di atas tabel. Semua dihitung SETELAH
+         * markOverdue, supaya angka "terlambat" langsung mencerminkan
+         * kenyataan, bukan status basi dari scheduler yang belum jalan.
+         *
+         * `due_at` dibatasi `whereBetween` ke jendela beberapa hari ke
+         * depan (config). Peminjaman yang sudah lewat tempo sengaja tidak
+         * ikut dihitung di sini — yang telat sudah punya baris merahnya
+         * sendiri, menggabungkannya hanya menyembunyikan urgensi.
+         */
+        $summary = [
+            'active' => Loan::query()->active()->count(),
+            'return_pending' => Loan::query()->active()->whereNotNull('return_requested_at')->count(),
+            'overdue' => Loan::query()->overdue()->count(),
+            'due_soon' => Loan::query()
+                ->where('status', Loan::STATUS_BORROWED)
+                ->whereBetween('due_at', [
+                    now()->startOfDay(),
+                    now()->addDays((int) config('perpustakaan.loan.due_soon_days'))->endOfDay(),
+                ])
+                ->count(),
+            'due_soon_days' => (int) config('perpustakaan.loan.due_soon_days'),
+        ];
+
         $loans = Loan::query()
             ->with(['user', 'book', 'bookCopy'])
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
@@ -83,6 +107,7 @@ class LoanController extends Controller
             'loans' => $loans,
             'statuses' => Loan::statuses(),
             'onlyActive' => ($filters['active'] ?? null) === '1',
+            'summary' => $summary,
         ]);
     }
 

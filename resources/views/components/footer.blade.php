@@ -134,12 +134,27 @@
             </div>
         </div>
 
-        {{-- Baris paling bawah. `built_with` pernah duduk di pojok kanan (sm:justify-between)
-             dan tertutup tombol "Kembali ke atas" yang fixed di kanan bawah. Sekarang
-             ditumpuk di tengah, jadi tidak pernah bertabrakan dengan tombol itu. --}}
+        {{--
+            Baris paling bawah. `built_with` pernah duduk di pojok kanan (sm:justify-between)
+            dan tertutup tombol "Kembali ke atas" yang fixed di kanan bawah. Sekarang
+            ditumpuk di tengah, jadi tidak pernah bertabrakan dengan tombol itu.
+
+            Statistik kunjungan: `current` null untuk halaman yang tidak dipantau
+            (login, dasbor, halaman staf) — di situ hanya total situs yang tampil.
+            Angka diformat dengan pemisah ribuan titik agar konsisten dengan
+            gaya Rupiah yang dipakai di seluruh aplikasi.
+        --}}
         <div
             class="mt-12 flex flex-col items-center gap-1.5 border-t border-hairline pt-6 text-center text-sm text-secondary">
             <p>&copy; {{ now()->year }} {{ config('app.name') }} &middot; {{ __('footer.tagline') }}</p>
+            @if (($pageViewStats['current'] ?? null) !== null)
+                <p class="text-label">
+                    {{ trans_choice('footer.page_views', $pageViewStats['current'], ['count' => number_format($pageViewStats['current'], 0, ',', '.')]) }}
+                </p>
+            @endif
+            <p class="text-label">
+                {{ __('footer.total_views', ['count' => number_format($pageViewStats['total'] ?? 0, 0, ',', '.')]) }}
+            </p>
             <p class="text-label">{{ __('footer.built_with', ['version' => Illuminate\Foundation\Application::VERSION]) }}</p>
         </div>
     </div>

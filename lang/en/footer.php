@@ -14,4 +14,10 @@ return [
     'join_member' => 'Join as a member',
     'signed_in_as' => 'Signed in as :role',
     'built_with' => 'Built with Laravel :version',
+
+    // Visit statistics (see CountPublicPageView + FooterStatsComposer).
+    // Dua bentuk dipisah `|` supaya `trans_choice` memilih time/times dengan
+    // benar (pelajaran Task 26.4: kunci harus dikirim langsung, bukan hasil __()).
+    'page_views' => 'This page has been opened :count time|This page has been opened :count times',
+    'total_views' => 'Total visits :count',
 ];

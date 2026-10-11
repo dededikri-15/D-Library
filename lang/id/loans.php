@@ -53,4 +53,11 @@ return [
     'active_count' => 'Sedang dipinjam',
     'overdue_count' => 'Terlambat',
     'returned_count' => 'Sudah dikembalikan',
+
+    // Banner ringkasan di halaman Data Peminjaman.
+    'summary_overdue' => ':count peminjaman terlambat — perlu ditindaklanjuti',
+    'summary_return_pending' => ':count anggota mengajukan pengembalian, menunggu konfirmasi',
+    'summary_due_soon' => ':count peminjaman jatuh tempo dalam :days hari',
+    'summary_active' => ':count buku sedang dipinjam',
+    'summary_clear' => 'Tidak ada peminjaman yang perlu perhatian.',
 ];

@@ -53,4 +53,11 @@ return [
     'active_count' => 'Currently borrowed',
     'overdue_count' => 'Overdue',
     'returned_count' => 'Returned',
+
+    // Summary banner on the Loans management page.
+    'summary_overdue' => ':count overdue loan(s) — need follow-up',
+    'summary_return_pending' => ':count member(s) requested a return, awaiting confirmation',
+    'summary_due_soon' => ':count loan(s) due within :days day(s)',
+    'summary_active' => ':count book(s) currently borrowed',
+    'summary_clear' => 'No loans need attention.',
 ];

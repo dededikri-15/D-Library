@@ -51,6 +51,19 @@ class Book extends Model
                 'status' => $book->status,
             ]);
         });
+
+        /*
+         * Kode inventaris eksemplar dibentuk dari DDC (judul+kategori) dan
+         * penanda penulis. Begitu salah satu dari tiga hal itu berubah, kode
+         * lama tidak lagi mencerminkan isi buku, jadi disusun ulang. Tanpa
+         * hook ini, buku yang dipindah dari Sejarah ke Agama tetap membawa
+         * kode 959.8 dan ditempatkan di rak yang salah di dunia nyata.
+         */
+        static::updated(function (self $book): void {
+            if ($book->wasChanged(['title', 'category_id', 'author_id'])) {
+                BookCopy::refreshCodesFor($book);
+            }
+        });
     }
 
     public static function statuses(): array
