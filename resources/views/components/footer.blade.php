@@ -135,27 +135,43 @@
         </div>
 
         {{--
-            Baris paling bawah. `built_with` pernah duduk di pojok kanan (sm:justify-between)
-            dan tertutup tombol "Kembali ke atas" yang fixed di kanan bawah. Sekarang
-            ditumpuk di tengah, jadi tidak pernah bertabrakan dengan tombol itu.
+            Baris paling bawah. Urutannya: copyright → "Dibangun dengan Laravel"
+            → bar Post Views (paling bawah). `built_with` ditumpuk di tengah
+            supaya tidak pernah bertabrakan dengan tombol "Kembali ke atas"
+            yang fixed di kanan bawah.
 
-            Statistik kunjungan: `current` null untuk halaman yang tidak dipantau
-            (login, dasbor, halaman staf) — di situ hanya total situs yang tampil.
-            Angka diformat dengan pemisah ribuan titik agar konsisten dengan
-            gaya Rupiah yang dipakai di seluruh aplikasi.
+            Bar Post Views: SATU angka saja (total kunjungan seluruh situs),
+            sesuai permintaan pengguna agar dijadikan satu fitur — tidak ada
+            lagi pemisah "Total kunjungan" terpisah. Ikon grafik batang di kiri.
+            Warnanya memakai pasangan inverse `bg-primary` + `text-surface` —
+            di tema terang bar-nya gelap, di tema gelap bar-nya terang — jadi
+            kontras selalu terjaga tanpa hex/token baru. Pemisah ribuan memakai
+            titik, konsisten dengan gaya Rupiah di seluruh aplikasi.
         --}}
-        <div
-            class="mt-12 flex flex-col items-center gap-1.5 border-t border-hairline pt-6 text-center text-sm text-secondary">
-            <p>&copy; {{ now()->year }} {{ config('app.name') }} &middot; {{ __('footer.tagline') }}</p>
-            @if (($pageViewStats['current'] ?? null) !== null)
-                <p class="text-label">
-                    {{ trans_choice('footer.page_views', $pageViewStats['current'], ['count' => number_format($pageViewStats['current'], 0, ',', '.')]) }}
-                </p>
-            @endif
-            <p class="text-label">
-                {{ __('footer.total_views', ['count' => number_format($pageViewStats['total'] ?? 0, 0, ',', '.')]) }}
+        <div class="mt-12 border-t border-hairline pt-6">
+            <p class="text-center text-sm text-secondary">
+                &copy; {{ now()->year }} {{ config('app.name') }} &middot; {{ __('footer.tagline') }}
             </p>
-            <p class="text-label">{{ __('footer.built_with', ['version' => Illuminate\Foundation\Application::VERSION]) }}</p>
+
+            <p class="mt-1.5 text-center text-label text-secondary">
+                {{ __('footer.built_with', ['version' => Illuminate\Foundation\Application::VERSION]) }}
+            </p>
+
+            <div class="mt-4 flex justify-center">
+                <div
+                    class="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm text-surface shadow-card">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+                        <path d="M18 17V9" />
+                        <path d="M13 17V5" />
+                        <path d="M8 17v-3" />
+                    </svg>
+                    <span>
+                        {{ __('footer.post_views', ['count' => number_format($pageViewStats['total'] ?? 0, 0, ',', '.')]) }}
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 </footer>

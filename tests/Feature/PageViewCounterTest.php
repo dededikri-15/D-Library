@@ -16,8 +16,7 @@ class PageViewCounterTest extends TestCase
     {
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Halaman ini dibuka 1 kali', false)
-            ->assertSee('Total kunjungan 1', false);
+            ->assertSee('Post Views: 1', false);
 
         $this->assertDatabaseHas('page_views', ['route_name' => 'home', 'view_count' => 1]);
     }
@@ -43,7 +42,7 @@ class PageViewCounterTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Total kunjungan 4', false);
+            ->assertSee('Post Views: 4', false);
     }
 
     public function test_staff_pages_are_not_recorded(): void
@@ -56,12 +55,13 @@ class PageViewCounterTest extends TestCase
         $this->assertSame(0, (int) DB::table('page_views')->sum('view_count'));
     }
 
-    public function test_untracked_page_shows_only_total(): void
+    public function test_untracked_page_still_shows_total_counter(): void
     {
+        // Halaman yang tidak dipantau (login) tidak menambah baris di tabel
+        // page_views, tapi bar Post Views tetap tampil dengan total situs.
         $this->get(route('login'))
             ->assertOk()
-            ->assertDontSee('Halaman ini dibuka', false)
-            ->assertSee('Total kunjungan', false);
+            ->assertSee('Post Views: 0', false);
     }
 
     public function test_failed_requests_are_not_counted(): void
@@ -82,19 +82,15 @@ class PageViewCounterTest extends TestCase
         $this->assertSame(2, (int) DB::table('page_views')->sum('view_count'));
     }
 
-    public function test_english_footer_picks_singular_and_plural(): void
+    public function test_english_footer_shows_post_views_bar(): void
     {
         // Sesuai LocalePreferenceTest: bahasa dipilih lewat session 'locale',
-        // yang dibaca middleware SetLocale sebelum footer dirender.
+        // yang dibaca middleware SetLocale sebelum footer dirender. Label
+        // "Post Views" sama di kedua bahasa.
         $this->withSession(['locale' => 'en'])
             ->get(route('home'))
             ->assertOk()
-            ->assertSee('This page has been opened 1 time', false);
-
-        $this->withSession(['locale' => 'en'])
-            ->get(route('home'))
-            ->assertOk()
-            ->assertSee('This page has been opened 2 times', false);
+            ->assertSee('Post Views: 1', false);
     }
 
     public function test_member_menu_pages_are_counted_when_logged_in(): void
@@ -112,14 +108,13 @@ class PageViewCounterTest extends TestCase
         $this->assertDatabaseHas('page_views', ['route_name' => 'library-cards.show', 'view_count' => 1]);
     }
 
-    public function test_member_page_footer_shows_page_counter(): void
+    public function test_member_page_footer_shows_post_views(): void
     {
         $member = User::factory()->create();
 
         $this->actingAs($member)->get(route('favorites.index'))
             ->assertOk()
-            ->assertSee('Halaman ini dibuka 1 kali', false)
-            ->assertSee('Total kunjungan 1', false);
+            ->assertSee('Post Views: 1', false);
     }
 
     public function test_guest_opening_member_page_is_not_counted(): void
