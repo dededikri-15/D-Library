@@ -51,5 +51,7 @@ return [
     'requirement_unmet' => 'Not met',
     'renew_card' => 'Extend validity',
     'renew_blocked_hint' => 'Meet all the requirements above first.',
+    'renewal_requested_badge' => 'Renewal request received',
+    'renewal_requested_at' => 'Requested on :date',
     'card_without_birthdate' => 'The member\'s date of birth is missing — the card cannot be created.',
 ];

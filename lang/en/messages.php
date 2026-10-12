@@ -47,4 +47,7 @@ return [
     'card_not_renewable' => 'The card cannot be renewed because some requirements are not met.',
     'card_not_member' => 'Only member cards can be renewed.',
     'card_no_birthdate' => 'The member\'s date of birth is missing, so the card cannot be created.',
+    'card_renew_requested' => 'Renewal request sent to the librarians.',
+    'card_renew_already_requested' => 'A request was already sent — waiting for librarian confirmation.',
+    'card_renew_requirements_unmet' => 'Not all renewal requirements are met yet.',
 ];

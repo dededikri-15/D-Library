@@ -78,13 +78,31 @@
                     <div>
                         <p class="text-[0.7rem] tracking-wide text-secondary uppercase">{{ __('users.library_card_valid_until') }}</p>
                         <p class="mt-0.5 text-sm font-semibold tabular-nums text-primary">{{ $card->valid_until->translatedFormat('d M Y') }}</p>
+                        @if ($card->hasRenewalRequest())
+                            <p class="mt-0.5 text-xs text-secondary">
+                                {{ __('users.renewal_requested_at', ['date' => $card->renewal_requested_at->translatedFormat('d M Y')]) }}
+                            </p>
+                        @endif
                     </div>
 
-                    @if ($card->isValid())
-                        <span class="badge badge-available">{{ __('users.library_card_status_active') }}</span>
-                    @else
-                        <span class="badge badge-overdue">{{ __('users.library_card_status_expired') }}</span>
-                    @endif
+                    <div class="flex flex-wrap items-center gap-2">
+                        {{--
+                            Pengajuan perpanjangan dari anggota. Warnanya
+                            memakai aksen (bukan status) supaya layar ini
+                            tetap maksimal dua keluarga warna status —
+                            hijau/hijau-tua sudah dipakai badge kartu dan
+                            checklist di bawah.
+                        --}}
+                        @if ($card->hasRenewalRequest())
+                            <span class="badge bg-tertiary/10 text-tertiary">{{ __('users.renewal_requested_badge') }}</span>
+                        @endif
+
+                        @if ($card->isValid())
+                            <span class="badge badge-available">{{ __('users.library_card_status_active') }}</span>
+                        @else
+                            <span class="badge badge-overdue">{{ __('users.library_card_status_expired') }}</span>
+                        @endif
+                    </div>
                 </div>
 
                 <p class="mt-5 text-label font-medium tracking-wide text-secondary uppercase">{{ __('users.renewal_requirements') }}</p>

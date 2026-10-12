@@ -51,5 +51,7 @@ return [
     'requirement_unmet' => 'Belum terpenuhi',
     'renew_card' => 'Perpanjang masa berlaku',
     'renew_blocked_hint' => 'Penuhi semua syarat di atas terlebih dahulu.',
+    'renewal_requested_badge' => 'Pengajuan perpanjangan masuk',
+    'renewal_requested_at' => 'Diajukan :date',
     'card_without_birthdate' => 'Tanggal lahir anggota belum diisi — kartu belum bisa dibuat.',
 ];

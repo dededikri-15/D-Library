@@ -278,6 +278,10 @@ Route::middleware(['auth', 'role:anggota'])->group(function () {
     // Kartu perpustakaan digital. Satu anggota hanya bisa melihat
     // kartunya sendiri — tidak ada parameter user di route ini.
     Route::get('/kartu', [LibraryCardController::class, 'show'])->name('library-cards.show');
+    // Pengajuan perpanjangan: anggota hanya MENGAJUKAN; pustakawan yang
+    // memperpanjang (route `users.card.renew` di grup staf).
+    Route::post('/kartu/ajukan-perpanjangan', [LibraryCardController::class, 'requestRenewal'])
+        ->name('library-cards.renew-request');
 
     Route::get('/riwayat-baca', [ReadingHistoryController::class, 'index'])->name('reading-histories.index');
     Route::post('/riwayat-baca', [ReadingHistoryController::class, 'store'])->name('reading-histories.store');

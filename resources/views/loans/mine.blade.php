@@ -26,8 +26,16 @@
         @endforeach
     </div>
 
+    {{--
+        `min-w-[1000px]`: tanpa lebar minimum, tabel mengecil mengikuti
+        lebar layar dan teks di tiap sel membungkus (judul jadi 3 baris)
+        sehingga `.table-wrap` tidak pernah meluap dan scroll horizontal
+        tidak pernah muncul. Dengan lebar minimum, tabel lebih lebar dari
+        bungkusnya pada layar sempit → scroll bar muncul, isi tetap satu
+        baris seperti tabel Pengguna.
+    --}}
     <div class="table-wrap mt-6">
-        <table class="table">
+        <table class="table min-w-[1000px]">
             <thead>
                 <tr>
                     <th>{{ __('loans.book') }}</th>

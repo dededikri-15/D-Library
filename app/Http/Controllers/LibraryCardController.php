@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LibraryCard;
 use App\Models\User;
+use App\Notifications\CardRenewRequested;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -34,6 +35,47 @@ class LibraryCardController extends Controller
         return view('library-cards.show', [
             'card' => $card,
         ]);
+    }
+
+    /**
+     * Anggota mengajukan perpanjangan masa berlaku kartunya.
+     *
+     * Ini hanya MENGAJUKAN, bukan memperpanjang: seluruh pustakawan
+     * mendapat notifikasi lonceng (tautan ke halaman edit pengguna anggota
+     * ini), dan pustakawan yang menekan tombol perpanjang seperti biasa.
+     *
+     * Syarat diperiksa ulang di sini — tombol memang hanya dirender kalau
+     * semua syarat hijau, tapi view bisa dilewati (curl, tab lama), jadi
+     * keputusan akhir tetap di server.
+     */
+    public function requestRenewal(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $card = $user->hasBirthDate()
+            ? LibraryCard::createFor($user)
+            : null;
+
+        if ($card === null) {
+            return $this->backWithStatus(__('messages.card_no_birthdate'));
+        }
+
+        if ($card->hasRenewalRequest()) {
+            return $this->backWithStatus(__('messages.card_renew_already_requested'));
+        }
+
+        if (! $card->canRenew()) {
+            return back()->with('error', __('messages.card_renew_requirements_unmet'));
+        }
+
+        $card->update(['renewal_requested_at' => now()]);
+
+        User::query()
+            ->pustakawan()
+            ->get()
+            ->each(fn (User $librarian) => $librarian->notify(new CardRenewRequested($card)));
+
+        return $this->backWithStatus(__('messages.card_renew_requested'));
     }
 
     /**

@@ -167,7 +167,31 @@
                 @endforeach
             </ul>
 
-            <p class="mt-3 text-xs text-secondary">{{ __('member.renewal_contact') }}</p>
+            {{--
+                Aksi di bawah checklist — tiga keadaan, saling eksklusif:
+
+                1. Sudah pernah ajukan → status "menunggu konfirmasi"
+                   (tombol disembunyikan supaya tidak mengajukan dua kali).
+                2. Semua syarat hijau, belum ajukan → tombol ajukan.
+                   Permintaan ini MENGAJUKAN, bukan memperpanjang: yang
+                   menekan tombol acc tetap pustakawan.
+                3. Ada syarat belum terpenuhi → teks perintah saja.
+            --}}
+            @if ($card->hasRenewalRequest())
+                <p class="mt-4 flex items-start gap-2 rounded-lg border border-borrowed/40 bg-borrowed/10 px-3 py-2.5 text-sm text-primary dark:bg-borrowed/15">
+                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-borrowed" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <span>{{ __('member.renewal_pending', ['date' => $card->renewal_requested_at->translatedFormat('d M Y')]) }}</span>
+                </p>
+            @elseif ($card->canRenew())
+                <form method="POST" action="{{ route('library-cards.renew-request') }}" class="mt-4" data-submit-once>
+                    @csrf
+                    <button type="submit" class="btn btn-primary">{{ __('member.renewal_submit') }}</button>
+                </form>
+            @else
+                <p class="mt-3 text-xs text-secondary">{{ __('member.renewal_contact') }}</p>
+            @endif
         </div>
 
         {{-- Tombol cetak. Handler di `app.js` (initPrint) — `onclick` inline

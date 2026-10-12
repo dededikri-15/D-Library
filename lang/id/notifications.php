@@ -205,5 +205,9 @@ return [
             'title' => 'Kartu perpustakaan diperpanjang',
             'body' => 'Masa berlaku kartu :subject diperpanjang 1 tahun.',
         ],
+        'card_renew_requested' => [
+            'title' => 'Pengajuan perpanjangan kartu',
+            'body' => ':member_name mengajukan perpanjangan kartu perpustakaan (nomor :card_number). Periksa syaratnya lalu perpanjang dari halaman pengguna.',
+        ],
     ],
 ];

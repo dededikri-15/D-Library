@@ -47,4 +47,7 @@ return [
     'card_not_renewable' => 'Kartu tidak bisa diperpanjang karena ada syarat yang belum terpenuhi.',
     'card_not_member' => 'Hanya kartu anggota yang bisa diperpanjang.',
     'card_no_birthdate' => 'Tanggal lahir anggota belum diisi, kartu belum bisa dibuat.',
+    'card_renew_requested' => 'Pengajuan perpanjangan dikirim ke pustakawan.',
+    'card_renew_already_requested' => 'Pengajuan sudah dikirim sebelumnya — menunggu konfirmasi pustakawan.',
+    'card_renew_requirements_unmet' => 'Syarat perpanjangan belum terpenuhi semua.',
 ];

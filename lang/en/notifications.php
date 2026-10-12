@@ -205,5 +205,9 @@ return [
             'title' => 'Library card renewed',
             'body' => 'The validity of :subject\'s card was extended by 1 year.',
         ],
+        'card_renew_requested' => [
+            'title' => 'Library card renewal request',
+            'body' => ':member_name requested a library card renewal (card :card_number). Check the requirements, then renew from the user page.',
+        ],
     ],
 ];

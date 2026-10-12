@@ -16,12 +16,14 @@ class LibraryCard extends Model
         'user_id',
         'card_number',
         'valid_until',
+        'renewal_requested_at',
     ];
 
     protected function casts(): array
     {
         return [
             'valid_until' => 'date',
+            'renewal_requested_at' => 'datetime',
         ];
     }
 
@@ -145,7 +147,19 @@ class LibraryCard extends Model
 
         $this->update([
             'valid_until' => now()->addMonthsNoOverflow($months),
+            // Pengajuan anggota ikut dilaporkan — kartu sudah diperpanjang,
+            // tidak ada lagi yang perlu dikonfirmasi pustakawan.
+            'renewal_requested_at' => null,
         ]);
+    }
+
+    /**
+     * Apakah ada pengajuan perpanjangan yang masih menunggu konfirmasi
+     * pustakawan?
+     */
+    public function hasRenewalRequest(): bool
+    {
+        return $this->renewal_requested_at !== null;
     }
 
     /**

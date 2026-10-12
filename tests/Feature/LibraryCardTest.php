@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\LibraryCard;
 use App\Models\Loan;
 use App\Models\User;
+use App\Notifications\CardRenewRequested;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class LibraryCardTest extends TestCase
@@ -291,5 +293,135 @@ class LibraryCardTest extends TestCase
             ->assertSee('Syarat perpanjangan')
             ->assertSee('Semua buku sudah dikembalikan')
             ->assertSee('Tidak ada denda yang belum lunas');
+    }
+
+    /* ------------------------------------------------------------------
+     | Pengajuan perpanjangan (anggota → pustakawan, Task 31.6)
+     * ----------------------------------------------------------------- */
+
+    public function test_tombol_ajukan_tampil_jika_semua_syarat_terpenuhi(): void
+    {
+        $member = $this->anggota();
+        LibraryCard::createFor($member);
+
+        $this->actingAs($member)
+            ->get('/kartu')
+            ->assertOk()
+            ->assertSee('Ajukan perpanjangan ke pustakawan')
+            ->assertSee(route('library-cards.renew-request'), false);
+    }
+
+    public function test_tombol_ajukan_tidak_tampil_jika_syarat_belum_terpenuhi(): void
+    {
+        $member = $this->anggota();
+        LibraryCard::createFor($member);
+        Loan::factory()->create(['user_id' => $member->id]);
+
+        $this->actingAs($member)
+            ->get('/kartu')
+            ->assertOk()
+            ->assertSee('Penuhi semua syarat di atas untuk bisa mengajukan perpanjangan.')
+            ->assertDontSee(route('library-cards.renew-request'), false);
+    }
+
+    public function test_pengajuan_perpanjangan_mengirim_notifikasi_ke_seluruh_pustakawan(): void
+    {
+        Notification::fake();
+
+        $member = $this->anggota();
+        LibraryCard::createFor($member);
+        $pustakawan = $this->pustakawan();
+
+        $this->actingAs($member)
+            ->from('/kartu')
+            ->post(route('library-cards.renew-request'))
+            ->assertRedirect('/kartu')
+            ->assertSessionHas('status');
+
+        $card = LibraryCard::where('user_id', $member->id)->firstOrFail();
+        $this->assertNotNull($card->renewal_requested_at);
+
+        Notification::assertSentTo($pustakawan, CardRenewRequested::class);
+        Notification::assertNotSentTo($member, CardRenewRequested::class);
+    }
+
+    public function test_pengajuan_kedua_kali_tidak_mengirim_notifikasi_lagi(): void
+    {
+        Notification::fake();
+
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+        $card->update(['renewal_requested_at' => now()]);
+
+        $this->actingAs($member)
+            ->from('/kartu')
+            ->post(route('library-cards.renew-request'))
+            ->assertRedirect('/kartu')
+            ->assertSessionHas('status');
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_pengajuan_ditolak_jika_syarat_belum_terpenuhi(): void
+    {
+        Notification::fake();
+
+        $member = $this->anggota();
+        LibraryCard::createFor($member);
+        Loan::factory()->create(['user_id' => $member->id]);
+
+        $this->actingAs($member)
+            ->from('/kartu')
+            ->post(route('library-cards.renew-request'))
+            ->assertRedirect('/kartu')
+            ->assertSessionHas('error');
+
+        $card = LibraryCard::where('user_id', $member->id)->firstOrFail();
+        $this->assertNull($card->renewal_requested_at);
+        Notification::assertNothingSent();
+    }
+
+    public function test_setelah_diajukan_tombol_diganti_status_menunggu(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+        $card->update(['renewal_requested_at' => now()]);
+
+        $this->actingAs($member)
+            ->get('/kartu')
+            ->assertOk()
+            ->assertSee('menunggu konfirmasi pustakawan')
+            ->assertDontSee(route('library-cards.renew-request'), false);
+    }
+
+    public function test_pustakawan_melihat_lencana_pengajuan_masuk_di_halaman_edit(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+        $card->update(['renewal_requested_at' => now()]);
+
+        $this->actingAs($this->pustakawan())
+            ->get(route('users.edit', $member))
+            ->assertOk()
+            ->assertSee('Pengajuan perpanjangan masuk');
+    }
+
+    public function test_memperpanjang_kartu_menghapus_status_pengajuan(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+        $card->update(['renewal_requested_at' => now()]);
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member));
+
+        $this->assertNull($card->fresh()->renewal_requested_at);
+    }
+
+    public function test_pustakawan_dilarang_mengajukan_perpanjangan(): void
+    {
+        $this->actingAs($this->pustakawan())
+            ->post(route('library-cards.renew-request'))
+            ->assertForbidden();
     }
 }
