@@ -19,7 +19,6 @@ return [
     'popular_books' => 'Popular Books',
     'popular_description' => 'Most frequently borrowed by members.',
     'reader_favorites' => 'Readers’ Favorites',
-    'recommendation_eyebrow' => 'For You',
     'topics' => 'Topics',
     'explore_categories' => 'Explore Categories',
     'categories_description' => 'Browse the collection by topic.',

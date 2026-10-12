@@ -44,8 +44,6 @@ return [
     'continue_reading' => 'Continue reading',
     'no_reading_history' => 'No reading history yet',
     'open_digital_book' => 'Open a digital book and your page history will appear here.',
-    'recommendations' => 'Recommended for you',
-    'recommendation_description' => 'Based on the categories you read most often.',
 
     // Librarian dashboard report charts (Task 26.2)
     'loans_chart_title' => 'Loans per Month',

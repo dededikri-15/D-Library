@@ -34,4 +34,18 @@ class LibraryCardFactory extends Factory
             'valid_until' => now()->subDay()->toDateString(),
         ]);
     }
+
+    /**
+     * Kartu yang kedaluwarsa jauh melewati masa tenggang perpanjangan
+     * (lebih dari `library_card.renewal_grace_days`) — tidak boleh bisa
+     * diperpanjang lagi.
+     */
+    public function expiredBeyondGrace(): static
+    {
+        $grace = (int) config('perpustakaan.library_card.renewal_grace_days', 30);
+
+        return $this->state(fn () => [
+            'valid_until' => now()->subDays($grace + 1)->toDateString(),
+        ]);
+    }
 }

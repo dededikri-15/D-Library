@@ -132,6 +132,44 @@
             {{ __('member.library_card_hint') }}
         </p>
 
+        {{--
+            Syarat perpanjangan — daftar yang sama dengan yang dilihat
+            pustakawan di halaman edit pengguna (sumbernya satu:
+            `LibraryCard::renewalBlockers()`). Anggota bisa tahu dulu apa
+            yang kurang sebelum datang ke meja sirkulasi, jadi perjalanan
+            ke perpustakaan tidak sia-sia.
+        --}}
+        <div class="card mt-4 p-5">
+            <p class="text-label font-medium tracking-wide text-secondary uppercase">{{ __('member.renewal_requirements') }}</p>
+
+            @php($blockers = $card->renewalBlockers())
+            <ul class="mt-3 space-y-2">
+                @foreach ([
+                    'active_loans' => __('member.requirement_all_returned'),
+                    'unpaid_fine' => __('member.requirement_no_unpaid_fine'),
+                    'expired_too_long' => __('member.requirement_within_grace', [
+                        'days' => App\Models\LibraryCard::renewalGraceDays(),
+                    ]),
+                ] as $key => $label)
+                    @php($met = ! array_key_exists($key, $blockers))
+                    <li class="flex items-start gap-2 text-sm {{ $met ? 'text-available' : 'text-overdue' }}">
+                        @if ($met)
+                            <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                            </svg>
+                        @else
+                            <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
+                        @endif
+                        <span>{{ $label }}</span>
+                    </li>
+                @endforeach
+            </ul>
+
+            <p class="mt-3 text-xs text-secondary">{{ __('member.renewal_contact') }}</p>
+        </div>
+
         {{-- Tombol cetak. Handler di `app.js` (initPrint) — `onclick` inline
              diblokir CSP. --}}
         <button type="button" data-print

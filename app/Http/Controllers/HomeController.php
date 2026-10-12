@@ -127,24 +127,6 @@ class HomeController extends Controller
 
         // Data khusus Anggota
         if ($user && $user->isMember()) {
-            $favoriteCategories = $user->readingHistories()
-                ->join('books', 'reading_histories.book_id', '=', 'books.id')
-                ->selectRaw('books.category_id, COUNT(*) as count')
-                ->whereNotNull('books.category_id')
-                ->groupBy('books.category_id')
-                ->orderByDesc('count')
-                ->limit(3)
-                ->pluck('category_id');
-
-            $recommendations = Book::query()
-                ->with(['category', 'author'])
-                ->where('status', '!=', Book::STATUS_INACTIVE)
-                ->whereIn('category_id', $favoriteCategories)
-                ->whereNotIn('id', $user->readingHistories()->pluck('book_id'))
-                ->latest()
-                ->limit(4)
-                ->get();
-
             $data = array_merge($data, [
                 'activeLoans' => $user->activeLoans()->with('book')->get(),
                 'activeLoanCount' => $user->activeLoans()->count(),
@@ -152,7 +134,6 @@ class HomeController extends Controller
                 'recentLoansMember' => $user->loans()->with('book')->latest('borrowed_at')->limit(5)->get(),
                 'favoriteCount' => $user->favorites()->count(),
                 'readingHistory' => $user->readingHistories()->with('book')->latest('last_read_at')->take(5)->get(),
-                'recommendations' => $recommendations,
 
                 // Data grafik pribadi anggota (Task 27.3). Sama seperti grafik
                 // staf, ini berada di dalam cabang role: anggota hanya melihat

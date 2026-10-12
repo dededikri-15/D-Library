@@ -104,6 +104,13 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
         ->except('show')
         ->whereNumber('user');
 
+    // Perpanjangan masa berlaku kartu perpustakaan anggota — hanya
+    // pustakawan, dan hanya setelah semua syarat terpenuhi (dicek di
+    // LibraryCardController::renew lewat LibraryCard::canRenew()).
+    Route::post('/pengguna/{user}/kartu/perpanjang', [LibraryCardController::class, 'renew'])
+        ->whereNumber('user')
+        ->name('users.card.renew');
+
     // Peminjaman (PRD §9)
     Route::get('/peminjaman', [LoanController::class, 'index'])->name('loans.index');
     Route::post('/peminjaman', [LoanController::class, 'store'])->name('loans.store');

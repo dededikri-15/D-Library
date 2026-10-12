@@ -201,5 +201,9 @@ return [
             'title' => 'Catatan peminjaman dihapus',
             'body' => 'Catatan peminjaman :subject dihapus.',
         ],
+        'card_renewed' => [
+            'title' => 'Kartu perpustakaan diperpanjang',
+            'body' => 'Masa berlaku kartu :subject diperpanjang 1 tahun.',
+        ],
     ],
 ];

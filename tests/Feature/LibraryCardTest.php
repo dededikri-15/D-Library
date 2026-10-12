@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\LibraryCard;
+use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -149,5 +150,146 @@ class LibraryCardTest extends TestCase
             ->assertOk()
             ->assertSee('Kartu Perpustakaan')
             ->assertDontSee('Kotak Masuk');
+    }
+
+    /* ------------------------------------------------------------------
+     | Perpanjangan masa berlaku (pustakawan)
+     * ----------------------------------------------------------------- */
+
+    private function pustakawan(): User
+    {
+        return User::factory()->pustakawan()->create();
+    }
+
+    public function test_halaman_edit_pengguna_menampilkan_checklist_syarat_kartu(): void
+    {
+        $member = $this->anggota();
+
+        $this->actingAs($this->pustakawan())
+            ->get(route('users.edit', $member))
+            ->assertOk()
+            ->assertSee('Syarat perpanjangan')
+            ->assertSee('Semua buku sudah dikembalikan')
+            ->assertSee('Tidak ada denda yang belum lunas');
+    }
+
+    public function test_pustakawan_bisa_memperpanjang_kartu_ketika_syarat_terpenuhi(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member))
+            ->assertRedirect(route('users.edit', $member));
+
+        $this->assertTrue($card->fresh()->valid_until->isSameMonth(now()->addMonthsNoOverflow(12)));
+    }
+
+    public function test_perpanjangan_ditolak_jika_masih_ada_peminjaman_aktif(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+        Loan::factory()->create(['user_id' => $member->id]);
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member))
+            ->assertRedirect(route('users.edit', $member))
+            ->assertSessionHas('error');
+
+        $this->assertTrue($card->fresh()->valid_until->equalTo($card->valid_until));
+    }
+
+    public function test_perpanjangan_ditolak_jika_ada_denda_belum_lunas(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+
+        Loan::factory()->returned()->create([
+            'user_id' => $member->id,
+            'fine' => 5000,
+            'fine_paid_at' => null,
+        ]);
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member))
+            ->assertSessionHas('error');
+
+        $this->assertTrue($card->fresh()->valid_until->equalTo($card->valid_until));
+    }
+
+    public function test_perpanjangan_ditolak_jika_kartu_kedaluwarsa_lewat_masa_tenggang(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::factory()->for($member)->expiredBeyondGrace()->create();
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member))
+            ->assertSessionHas('error');
+
+        $this->assertTrue($card->fresh()->valid_until->equalTo($card->valid_until));
+    }
+
+    public function test_kartu_kedaluwarsa_di_bawah_masa_tenggang_tetap_bisa_diperpanjang(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::factory()->for($member)->expired()->create();
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member))
+            ->assertSessionHas('status');
+
+        // Dihitung dari tanggal perpanjangan (hari ini), bukan menumpuk
+        // di ujung masa berlaku lama.
+        $this->assertTrue($card->fresh()->valid_until->isSameMonth(now()->addMonthsNoOverflow(12)));
+    }
+
+    public function test_perpanjangan_dihitung_dari_tanggal_perpanjangan_bukan_tanggal_lama(): void
+    {
+        $member = $this->anggota();
+        $card = LibraryCard::createFor($member);
+
+        // Masa berlaku masih setengah jalan — kalau dihitung dari tanggal
+        // lama, hasilnya akan lebih awal dari sekarang + 12 bulan.
+        $card->update(['valid_until' => now()->addMonthsNoOverflow(6)]);
+
+        $this->actingAs($this->pustakawan())
+            ->post(route('users.card.renew', $member));
+
+        $this->assertTrue($card->fresh()->valid_until->isSameMonth(now()->addMonthsNoOverflow(12)));
+    }
+
+    public function test_anggota_dilarang_memperpanjang_kartunya_sendiri(): void
+    {
+        $member = $this->anggota();
+        LibraryCard::createFor($member);
+
+        $this->actingAs($member)
+            ->post(route('users.card.renew', $member))
+            ->assertForbidden();
+    }
+
+    public function test_tombol_perpanjang_tampil_disabled_jika_syarat_belum_terpenuhi(): void
+    {
+        $member = $this->anggota();
+        LibraryCard::createFor($member);
+        Loan::factory()->create(['user_id' => $member->id]);
+
+        $this->actingAs($this->pustakawan())
+            ->get(route('users.edit', $member))
+            ->assertOk()
+            ->assertSee('Penuhi semua syarat di atas terlebih dahulu.')
+            ->assertDontSee(route('users.card.renew', $member), false);
+    }
+
+    public function test_anggota_melihat_checklist_syarat_di_halaman_kartu(): void
+    {
+        $member = $this->anggota();
+
+        $this->actingAs($member)
+            ->get('/kartu')
+            ->assertOk()
+            ->assertSee('Syarat perpanjangan')
+            ->assertSee('Semua buku sudah dikembalikan')
+            ->assertSee('Tidak ada denda yang belum lunas');
     }
 }

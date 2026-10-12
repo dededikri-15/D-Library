@@ -36,4 +36,20 @@ return [
     'leave_password_blank' => 'Kosongkan kedua kolom bila kata sandi tidak ingin diubah.',
     'save_changes' => 'Simpan perubahan',
     'cancel' => 'Batal',
+
+    // Perpanjangan masa berlaku kartu perpustakaan (pustakawan menekan tombol acc)
+    'library_card_section' => 'Kartu Perpustakaan',
+    'library_card_description' => 'Perpanjang masa berlaku kartu anggota. Semua syarat harus terpenuhi sebelum tombol perpanjang aktif.',
+    'library_card_valid_until' => 'Berlaku sampai',
+    'library_card_status_active' => 'Aktif',
+    'library_card_status_expired' => 'Kedaluwarsa',
+    'renewal_requirements' => 'Syarat perpanjangan',
+    'requirement_all_returned' => 'Semua buku sudah dikembalikan',
+    'requirement_no_unpaid_fine' => 'Tidak ada denda yang belum lunas',
+    'requirement_within_grace' => 'Kartu masih berlaku atau kedaluwarsa maksimal :days hari',
+    'requirement_met' => 'Terpenuhi',
+    'requirement_unmet' => 'Belum terpenuhi',
+    'renew_card' => 'Perpanjang masa berlaku',
+    'renew_blocked_hint' => 'Penuhi semua syarat di atas terlebih dahulu.',
+    'card_without_birthdate' => 'Tanggal lahir anggota belum diisi — kartu belum bisa dibuat.',
 ];

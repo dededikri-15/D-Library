@@ -201,5 +201,9 @@ return [
             'title' => 'Loan record deleted',
             'body' => 'The loan record for :subject was deleted.',
         ],
+        'card_renewed' => [
+            'title' => 'Library card renewed',
+            'body' => 'The validity of :subject\'s card was extended by 1 year.',
+        ],
     ],
 ];

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Models\LibraryCard;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,9 +56,21 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        /*
+         * Kartu perpustakaan anggota ikut ditampilkan (dengan syarat
+         * perpanjannya) supaya pustakawan bisa langsung memeriksa dan
+         * menekan tombol perpanjang tanpa membuka tab lain. Kartu dibuat
+         * dengan `firstOrCreate` — aman kalau anggota belum pernah buka
+         * halaman kartunya.
+         */
+        $card = $user->isMember() && $user->hasBirthDate()
+            ? LibraryCard::createFor($user)
+            : null;
+
         return view('admin.users.edit', [
             'user' => $user,
             'roles' => User::roles(),
+            'card' => $card,
         ]);
     }
 

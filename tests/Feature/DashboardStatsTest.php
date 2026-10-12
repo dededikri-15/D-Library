@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
-use App\Models\Category;
 use App\Models\Loan;
 use App\Models\ReadingHistory;
 use App\Models\User;
@@ -199,73 +198,6 @@ class DashboardStatsTest extends TestCase
             ->assertSee('Riwayat peminjaman')
             ->assertSee('Buku Riwayat Pinjaman')
             ->assertSee(route('loans.mine'), false);
-    }
-
-    public function test_anggota_dashboard_menampilkan_rekomendasi(): void
-    {
-        $member = User::factory()->anggota()->create();
-        $category = Category::factory()->create();
-
-        $readBook = Book::factory()->create(['category_id' => $category->id]);
-        ReadingHistory::create([
-            'user_id' => $member->id,
-            'book_id' => $readBook->id,
-            'last_page' => 5,
-            'last_read_at' => now(),
-        ]);
-
-        $recommendedBook = Book::factory()->create([
-            'category_id' => $category->id,
-            'title' => 'Buku Rekomendasi',
-        ]);
-
-        $this->actingAs($member)
-            ->get(route('anggota.dashboard'))
-            ->assertOk()
-            ->assertSee('Rekomendasi untuk Anda')
-            ->assertSee('Buku Rekomendasi');
-    }
-
-    public function test_anggota_dashboard_tidak_menampilkan_rekomendasi_kosong(): void
-    {
-        $member = User::factory()->anggota()->create();
-
-        $this->actingAs($member)
-            ->get(route('anggota.dashboard'))
-            ->assertOk()
-            ->assertDontSee('Rekomendasi untuk Anda');
-    }
-
-    public function test_anggota_dashboard_tidak_menampilkan_buku_yang_sudah_dibaca_di_rekomendasi(): void
-    {
-        $member = User::factory()->anggota()->create();
-        $category = Category::factory()->create();
-
-        $readBook = Book::factory()->create([
-            'category_id' => $category->id,
-            'title' => 'Buku Sudah Dibaca',
-        ]);
-        ReadingHistory::create([
-            'user_id' => $member->id,
-            'book_id' => $readBook->id,
-            'last_page' => 5,
-            'last_read_at' => now(),
-        ]);
-
-        $response = $this->actingAs($member)->get(route('anggota.dashboard'));
-
-        $response->assertOk();
-
-        $content = $response->getContent();
-        $recommendationsPos = strpos($content, 'Rekomendasi untuk Anda');
-        $bookPos = strpos($content, 'Buku Sudah Dibaca');
-
-        if ($recommendationsPos !== false && $bookPos !== false) {
-            $this->assertTrue(
-                $bookPos < $recommendationsPos,
-                'Buku yang sudah dibaca tidak boleh muncul di bagian rekomendasi.'
-            );
-        }
     }
 
     public function test_tamu_diarahkan_ke_login(): void

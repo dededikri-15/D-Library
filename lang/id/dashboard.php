@@ -44,8 +44,6 @@ return [
     'continue_reading' => 'Lanjut baca',
     'no_reading_history' => 'Belum ada riwayat membaca',
     'open_digital_book' => 'Buka buku digital dan riwayat halaman akan tercatat di sini.',
-    'recommendations' => 'Rekomendasi untuk Anda',
-    'recommendation_description' => 'Berdasarkan kategori yang sering Anda baca.',
 
     // Laporan grafik dasbor pustakawan (Task 26.2)
     'loans_chart_title' => 'Peminjaman per Bulan',

@@ -84,8 +84,8 @@
         Blok dasbor (anggota + pustakawan) diletakkan SEBELUM seluruh bagian
         katalog/buku (permintaan pengguna). Alasannya: ringkasan pribadi
         (sapaan, pinjaman aktif, riwayat) adalah inti beranda anggota dan
-        harus langsung terlihat; koleksi buku (Terbaru, Populer, Rekomendasi,
-        Kategori) dikelompokkan rapat di bawahnya sebagai satu kesatuan katalog
+        harus langsung terlihat; koleksi buku (Terbaru, Populer, Kategori)
+        dikelompokkan rapat di bawahnya sebagai satu kesatuan katalog
         sehingga tidak lagi terpisah jauh dan menyisakan jarak kosong.
     --}}
     @auth
@@ -311,8 +311,8 @@
     {{--
         Koleksi buku (umum) — dikelompokkan rapat setelah blok dasbor
         (permintaan pengguna). Urutannya: Buku Terbaru → Buku Populer →
-        Rekomendasi (anggota) → Kategori, tanpa jarak kosong yang memisahkan
-        fitur buku dari bagian lain.
+        Kategori, tanpa jarak kosong yang memisahkan fitur buku dari
+        bagian lain.
     --}}
 
     {{-- Buku terbaru (umum) --}}
@@ -357,27 +357,6 @@
             </div>
         </section>
     @endif
-
-    {{-- Rekomendasi (anggota) — digabung ke dalam grup katalog, bukan terdampar di bawah --}}
-    @auth
-        @if ($isMember && $recommendations->isNotEmpty())
-            <section class="mt-14">
-                <div class="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                        <p class="section-eyebrow">{{ __('home.recommendation_eyebrow') }}</p>
-                        <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('dashboard.recommendations') }}</h2>
-                        <p class="mt-1.5 text-sm text-secondary">{{ __('dashboard.recommendation_description') }}</p>
-                    </div>
-                </div>
-
-                <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach ($recommendations as $book)
-                        <x-book-card :book="$book" />
-                    @endforeach
-                </div>
-            </section>
-        @endif
-    @endauth
 
     {{-- Kategori (umum) --}}
     @if ($categories->isNotEmpty())

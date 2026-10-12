@@ -36,4 +36,20 @@ return [
     'leave_password_blank' => 'Leave both fields blank to keep the current password.',
     'save_changes' => 'Save changes',
     'cancel' => 'Cancel',
+
+    // Library card validity renewal (librarian presses the approve button)
+    'library_card_section' => 'Library Card',
+    'library_card_description' => 'Extend the member\'s card validity. All requirements must be met before the renew button becomes active.',
+    'library_card_valid_until' => 'Valid until',
+    'library_card_status_active' => 'Active',
+    'library_card_status_expired' => 'Expired',
+    'renewal_requirements' => 'Renewal requirements',
+    'requirement_all_returned' => 'All books have been returned',
+    'requirement_no_unpaid_fine' => 'No unpaid fines',
+    'requirement_within_grace' => 'Card is valid or expired no more than :days days',
+    'requirement_met' => 'Met',
+    'requirement_unmet' => 'Not met',
+    'renew_card' => 'Extend validity',
+    'renew_blocked_hint' => 'Meet all the requirements above first.',
+    'card_without_birthdate' => 'The member\'s date of birth is missing — the card cannot be created.',
 ];
