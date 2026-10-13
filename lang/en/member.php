@@ -29,7 +29,7 @@ return [
     'card_valid_until' => 'Valid Until',
     'card_active' => 'Card is active',
     'card_expired' => 'Card has expired',
-    'library_card_hint' => 'This card is created automatically and is valid for 1 year. Renewal is performed by the librarian once the requirements below are met.',
+    'library_card_hint' => 'This card is created automatically and is valid for 1 year. Each renewal adds :months months of validity — you request it from this page and the librarian confirms it once the requirements below are met.',
     'renewal_requirements' => 'Renewal requirements',
     'requirement_all_returned' => 'All books have been returned',
     'requirement_no_unpaid_fine' => 'No unpaid fines',

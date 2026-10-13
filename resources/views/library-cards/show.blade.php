@@ -129,7 +129,7 @@
         @endif
 
         <p class="mt-4 max-w-prose text-sm text-secondary">
-            {{ __('member.library_card_hint') }}
+            {{ __('member.library_card_hint', ['months' => App\Models\LibraryCard::renewalMonths()]) }}
         </p>
 
         {{--

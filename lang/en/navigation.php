@@ -12,6 +12,7 @@ return [
     'authors' => 'Authors',
     'publishers' => 'Publishers',
     'loans' => 'Loans',
+    'card_requests' => 'Card Requests',
     'users' => 'Users',
     'loan_history' => 'Loan History',
     'favorites' => 'Favorites',

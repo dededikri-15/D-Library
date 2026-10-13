@@ -60,7 +60,10 @@
                     <td class="text-right text-secondary">{{ $row->books_count }}</td>
                     @if ($canManage)
                         <td class="text-right">
-                            <a href="{{ route($routeBase.'.edit', $row) }}" class="btn btn-ghost btn-sm">{{ __('master.edit') }}</a>
+                            {{-- btn-secondary (punya border), bukan ghost:
+                                 ghost nyaris tak terlihat di latar tabel
+                                 sehingga "Edit" terbaca sebagai teks biasa. --}}
+                            <a href="{{ route($routeBase.'.edit', $row) }}" class="btn btn-secondary btn-sm">{{ __('master.edit') }}</a>
                         </td>
                         <td class="text-right">
                             {{--

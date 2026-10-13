@@ -3,6 +3,16 @@
     $isStaff = (bool) $user?->isStaff();
 
     /*
+     * Jumlah pengajuan perpanjangan kartu yang masih menunggu konfirmasi.
+     * Dipakai sebagai lencana di menu "Pengajuan Kartu" supaya pustakawan
+     * langsung tahu ada anggota menunggu tanpa membuka halamannya dulu.
+     * Hanya dihitung untuk staf — anggota tidak perlu tahu angka ini.
+     */
+    $pendingCardRequests = $isStaff
+        ? App\Models\LibraryCard::whereNotNull('renewal_requested_at')->count()
+        : 0;
+
+    /*
      * Sorotan menu buku (Katalog vs Kelola Buku).
      *
      * Dulu keduanya memakai pola `books.*` yang sama, padahal URL-nya juga
@@ -101,6 +111,21 @@
                     'pattern' => 'loans.*',
                     'label' => __('navigation.loans'),
                     'icon' => 'M12 6v6l4 2m4-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+                ]
+                : null,
+            /*
+                Pengajuan perpanjangan kartu anggota — daftar khusus staf
+                (route `library-cards.requests`). Lencana angka muncul hanya
+                kalau ada pengajuan yang menunggu, supaya menu ini berfungsi
+                sekaligus sebagai pengingat.
+            */
+            $user?->isStaff()
+                ? [
+                    'route' => 'library-cards.requests',
+                    'pattern' => 'library-cards.requests',
+                    'label' => __('navigation.card_requests'),
+                    'badge' => $pendingCardRequests > 0 ? $pendingCardRequests : null,
+                    'icon' => 'M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z',
                 ]
                 : null,
             $user?->isStaff()
@@ -230,6 +255,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $link['icon'] }}" />
                     </svg>
                     <span data-sidebar-label class="truncate">{{ $link['label'] }}</span>
+                    @if (! empty($link['badge']))
+                        <span data-sidebar-label
+                              class="ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-tertiary/15 px-1.5 text-[0.65rem] font-semibold text-tertiary">
+                            {{ $link['badge'] }}
+                        </span>
+                    @endif
                 </a>
             @endforeach
         </nav>

@@ -46,7 +46,9 @@ class CardRenewRequested extends Notification
             'user_id' => $user?->getKey(),
             'member_name' => $user?->name ?? '-',
             'card_number' => $this->card->card_number,
-            'url' => $user ? route('users.edit', $user) : route('users.index'),
+            // Mendarat di daftar pengajuan perpanjangan, bukan halaman edit
+            // pengguna — di situlah pustakawan mengonfirmasi semua pengajuan.
+            'url' => route('library-cards.requests'),
         ];
     }
 }

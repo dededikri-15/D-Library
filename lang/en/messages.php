@@ -43,7 +43,7 @@ return [
     'loan_overdue_reason' => 'Your loan is overdue.',
     'already_borrowing_reason' => 'You already have this book on loan.',
     'copy_unavailable_reason' => 'This book is currently borrowed by another member.',
-    'card_renewed' => 'Card validity extended by 1 year.',
+    'card_renewed' => 'Card validity extended by :months months.',
     'card_not_renewable' => 'The card cannot be renewed because some requirements are not met.',
     'card_not_member' => 'Only member cards can be renewed.',
     'card_no_birthdate' => 'The member\'s date of birth is missing, so the card cannot be created.',

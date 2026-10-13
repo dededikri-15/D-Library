@@ -71,7 +71,9 @@
 
         <div class="card mt-6 max-w-xl p-6">
             <p class="text-sm font-semibold text-primary">{{ __('users.library_card_section') }}</p>
-            <p class="mt-1 text-xs text-secondary">{{ __('users.library_card_description') }}</p>
+            <p class="mt-1 text-xs text-secondary">
+                {{ __('users.library_card_description', ['months' => App\Models\LibraryCard::renewalMonths()]) }}
+            </p>
 
             @if ($card)
                 <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-secondary/20 px-4 py-3">

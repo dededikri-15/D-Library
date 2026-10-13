@@ -111,6 +111,16 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
         ->whereNumber('user')
         ->name('users.card.renew');
 
+    // Daftar pengajuan perpanjangan kartu yang menunggu konfirmasi.
+    // Satu halaman khusus supaya pustakawan bisa memproses semua
+    // pengajuan sekaligus — tidak perlu membuka halaman edit tiap
+    // pengguna satu per satu dari lonceng notifikasi.
+    Route::get('/kartu/perpanjangan', [LibraryCardController::class, 'requests'])
+        ->name('library-cards.requests');
+    Route::post('/kartu/perpanjangan/{user}/konfirmasi', [LibraryCardController::class, 'confirmRenewal'])
+        ->whereNumber('user')
+        ->name('library-cards.renew-confirm');
+
     // Peminjaman (PRD §9)
     Route::get('/peminjaman', [LoanController::class, 'index'])->name('loans.index');
     Route::post('/peminjaman', [LoanController::class, 'store'])->name('loans.store');

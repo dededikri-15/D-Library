@@ -45,8 +45,15 @@ return [
     */
 
     'library_card' => [
-        // Lama berlaku kartu, dalam bulan. Default 12 bulan (1 tahun).
+        // Lama berlaku kartu saat PERTAMA KALI dibuat, dalam bulan.
+        // Default 12 bulan (1 tahun).
         'validity_months' => (int) env('PERPUSTAKAAN_LIBRARY_CARD_VALIDITY_MONTHS', 12),
+
+        // Tambahan masa berlaku setiap SATU KALI perpanjangan, dalam bulan.
+        // Berbeda dari `validity_months`: kartu baru berlaku 1 tahun, tapi
+        // perpanjangan hanya menambah 3 bulan — supaya anggota memperpanjang
+        // secara berkala, bukan sekali untuk bertahun-tahun.
+        'renewal_months' => (int) env('PERPUSTAKAAN_LIBRARY_CARD_RENEWAL_MONTHS', 3),
 
         // Perpanjangan dilakukan pustakawan. Kartu yang sudah kedaluwarsa
         // lebih dari ini (hari) tidak bisa diperpanjang lagi dan harus

@@ -43,7 +43,7 @@ return [
     'loan_overdue_reason' => 'Peminjamanmu sudah lewat jatuh tempo.',
     'already_borrowing_reason' => 'Kamu sedang meminjam buku ini.',
     'copy_unavailable_reason' => 'Buku ini sedang dipinjam anggota lain.',
-    'card_renewed' => 'Masa berlaku kartu berhasil diperpanjang 1 tahun.',
+    'card_renewed' => 'Masa berlaku kartu berhasil diperpanjang :months bulan.',
     'card_not_renewable' => 'Kartu tidak bisa diperpanjang karena ada syarat yang belum terpenuhi.',
     'card_not_member' => 'Hanya kartu anggota yang bisa diperpanjang.',
     'card_no_birthdate' => 'Tanggal lahir anggota belum diisi, kartu belum bisa dibuat.',

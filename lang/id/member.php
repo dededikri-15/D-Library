@@ -29,7 +29,7 @@ return [
     'card_valid_until' => 'Berlaku Sampai',
     'card_active' => 'Kartu aktif',
     'card_expired' => 'Kartu sudah kedaluwarsa',
-    'library_card_hint' => 'Kartu ini dibuat otomatis dan berlaku selama 1 tahun. Perpanjangan dilakukan pustakawan setelah syarat di bawah terpenuhi.',
+    'library_card_hint' => 'Kartu ini dibuat otomatis dan berlaku selama 1 tahun. Setiap perpanjangan menambah masa berlaku :months bulan, diajukan lewat halaman ini dan dikonfirmasi pustakawan setelah syarat di bawah terpenuhi.',
     'renewal_requirements' => 'Syarat perpanjangan',
     'requirement_all_returned' => 'Semua buku sudah dikembalikan',
     'requirement_no_unpaid_fine' => 'Tidak ada denda yang belum lunas',

@@ -79,6 +79,28 @@ class LibraryCardController extends Controller
     }
 
     /**
+     * Daftar pengajuan perpanjangan kartu yang menunggu konfirmasi
+     * (halaman khusus pustakawan, route `library-cards.requests`).
+     *
+     * Pustakawan cukup membuka satu halaman ini untuk melihat SELURUH
+     * anggota yang sedang menunggu — tanpa harus mengingat satu per satu
+     * dari lonceng notifikasi atau halaman edit tiap pengguna.
+     */
+    public function requests(): View
+    {
+        $cards = LibraryCard::query()
+            ->whereNotNull('renewal_requested_at')
+            ->with('user')
+            ->orderBy('renewal_requested_at')
+            ->paginate(config('perpustakaan.pagination.per_page'))
+            ->withQueryString();
+
+        return view('library-cards.requests', [
+            'cards' => $cards,
+        ]);
+    }
+
+    /**
      * Perpanjang masa berlaku kartu anggota (dipanggil pustakawan).
      *
      * Route berada di grup `role:pustakawan`, jadi anggota tidak pernah
@@ -87,8 +109,82 @@ class LibraryCardController extends Controller
      */
     public function renew(Request $request, User $user): RedirectResponse
     {
+        ['card' => $card, 'error' => $error] = $this->validateRenewal($user);
+
+        if ($card === null) {
+            // "Syarat belum terpenuhi" adalah penolakan (merah, halaman edit
+            // pengguna); sisanya hanya info status (kembali ke halaman sebelumnya).
+            if ($error === 'card_not_renewable') {
+                return $this->failure('users.edit', __('messages.'.$error), ['user' => $user]);
+            }
+
+            return $this->backWithStatus(__('messages.'.$error));
+        }
+
+        $card->renew();
+
+        $this->notifySelf(
+            $request->user(),
+            'card_renewed',
+            ['subject' => $user->name, 'months' => LibraryCard::renewalMonths()],
+            route('users.edit', $user),
+        );
+
+        return $this->success(
+            'users.edit',
+            __('messages.card_renewed', ['months' => LibraryCard::renewalMonths()]),
+            ['user' => $user],
+        );
+    }
+
+    /**
+     * Konfirmasi pengajuan perpanjangan dari halaman daftar pengajuan.
+     *
+     * Aturannya identik dengan `renew()` di atas — hanya halaman tujuan
+     * setelah berhasil yang berbeda: pustakawan kembali ke daftar
+     * pengajuan (bukan halaman edit pengguna), jadi dia bisa langsung
+     * memproses pengajuan berikutnya tanpa navigasi ulang.
+     */
+    public function confirmRenewal(Request $request, User $user): RedirectResponse
+    {
+        ['card' => $card, 'error' => $error] = $this->validateRenewal($user);
+
+        if ($card === null) {
+            if ($error === 'card_not_renewable') {
+                return back()->with('error', __('messages.'.$error));
+            }
+
+            return $this->backWithStatus(__('messages.'.$error));
+        }
+
+        $card->renew();
+
+        $this->notifySelf(
+            $request->user(),
+            'card_renewed',
+            ['subject' => $user->name, 'months' => LibraryCard::renewalMonths()],
+            route('library-cards.requests'),
+        );
+
+        return $this->backWithStatus(
+            __('messages.card_renewed', ['months' => LibraryCard::renewalMonths()]),
+        );
+    }
+
+    /**
+     * Periksa semua prasyarat perpanjangan untuk satu anggota.
+     *
+     * Berhasil → `card` terisi kartu siap diperpanjang. Gagal → `error`
+     * berisi kunci pesan di `lang/{locale}/messages.php`. Dipakai bersama
+     * oleh `renew()` dan `confirmRenewal()` supaya keduanya tidak mungkin
+     * menerapkan syarat yang berbeda.
+     *
+     * @return array{card: LibraryCard|null, error: string|null}
+     */
+    private function validateRenewal(User $user): array
+    {
         if ($user->isStaff()) {
-            return $this->backWithStatus(__('messages.card_not_member'));
+            return ['card' => null, 'error' => 'card_not_member'];
         }
 
         // Kartu anggota dibuat saat pertama kali dibuka. Kalau belum ada
@@ -100,25 +196,16 @@ class LibraryCardController extends Controller
             : null;
 
         if ($card === null) {
-            return $this->backWithStatus(__('messages.card_no_birthdate'));
+            return ['card' => null, 'error' => 'card_no_birthdate'];
         }
 
         // Syarat diperiksa ULANG di server. Tombol di view memang sudah
         // disabled kalau syarat belum terpenuhi, tapi view bisa
         // dilewati (curl, tab lama, dsb.) — keputusan akhir selalu di sini.
         if (! $card->canRenew()) {
-            return $this->failure('users.edit', __('messages.card_not_renewable'), ['user' => $user]);
+            return ['card' => null, 'error' => 'card_not_renewable'];
         }
 
-        $card->renew();
-
-        $this->notifySelf(
-            $request->user(),
-            'card_renewed',
-            ['subject' => $user->name],
-            route('users.edit', $user),
-        );
-
-        return $this->success('users.edit', __('messages.card_renewed'), ['user' => $user]);
+        return ['card' => $card, 'error' => null];
     }
 }

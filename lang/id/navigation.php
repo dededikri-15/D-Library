@@ -12,6 +12,7 @@ return [
     'authors' => 'Penulis',
     'publishers' => 'Penerbit',
     'loans' => 'Peminjaman',
+    'card_requests' => 'Pengajuan Kartu',
     'users' => 'Pengguna',
     'loan_history' => 'Riwayat Pinjam',
     'favorites' => 'Favorit',

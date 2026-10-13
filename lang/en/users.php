@@ -39,7 +39,7 @@ return [
 
     // Library card validity renewal (librarian presses the approve button)
     'library_card_section' => 'Library Card',
-    'library_card_description' => 'Extend the member\'s card validity. All requirements must be met before the renew button becomes active.',
+    'library_card_description' => 'Extend the member\'s card validity — each renewal adds :months months. All requirements must be met before the renew button becomes active.',
     'library_card_valid_until' => 'Valid until',
     'library_card_status_active' => 'Active',
     'library_card_status_expired' => 'Expired',

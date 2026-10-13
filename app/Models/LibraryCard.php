@@ -132,25 +132,39 @@ class LibraryCard extends Model
     }
 
     /**
-     * Perpanjang masa berlaku +`validity_months` bulan dari HARI INI.
+     * Perpanjang masa berlaku +`renewal_months` (3 bulan) dari HARI INI.
      *
      * Dihitung dari tanggal perpanjangan (bukan menumpuk di ujung masa
      * berlaku lama) supaya anggota tidak bisa mengakumulasi masa berlaku
      * bertahun-tahun hanya dengan menekan tombol berkali-kali.
+     *
+     * Catatan: kartu BARU berlaku `validity_months` (12 bulan), tapi
+     * perpanjangan hanya menambah `renewal_months` (3 bulan) — keduanya
+     * sengaja durasi berbeda supaya perpanjangan dilakukan berkala.
      *
      * Pemanggil WAJIB sudah memeriksa `canRenew()` — method ini tidak
      * mengecek ulang supaya logika syarat tetap berada di satu tempat.
      */
     public function renew(): void
     {
-        $months = (int) config('perpustakaan.library_card.validity_months', 12);
-
         $this->update([
-            'valid_until' => now()->addMonthsNoOverflow($months),
+            'valid_until' => now()->addMonthsNoOverflow(self::renewalMonths()),
             // Pengajuan anggota ikut dilaporkan — kartu sudah diperpanjang,
             // tidak ada lagi yang perlu dikonfirmasi pustakawan.
             'renewal_requested_at' => null,
         ]);
+    }
+
+    /**
+     * Berapa bulan yang ditambahkan oleh SATU kali perpanjangan.
+     *
+     * Dipakai model, controller (pesan flash + notifikasi), dan view
+     * (teks "perpanjangan menambah :months bulan") — satu sumber angka,
+     * jadi teks di layar tidak mungkin berbeda dari yang dihitung.
+     */
+    public static function renewalMonths(): int
+    {
+        return (int) config('perpustakaan.library_card.renewal_months', 3);
     }
 
     /**

@@ -74,7 +74,10 @@
                         </td>
                         <td>
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('users.edit', $user) }}" class="btn btn-ghost btn-sm">{{ __('users.edit') }}</a>
+                                {{-- btn-secondary (punya border), bukan ghost:
+                                     ghost nyaris tak terlihat di latar tabel
+                                     sehingga "Edit" terbaca sebagai teks biasa. --}}
+                                <a href="{{ route('users.edit', $user) }}" class="btn btn-secondary btn-sm">{{ __('users.edit') }}</a>
 
                                 @if ($user->id !== auth()->id())
                                     <form method="POST" action="{{ route('users.destroy', $user) }}"

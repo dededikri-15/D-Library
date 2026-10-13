@@ -39,7 +39,7 @@ return [
 
     // Perpanjangan masa berlaku kartu perpustakaan (pustakawan menekan tombol acc)
     'library_card_section' => 'Kartu Perpustakaan',
-    'library_card_description' => 'Perpanjang masa berlaku kartu anggota. Semua syarat harus terpenuhi sebelum tombol perpanjang aktif.',
+    'library_card_description' => 'Perpanjang masa berlaku kartu anggota — setiap perpanjangan menambah :months bulan. Semua syarat harus terpenuhi sebelum tombol perpanjang aktif.',
     'library_card_valid_until' => 'Berlaku sampai',
     'library_card_status_active' => 'Aktif',
     'library_card_status_expired' => 'Kedaluwarsa',
