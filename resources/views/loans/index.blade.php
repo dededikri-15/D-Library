@@ -115,21 +115,35 @@
             <tbody>
                 @forelse ($loans as $loan)
                     <tr>
-                        <td class="font-medium text-primary">{{ $loan->user?->name ?? '-' }}</td>
+                        <td class="font-medium text-primary">
+                            {{ $loan->user?->name ?? '-' }}
+                            {{-- Masa sanksi anggota tampil di sini, di baris
+                                 peminjamannya, supaya pustakawan melihat
+                                 larangan meminjam tepat saat menimbang
+                                 tindak lanjut keterlambatan — bukan di halaman
+                                 terpisah yang harus dia buka sendiri. --}}
+                            @if ($loan->user?->isSuspended())
+                                <span class="mt-1 block text-label text-overdue">
+                                    {{ __('loans.member_suspended', [
+                                        'until' => $loan->user->suspensionEndsAt()
+                                            ?->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
+                                            ->translatedFormat('d M Y H:i'),
+                                    ]) }}
+                                </span>
+                            @endif
+                        </td>
                         <td class="text-secondary">{{ $loan->book?->title ?? '-' }}</td>
                         <td class="font-mono text-secondary">{{ $loan->bookCopy?->inventory_code ?? '-' }}</td>
                         <td class="text-secondary">{{ $loan->displayDate($loan->borrowed_at)?->format('d M Y') }}</td>
                         <td class="text-secondary">{{ $loan->displayDate($loan->due_at)?->format('d M Y') }}</td>
                         <td>
                             <x-status-badge :status="$loan->isOverdue() ? 'overdue' : $loan->status" />
-                            @if ($loan->isOverdue() && $loan->liveFine() > 0)
+                            {{-- Keterlambatan kini dinyatakan dalam HARI, bukan
+                                 rupiah: tidak ada yang ditagih, tapi pustakawan
+                                 tetap perlu tahu seberapa jauh telatnya. --}}
+                            @if ($loan->isOverdue() && $loan->overdueDays() > 0)
                                 <span class="mt-1 block text-label text-overdue">
-                                    {{ __('loans.fine_amount', ['amount' => number_format($loan->liveFine(), 0, ',', '.')]) }}
-                                </span>
-                            @elseif ($loan->isReturned() && $loan->fine > 0)
-                                <span class="mt-1 block text-label {{ $loan->fine_paid_at ? 'text-available' : 'text-overdue' }}">
-                                    {{ __('loans.fine_amount', ['amount' => number_format($loan->fine, 0, ',', '.')]) }}
-                                    · {{ $loan->fine_paid_at ? __('loans.fine_paid') : __('loans.fine_unpaid') }}
+                                    {{ __('loans.overdue_days', ['count' => $loan->overdueDays()]) }}
                                 </span>
                             @endif
                             @if ($loan->hasReturnRequest() && $loan->isActive())
@@ -150,11 +164,6 @@
                                         <button type="submit" class="btn btn-ghost btn-sm text-available hover:bg-available/5">
                                             {{ $loan->hasReturnRequest() ? __('loans.confirm_return') : __('loans.return_book') }}
                                         </button>
-                                    </form>
-                                @elseif ($loan->hasUnpaidFine())
-                                    <form method="POST" action="{{ route('loans.fine.pay', $loan) }}">
-                                        @csrf
-                                        <button type="submit" class="btn btn-secondary btn-sm">{{ __('loans.mark_fine_paid') }}</button>
                                     </form>
                                 @endif
 

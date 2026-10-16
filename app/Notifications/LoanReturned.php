@@ -47,8 +47,16 @@ class LoanReturned extends Notification
             'book_id' => $book?->getKey(),
             'book_title' => $book?->title ?? __('loans.book_deleted'),
             'returned_at' => $loan->returned_at?->toIso8601String(),
-            'fine' => (int) $loan->fine,
-            'fine_paid_at' => $loan->fine_paid_at?->toIso8601String(),
+            /*
+             * Diisi hanya kalau pengembalian ini terlambat — `suspended_until`
+             * anggota sudah disegarkan oleh completeReturn sebelum notifikasi
+             * dikirim (lihat LoanController::returnBook). Null saat tepat
+             * waktu; komponen notification-item menyembunyikan kalimat
+             * sanksi kalau nilainya kosong.
+             */
+            'suspended_until' => $loan->isLateReturn()
+                ? $loan->user?->suspended_until?->toIso8601String()
+                : null,
             'url' => route('loans.mine'),
         ];
     }

@@ -60,6 +60,17 @@ class UserFactory extends Factory
     }
 
     /**
+     * Anggota yang sedang dalam masa sanksi larangan meminjam
+     * (keterlambatan pengembalian, 72 jam sejak sekarang).
+     */
+    public function suspended(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'suspended_until' => now()->addHours((int) config('perpustakaan.loan.suspension_hours', 72)),
+        ]);
+    }
+
+    /**
      * User dengan tanggal lahir (dipakai test kartu perpustakaan).
      */
     public function withBirthDate(?string $date = null): static

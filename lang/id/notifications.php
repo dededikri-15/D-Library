@@ -26,7 +26,6 @@ return [
     'empty_title' => 'Belum ada notifikasi',
     'empty_description' => 'Pemberitahuan peminjaman, pengembalian, keterlambatan, dan jejak aksi Anda akan muncul di sini.',
     'generic_title' => 'Notifikasi baru',
-    'fine_notice' => 'Denda sementara Rp :fine.',
 
     'reasons' => [
         'admin_deleted' => 'catatan dihapus oleh pustakawan',
@@ -36,7 +35,7 @@ return [
     /*
     | Satu judul + satu kalimat per jenis notifikasi. Parameter berupa
     | penanda `:nama` yang diisi dari payload — tanggal sudah diformat,
-    | denda sudah dirupiahkan, dan alasan sudah diterjemahkan dari kode.
+    | dan alasan sudah diterjemahkan dari kode.
     */
     'types' => [
         'borrowed' => [
@@ -62,7 +61,7 @@ return [
         'returned' => [
             'title' => 'Buku telah dikembalikan',
             'body' => ':book_title dikembalikan pada :returned_at.',
-            'fine_notice' => 'Denda Rp :fine tercatat pada pengembalian ini.',
+            'suspension_notice' => 'Karena terlambat, sanksi larangan meminjam berlaku sampai :suspended_until.',
         ],
         'due_soon' => [
             'title' => 'Tenggat mendekat',
@@ -72,12 +71,12 @@ return [
         'overdue_member' => [
             'title' => 'Peminjaman terlambat',
             'body' => ':book_title terlambat dikembalikan :overdue_days hari (tenggat :due_at).',
-            'fine_notice' => 'Denda sementara Rp :fine.',
+            'suspension_notice' => 'Pengembalian terlambat dikenakan sanksi larangan meminjam :hours jam.',
         ],
         'overdue_staff' => [
             'title' => 'Keterlambatan pengembalian',
             'body' => ':user_name terlambat mengembalikan :book_title sejak :due_at — :overdue_days hari.',
-            'fine_notice' => 'Denda sementara Rp :fine.',
+            'suspension_notice' => 'Sanksi larangan meminjam :hours jam dijatuhkan saat pengembalian diproses.',
         ],
 
         /*
@@ -192,10 +191,6 @@ return [
         'return_requested_self' => [
             'title' => 'Permintaan pengembalian terkirim',
             'body' => 'Permintaan pengembalian :subject dikirim ke pustakawan (tenggat :due_at).',
-        ],
-        'fine_paid' => [
-            'title' => 'Denda ditandai lunas',
-            'body' => 'Denda untuk :subject (Rp :fine) ditandai sudah dibayar.',
         ],
         'loan_record_deleted' => [
             'title' => 'Catatan peminjaman dihapus',

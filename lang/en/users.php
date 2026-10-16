@@ -45,7 +45,7 @@ return [
     'library_card_status_expired' => 'Expired',
     'renewal_requirements' => 'Renewal requirements',
     'requirement_all_returned' => 'All books have been returned',
-    'requirement_no_unpaid_fine' => 'No unpaid fines',
+    'requirement_not_suspended' => 'Not under a borrowing suspension',
     'requirement_within_grace' => 'Card is valid or expired no more than :days days',
     'requirement_met' => 'Met',
     'requirement_unmet' => 'Not met',

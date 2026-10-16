@@ -44,7 +44,7 @@
         }
     }
 
-    foreach (['due_at', 'borrowed_at', 'returned_at', 'fine_paid_at'] as $column) {
+    foreach (['due_at', 'borrowed_at', 'returned_at'] as $column) {
         if (! empty($params[$column])) {
             $params[$column] = Carbon::parse($params[$column])
                 ->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
@@ -52,9 +52,18 @@
         }
     }
 
-    if (isset($params['fine'])) {
-        $params['fine'] = number_format((int) $params['fine'], 0, ',', '.');
+    // Sanksi punya presisi jam (72 jam), bukan hari — formatnya ikut
+    // lebih tajam supaya "sampai jam berapa" terbaca, bukan hanya tanggalnya.
+    if (! empty($params['suspended_until'])) {
+        $params['suspended_until'] = Carbon::parse($params['suspended_until'])
+            ->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
+            ->translatedFormat('d M Y H:i');
     }
+
+    // Kalimat sanksi menyebut durasi (:hours). Payload notifikasi lama
+    // (sebelum fitur sanksi) tidak membawa angka ini, jadi diisi dari
+    // config saat render — pesan tidak boleh menyisakan ":hours" mentah.
+    $params['hours'] = $params['hours'] ?? (int) config('perpustakaan.loan.suspension_hours', 72);
 
     // Alasan disimpan sebagai KODE (lihat LoanRejected::REASON_ADMIN_DELETED)
     // supaya bisa diterjemahkan di sini, saat notifikasi dibaca.
@@ -71,13 +80,15 @@
         : ($data['book_title'] ?? __('notifications.generic_title'));
     $body = $hasText ? (string) __($key.'.body', $params) : (string) ($data['message'] ?? '');
 
-    // Kalimat lanjutan hanya muncul kalau angkanya memang relevan — pesan
-    // "denda Rp 0" pada pengembalian tepat waktu hanya membingungkan.
+    // Kalimat lanjutan hanya muncul kalau isinya memang relevan — pesan
+    // sanksi pada pengembalian tepat waktu hanya membingungkan, dan
+    // peringatan sanksi pada pengingat H-1 justru tujuannya: memberi
+    // anggota satu hari terakhir untuk menghindari larangan meminjam.
     $extraKey = match (true) {
-        $type === 'returned' && (int) ($data['fine'] ?? 0) > 0 => $key.'.fine_notice',
+        $type === 'returned' && ! empty($params['suspended_until']) => $key.'.suspension_notice',
         $type === 'due_soon' && (int) ($data['renewals_left'] ?? 0) > 0 => $key.'.renewals',
         in_array($type, ['overdue_member', 'overdue_staff'], true)
-            && (int) ($data['fine'] ?? 0) > 0 => $key.'.fine_notice',
+            && (int) ($data['overdue_days'] ?? 0) > 0 => $key.'.suspension_notice',
         default => null,
     };
 

@@ -429,7 +429,7 @@ class ActionNotificationTest extends TestCase
         $this->assertActionLogged($member, 'return_requested_self');
     }
 
-    public function test_pengembalian_dan_pembayaran_denda_mengirim_jejak_aksi_ke_pustakawan(): void
+    public function test_pengembalian_mengirim_jejak_aksi_ke_pustakawan(): void
     {
         Notification::fake();
         $member = $this->member();
@@ -442,16 +442,6 @@ class ActionNotificationTest extends TestCase
 
         $this->actingAs($staff)->post(route('loans.return', $loan))->assertRedirect();
         $this->assertActionLogged($staff, 'return_recorded');
-
-        // Denda di-snapshot pengembalian. Kalau nol, buat denda berbayar
-        // dulu supaya tombol "denda lunas" punya target.
-        $loan->refresh();
-        if ((int) $loan->fine === 0) {
-            $loan->update(['fine' => 5000]);
-        }
-
-        $this->actingAs($staff)->post(route('loans.fine.pay', $loan))->assertRedirect();
-        $this->assertActionLogged($staff, 'fine_paid');
     }
 
     public function test_menghapus_catatan_peminjaman_mengirim_jejak_aksi_ke_pelaku(): void

@@ -32,7 +32,7 @@ return [
     'library_card_hint' => 'Kartu ini dibuat otomatis dan berlaku selama 1 tahun. Setiap perpanjangan menambah masa berlaku :months bulan, diajukan lewat halaman ini dan dikonfirmasi pustakawan setelah syarat di bawah terpenuhi.',
     'renewal_requirements' => 'Syarat perpanjangan',
     'requirement_all_returned' => 'Semua buku sudah dikembalikan',
-    'requirement_no_unpaid_fine' => 'Tidak ada denda yang belum lunas',
+    'requirement_not_suspended' => 'Tidak sedang dalam masa sanksi larangan meminjam',
     'requirement_within_grace' => 'Kartu masih berlaku atau kedaluwarsa maksimal :days hari',
     'renewal_contact' => 'Penuhi semua syarat di atas untuk bisa mengajukan perpanjangan.',
     'renewal_submit' => 'Ajukan perpanjangan ke pustakawan',

@@ -172,7 +172,7 @@ class LibraryCardTest extends TestCase
             ->assertOk()
             ->assertSee('Syarat perpanjangan')
             ->assertSee('Semua buku sudah dikembalikan')
-            ->assertSee('Tidak ada denda yang belum lunas');
+            ->assertSee('Tidak sedang dalam masa sanksi larangan meminjam');
     }
 
     public function test_pustakawan_bisa_memperpanjang_kartu_ketika_syarat_terpenuhi(): void
@@ -203,16 +203,11 @@ class LibraryCardTest extends TestCase
         $this->assertTrue($card->fresh()->valid_until->equalTo($card->valid_until));
     }
 
-    public function test_perpanjangan_ditolak_jika_ada_denda_belum_lunas(): void
+    public function test_perpanjangan_ditolak_selama_masa_sanksi(): void
     {
         $member = $this->anggota();
+        $member->update(['suspended_until' => now()->addHours(48)]);
         $card = LibraryCard::createFor($member);
-
-        Loan::factory()->returned()->create([
-            'user_id' => $member->id,
-            'fine' => 5000,
-            'fine_paid_at' => null,
-        ]);
 
         $this->actingAs($this->pustakawan())
             ->post(route('users.card.renew', $member))
@@ -294,7 +289,7 @@ class LibraryCardTest extends TestCase
             ->assertOk()
             ->assertSee('Syarat perpanjangan')
             ->assertSee('Semua buku sudah dikembalikan')
-            ->assertSee('Tidak ada denda yang belum lunas');
+            ->assertSee('Tidak sedang dalam masa sanksi larangan meminjam');
     }
 
     /* ------------------------------------------------------------------

@@ -133,9 +133,6 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
     Route::post('/peminjaman/{loan}/perpanjang', [LoanController::class, 'renew'])
         ->whereNumber('loan')
         ->name('loans.renew');
-    Route::post('/peminjaman/{loan}/denda-lunas', [LoanController::class, 'payFine'])
-        ->whereNumber('loan')
-        ->name('loans.fine.pay');
 });
 
 /*

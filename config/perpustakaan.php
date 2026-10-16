@@ -21,10 +21,12 @@ return [
         // orang lain mungkin sedang menunggu buku yang sama.
         'max_renewals' => (int) env('PERPUSTAKAAN_LOAN_MAX_RENEWALS', 1),
 
-        // Denda per hari keterlambatan, dalam Rupiah. Disimpan sebagai
-        // angka bulat (tanpa desimal) karena Rupiah memang tidak memakai
-        // pecahan di sini.
-        'fine_per_day' => (int) env('PERPUSTAKAAN_LOAN_FINE_PER_DAY', 1000),
+        // Sanksi keterlambatan: berapa JAM anggota dilarang meminjam buku
+        // setelah pengembalian terlambat diproses. Bukan denda uang —
+        // pustaka tidak menagih rupiah, hanya menahan hak pinjam.
+        // Default 72 jam (3 hari penuh). Batas akhirnya disimpan di
+        // users.suspended_until, jadi tidak ada scheduler yang perlu jalan.
+        'suspension_hours' => (int) env('PERPUSTAKAAN_LOAN_SUSPENSION_HOURS', 72),
 
         // Berapa hari ke depan sebuah peminjaman dianggap "jatuh tempo
         // segera" dan ditampilkan di banner ringkasan halaman peminjaman.

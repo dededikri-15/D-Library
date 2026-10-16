@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Support\Carbon;
 
 /**
  * Peminjaman tidak bisa diteruskan karena keadaan pustaka berubah.
@@ -46,5 +47,20 @@ class LoanNotPossibleException extends Exception
     public static function borrowedByOtherMember(): self
     {
         return new self(__('messages.borrowed_by_other_member'));
+    }
+
+    /**
+     * Pemohon sedang dalam masa sanksi larangan meminjam (keterlambatan).
+     *
+     * Pesan menyertakan batas akhir sanksi supaya anggota tahu kapan dia
+     * boleh meminjam lagi — tanpa itu "coba lagi nanti" terdengar seperti
+     * penolakan tanpa alasan.
+     */
+    public static function suspendedUntil(Carbon $until): self
+    {
+        return new self(__('messages.borrow_suspended', [
+            'until' => $until->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
+                ->translatedFormat('d M Y H:i'),
+        ]));
     }
 }

@@ -89,8 +89,11 @@ class LibraryCard extends Model
      *
      * 1. Semua buku sudah dikembalikan — peminjaman aktif
      *    (borrowed/overdue) berarti anggota masih memegang koleksi.
-     * 2. Tidak ada denda yang belum lunas — denda harus diselesaikan
-     *    dulu di meja sirkulasi.
+     * 2. Tidak sedang dalam masa sanksi larangan meminjam — sanksi 72 jam
+     *    lahir dari keterlambatan, dan anggota yang masih kena sanksi
+     *    berarti baru saja tersandung; urusan kartu bisa menunggu sampai
+     *    sanksinya selesai (pengganti syarat "tidak ada denda belum lunas"
+     *    pada sistem denda uang yang sudah dihapus).
      * 3. Kartu masih berlaku ATAU baru kedaluwarsa maksimal
      *    `renewal_grace_days` hari — lewat itu kartu dianggap lama dan
      *    harus dibuat ulang oleh pustakawan.
@@ -108,11 +111,8 @@ class LibraryCard extends Model
             $blockers['active_loans'] = 'Masih ada buku yang dipinjam dan belum dikembalikan.';
         }
 
-        if ($this->user->loans()
-            ->where('fine', '>', 0)
-            ->whereNull('fine_paid_at')
-            ->exists()) {
-            $blockers['unpaid_fine'] = 'Ada denda yang belum lunas.';
+        if ($this->user->isSuspended()) {
+            $blockers['suspended'] = 'Sedang dalam masa sanksi larangan meminjam.';
         }
 
         if (! $this->isValid()

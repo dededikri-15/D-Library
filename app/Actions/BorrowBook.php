@@ -48,6 +48,21 @@ class BorrowBook
         $borrowedAt ??= now();
 
         return DB::transaction(function () use ($member, $bookId, $borrowedAt) {
+            /*
+             * Sanksi larangan meminjam (72 jam setelah pengembalian
+             * terlambat) dicek DI SINI, bukan hanya di tombol view atau
+             * policy: ini satu-satunya tempat baris peminjaman dibuat,
+             * jadi anggota yang mengetik URL pinjam langsung — maupun
+             * pustakawan yang mencatat atas namanya — tetap ditolak.
+             * Pemeriksaan dilakukan di dalam transaksi supaya keputusannya
+             * berdasar data yang terkunci, bukan salinan basi di memori.
+             */
+            $member = User::query()->whereKey($member->getKey())->lockForUpdate()->first() ?? $member;
+
+            if ($member->isSuspended()) {
+                throw LoanNotPossibleException::suspendedUntil($member->suspensionEndsAt());
+            }
+
             // Kunci baris buku sampai transaksi selesai. Lihat komentar kelas.
             $book = Book::query()->whereKey($bookId)->lockForUpdate()->first();
 

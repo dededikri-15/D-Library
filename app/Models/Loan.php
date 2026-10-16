@@ -30,8 +30,6 @@ class Loan extends Model
         'return_requested_at',
         'status',
         'renew_count',
-        'fine',
-        'fine_paid_at',
         'due_reminder_sent_at',
         'overdue_notified_at',
         'overdue_alerted_at',
@@ -45,8 +43,6 @@ class Loan extends Model
             'returned_at' => 'datetime',
             'return_requested_at' => 'datetime',
             'renew_count' => 'integer',
-            'fine' => 'integer',
-            'fine_paid_at' => 'datetime',
             'due_reminder_sent_at' => 'datetime',
             'overdue_notified_at' => 'datetime',
             'overdue_alerted_at' => 'datetime',
@@ -173,28 +169,18 @@ class Loan extends Model
     }
 
     /**
-     * Denda yang berlaku sekarang.
+     * Apakah peminjaman ini terlambat dikembalikan?
      *
-     * Untuk peminjaman yang belum dikembalikan nilainya dihitung hidup
-     * (waktu terus berjalan, denda terus tumbuh). Untuk yang sudah
-     * dikembalikan, dipakai nilai snapshot di kolom `fine` — tarif boleh
-     * berubah kapan pun, denda yang pernah ditagih tidak ikut berubah.
+     * Dipakai untuk menjatuhkan sanksi 72 jam: keterlambatan ditentukan
+     * oleh perbandingan `returned_at` vs `due_at` — bukan oleh status
+     * `overdue` di kolom, karena status itu bisa saja belum disegarkan
+     * scheduler saat pengembalian diproses.
      */
-    public function liveFine(): int
+    public function isLateReturn(): bool
     {
-        if ($this->isReturned()) {
-            return (int) $this->fine;
-        }
-
-        return $this->overdueDays() * max(0, (int) config('perpustakaan.loan.fine_per_day'));
-    }
-
-    /**
-     * Denda yang tercatat tapi belum ditandai lunas oleh pustakawan.
-     */
-    public function hasUnpaidFine(): bool
-    {
-        return $this->isReturned() && (int) $this->fine > 0 && $this->fine_paid_at === null;
+        return $this->returned_at !== null
+            && $this->due_at !== null
+            && $this->returned_at->greaterThan($this->due_at);
     }
 
     /**

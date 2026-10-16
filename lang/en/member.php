@@ -32,7 +32,7 @@ return [
     'library_card_hint' => 'This card is created automatically and is valid for 1 year. Each renewal adds :months months of validity — you request it from this page and the librarian confirms it once the requirements below are met.',
     'renewal_requirements' => 'Renewal requirements',
     'requirement_all_returned' => 'All books have been returned',
-    'requirement_no_unpaid_fine' => 'No unpaid fines',
+    'requirement_not_suspended' => 'Not under a borrowing suspension',
     'requirement_within_grace' => 'Card is valid or expired no more than :days days',
     'renewal_contact' => 'Meet all the requirements above to be able to request a renewal.',
     'renewal_submit' => 'Request renewal from the librarian',

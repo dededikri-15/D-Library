@@ -311,6 +311,24 @@ class BookController extends Controller
             return ['can' => false, 'reason' => null];
         }
 
+        /*
+         * Sanksi larangan meminjam didahulukan di sini: selama sanksi
+         * berjalan, tidak ada gunanya menimbang status buku — tombolnya
+         * tetap tidak akan lolos server (BorrowBook). Menampilkan alasan
+         * sanksi lebih berguna daripada alasan "buku dipinjam lain",
+         * karena yang satu bisa ditunggu, yang satu tidak.
+         */
+        if ($user->isSuspended()) {
+            return [
+                'can' => false,
+                'reason' => __('messages.suspended_borrow_reason', [
+                    'until' => $user->suspensionEndsAt()
+                        ?->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
+                        ->translatedFormat('d M Y H:i'),
+                ]),
+            ];
+        }
+
         if ($book->status === Book::STATUS_INACTIVE) {
             return ['can' => false, 'reason' => __('messages.book_inactive_reason')];
         }

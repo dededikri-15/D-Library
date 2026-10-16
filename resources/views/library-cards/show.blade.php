@@ -146,7 +146,7 @@
             <ul class="mt-3 space-y-2">
                 @foreach ([
                     'active_loans' => __('member.requirement_all_returned'),
-                    'unpaid_fine' => __('member.requirement_no_unpaid_fine'),
+                    'suspended' => __('member.requirement_not_suspended'),
                     'expired_too_long' => __('member.requirement_within_grace', [
                         'days' => App\Models\LibraryCard::renewalGraceDays(),
                     ]),

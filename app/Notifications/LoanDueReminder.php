@@ -60,7 +60,7 @@ class LoanDueReminder extends Notification
                 'name' => $notifiable->name,
                 'title' => $book?->title ?? __('loans.book_deleted'),
                 'date' => $dueDate,
-                'fine' => number_format($loan->liveFine(), 0, ',', '.'),
+                'hours' => (int) config('perpustakaan.loan.suspension_hours'),
             ])
             : __('loans.reminder_due_soon_body', [
                 'name' => $notifiable->name,

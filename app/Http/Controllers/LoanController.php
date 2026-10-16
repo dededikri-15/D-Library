@@ -194,11 +194,12 @@ class LoanController extends Controller
         /*
          * `completeReturn()` menulis barisnya lewat instance KUNCI yang
          * berbeda di dalam transaksi, jadi `$loan` yang ini masih membawa
-         * nilai lama — `returned_at` dan denda snapshot-nya masih null.
-         * Refresh dulu, kalau tidak notifikasi anggota dikirim dengan
-         * tanggal pengembalian kosong dan denda Rp 0.
+         * nilai lama — `returned_at`-nya masih null. Refresh dulu, kalau
+         * tidak notifikasi anggota dikirim dengan tanggal pengembalian
+         * kosong.
          */
         $loan->refresh();
+        $loan->user?->refresh();
         $loan->user?->notify(new LoanReturned($loan));
 
         // Jejak pelaku (pustakawan): route ini hanya untuk staf, jadi pelaku
@@ -212,6 +213,21 @@ class LoanController extends Controller
             ],
             route('loans.index'),
         );
+
+        /*
+         * Pengembalian terlambat memberi kabar berbeda dari yang tepat waktu:
+         * anggota perlu tahu batas akhir sanksinya, bukan sekadar "berhasil".
+         * Angka 72 di pesan diambil dari config, jadi kalau durasi sanksi
+         * berubah nanti teksnya tidak akan berbohong.
+         */
+        if ($loan->isLateReturn() && $loan->user?->isSuspended()) {
+            return $this->success('loans.index', __('messages.book_returned_suspended', [
+                'hours' => (int) config('perpustakaan.loan.suspension_hours'),
+                'until' => $loan->user->suspensionEndsAt()
+                    ?->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
+                    ->translatedFormat('d M Y H:i'),
+            ]));
+        }
 
         return $this->success('loans.index', __('messages.book_returned'));
     }
@@ -325,34 +341,6 @@ class LoanController extends Controller
         ]));
     }
 
-    /**
-     * Tandai denda sudah dibayar (pencatatan kas meja sirkulasi).
-     *
-     * Tidak ada alur pembayaran online di PRD — denda dibayar tunai/transfer,
-     * lalu pustakawan menekan tombol ini supaya status "belum lunas" hilang
-     * dari daftar.
-     */
-    public function payFine(Request $request, Loan $loan): RedirectResponse
-    {
-        if (! $loan->hasUnpaidFine()) {
-            return back()->with('error', __('messages.fine_not_payable'));
-        }
-
-        $loan->update(['fine_paid_at' => now()]);
-
-        $this->notifySelf(
-            $request->user(),
-            'fine_paid',
-            [
-                'subject' => $loan->book?->title ?? __('loans.book_deleted'),
-                'fine' => $loan->fine,
-            ],
-            route('loans.index'),
-        );
-
-        return $this->backWithStatus(__('messages.fine_paid'));
-    }
-
     protected function completeReturn(Loan $loan): bool
     {
         return DB::transaction(function () use ($loan) {
@@ -365,16 +353,23 @@ class LoanController extends Controller
             $lockedLoan->update([
                 'returned_at' => now(),
                 'status' => Loan::STATUS_RETURNED,
-                /*
-                 * Denda di-snapshot di sini, saat momen pengembalian.
-                 * `liveFine()` pada saat status masih aktif menghitung dari
-                 * `due_at` sampai `now()` — yang kebetulan adalah detik
-                 * pengembalian ini. Setelah baris ini, tampilan memakai
-                 * kolom `fine`, jadi tarif yang berubah nanti tidak
-                 * mengubah denda yang sudah pernah ditagih.
-                 */
-                'fine' => $lockedLoan->liveFine(),
             ]);
+
+            /*
+             * Sanksi 72 jam dijatuhkan DI DALAM transaksi yang sama dengan
+             * pencatatan pengembalian: keterlambatan dan larangan meminjam
+             * adalah satu peristiwa, bukan dua. Kalau dipisah, proses yang
+             * mati di tengah akan meninggalkan pengembalian "bersih" tanpa
+             * sanksi — celah yang bisa dimanfaatkan tanpa disadari siapa pun.
+             *
+             * Kunci baris anggota dulu sebelum menulis: dua pustakawan yang
+             * memproses pengembalian telat anggota yang sama pada detik yang
+             * sama akan diserialkan di sini, bukan saling menimpa.
+             */
+            if ($lockedLoan->isLateReturn()) {
+                $member = User::query()->whereKey($lockedLoan->user_id)->lockForUpdate()->first();
+                $member?->applyLateReturnSuspension();
+            }
 
             $book = Book::query()->whereKey($lockedLoan->book_id)->lockForUpdate()->first();
             $copy = $lockedLoan->book_copy_id

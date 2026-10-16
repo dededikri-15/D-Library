@@ -19,7 +19,8 @@ use Illuminate\Notifications\Notification;
  * SATU kelas untuk dua penerima karena isinya hampir sama; yang berbeda
  * hanya penekanan informasinya:
  *
- * - anggota: "segera kembalikan", plus denda yang sedang berjalan,
+ * - anggota: "segera kembalikan", plus peringatan sanksi larangan
+ *   meminjam yang menanti jika telat terus,
  * - pustakawan: siapa yang telat, kapan meminjam, kapan jatuh tempo, dan
  *   sudah berapa hari — semua yang dibutuhkan untuk menelepon anggota.
  *
@@ -59,7 +60,6 @@ class LoanOverdue extends Notification
             'book_id' => $book?->getKey(),
             'book_title' => $book?->title ?? __('loans.book_deleted'),
             'overdue_days' => $loan->overdueDays(),
-            'fine' => $loan->liveFine(),
             'due_at' => $loan->due_at?->toIso8601String(),
             'url' => $isStaff
                 ? route('loans.index', ['status' => Loan::STATUS_OVERDUE])

@@ -12,6 +12,23 @@
         <a href="{{ route('books.index') }}" class="btn btn-secondary btn-sm">{{ __('loans.search_books') }}</a>
     </div>
 
+    {{-- Masa sanksi larangan meminjam. Tampil di halaman ini karena
+         riwayat peminjaman adalah halaman pertama yang dibuka anggota
+         setelah bukunya dikembalikan — pesan "belum boleh meminjam" harus
+         terlihat di sana, bukan disembunyikan di halaman katalog yang
+         justru menggoda dia untuk menekan tombol Pinjam. --}}
+    @if (auth()->user()?->isSuspended())
+        <x-alert variant="warning" class="mt-6" :dismissible="false"
+                 :title="__('loans.suspension_title')">
+            {{ __('loans.suspension_body', [
+                'hours' => (int) config('perpustakaan.loan.suspension_hours'),
+                'until' => auth()->user()->suspensionEndsAt()
+                    ?->setTimezone((string) config('perpustakaan.display_timezone', 'Asia/Jakarta'))
+                    ->translatedFormat('d M Y H:i'),
+            ]) }}
+        </x-alert>
+    @endif
+
     {{-- Ringkasan singkat. Tiga angka ini jadi kartu, bukan teks, karena
          dari sanalah orang cepat tahu "berapa yang masih harus saya
          kembalikan". --}}
@@ -66,11 +83,6 @@
                                 <span class="block text-label text-overdue">
                                     {{ __('loans.late_since', ['date' => $loan->displayDate($loan->due_at)?->diffForHumans()]) }}
                                 </span>
-                                @if ($loan->liveFine() > 0)
-                                    <span class="block text-label font-medium text-overdue">
-                                        {{ __('loans.fine_amount', ['amount' => number_format($loan->liveFine(), 0, ',', '.')]) }}
-                                    </span>
-                                @endif
                             @elseif ($loan->isActive() && $loan->renewalsLeft() > 0)
                                 <span class="block text-label text-secondary">
                                     {{ __('loans.renewals_left', ['count' => $loan->renewalsLeft()]) }}
@@ -81,10 +93,13 @@
                         </td>
                         <td>
                             <x-status-badge :status="$loan->status" />
-                            @if ($loan->isReturned() && $loan->fine > 0)
-                                <span class="mt-1 block text-label {{ $loan->fine_paid_at ? 'text-available' : 'text-overdue' }}">
-                                    {{ __('loans.fine_amount', ['amount' => number_format($loan->fine, 0, ',', '.')]) }}
-                                    · {{ $loan->fine_paid_at ? __('loans.fine_paid') : __('loans.fine_unpaid') }}
+                            {{-- Pengembalian yang terlambat menandai peminjaman
+                                 ini sebagai pemicu sanksi 72 jam — anggota perlu
+                                 melihatnya di baris ini, bukan hanya menebak dari
+                                 pesan flash yang hilang saat refresh. --}}
+                            @if ($loan->isLateReturn())
+                                <span class="mt-1 block text-label text-overdue">
+                                    {{ __('loans.late_return_note', ['hours' => (int) config('perpustakaan.loan.suspension_hours')]) }}
                                 </span>
                             @endif
                         </td>

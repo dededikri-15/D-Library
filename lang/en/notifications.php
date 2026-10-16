@@ -26,7 +26,6 @@ return [
     'empty_title' => 'No notifications yet',
     'empty_description' => 'Borrowing, return, overdue, and action-trail updates will appear here.',
     'generic_title' => 'New notification',
-    'fine_notice' => 'Current fine: Rp :fine.',
 
     'reasons' => [
         'admin_deleted' => 'the record was removed by a librarian',
@@ -35,8 +34,8 @@ return [
 
     /*
     | One title and one sentence per notification type. Placeholders such as
-    | `:name` are filled from the payload — dates already formatted, fines
-    | already grouped, and reasons already translated from their code.
+    | `:name` are filled from the payload — dates already formatted, and
+    | reasons already translated from their code.
     */
     'types' => [
         'borrowed' => [
@@ -62,7 +61,7 @@ return [
         'returned' => [
             'title' => 'Book returned',
             'body' => ':book_title was returned on :returned_at.',
-            'fine_notice' => 'A fine of Rp :fine was recorded with this return.',
+            'suspension_notice' => 'Because it was late, a borrowing suspension applies until :suspended_until.',
         ],
         'due_soon' => [
             'title' => 'Due date approaching',
@@ -72,12 +71,12 @@ return [
         'overdue_member' => [
             'title' => 'Loan overdue',
             'body' => ':book_title is :overdue_days days overdue (was due :due_at).',
-            'fine_notice' => 'Current fine: Rp :fine.',
+            'suspension_notice' => 'Late returns incur a :hours-hour borrowing suspension.',
         ],
         'overdue_staff' => [
             'title' => 'Overdue return',
             'body' => ':user_name is :overdue_days days late returning :book_title (was due :due_at).',
-            'fine_notice' => 'Current fine: Rp :fine.',
+            'suspension_notice' => 'A :hours-hour borrowing suspension applies once the return is processed.',
         ],
 
         /*
@@ -192,10 +191,6 @@ return [
         'return_requested_self' => [
             'title' => 'Return request sent',
             'body' => 'Your request to return :subject was sent to the librarian (due :due_at).',
-        ],
-        'fine_paid' => [
-            'title' => 'Fine marked as paid',
-            'body' => 'The fine for :subject (Rp :fine) was marked as paid.',
         ],
         'loan_record_deleted' => [
             'title' => 'Loan record deleted',

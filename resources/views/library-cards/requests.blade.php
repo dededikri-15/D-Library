@@ -56,7 +56,7 @@
                                 <ul class="space-y-1">
                                     @foreach ([
                                         'active_loans' => __('users.requirement_all_returned'),
-                                        'unpaid_fine' => __('users.requirement_no_unpaid_fine'),
+                                        'suspended' => __('users.requirement_not_suspended'),
                                         'expired_too_long' => __('users.requirement_within_grace', [
                                             'days' => App\Models\LibraryCard::renewalGraceDays(),
                                         ]),

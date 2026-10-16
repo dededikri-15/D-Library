@@ -45,7 +45,7 @@ return [
     'library_card_status_expired' => 'Kedaluwarsa',
     'renewal_requirements' => 'Syarat perpanjangan',
     'requirement_all_returned' => 'Semua buku sudah dikembalikan',
-    'requirement_no_unpaid_fine' => 'Tidak ada denda yang belum lunas',
+    'requirement_not_suspended' => 'Tidak sedang dalam masa sanksi larangan meminjam',
     'requirement_within_grace' => 'Kartu masih berlaku atau kedaluwarsa maksimal :days hari',
     'requirement_met' => 'Terpenuhi',
     'requirement_unmet' => 'Belum terpenuhi',

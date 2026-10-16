@@ -40,6 +40,7 @@ class User extends Authenticatable
         'gender',
         'date_of_birth',
         'avatar',
+        'suspended_until',
     ];
 
     /**
@@ -63,6 +64,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'date_of_birth' => 'date',
+            'suspended_until' => 'datetime',
         ];
     }
 
@@ -221,6 +223,73 @@ class User extends Authenticatable
     public function isStaff(): bool
     {
         return $this->isPustakawan();
+    }
+
+    /*
+    |------------------------------------------------------------------
+    | Sanksi keterlambatan (pengganti denda uang)
+    |------------------------------------------------------------------
+    |
+    | Satu kolom `suspended_until` menjalankan dua pekerjaan sekaligus:
+    | menandai bahwa sanksi pernah dijatuhkan, DAN menyimpan batas akhirnya.
+    | Sanksi dianggap berlaku selama timestamp masih di masa depan —
+    | jadi "otomatis aktif kembali setelah 72 jam" tidak butuh scheduler:
+    | waktu yang bekerja, bukan job.
+    |
+    */
+
+    /**
+     * Apakah anggota ini sedang dalam masa sanksi larangan meminjam?
+     */
+    public function isSuspended(): bool
+    {
+        return $this->suspended_until !== null && now()->lessThan($this->suspended_until);
+    }
+
+    /**
+     * Jatuh tempo sanksi (batas akhir larangan meminjam).
+     *
+     * Nilai tetap dikembalikan walaupun sanksi sudah lewat, supaya pustakawan
+     * bisa melihat riwayat "sanksi berakhir kapan" di halaman pengguna.
+     */
+    public function suspensionEndsAt(): ?Carbon
+    {
+        return $this->suspended_until;
+    }
+
+    /**
+     * Terapkan sanksi larangan meminjam selama `suspension_hours` (72 jam)
+     * sejak SEKARANG — dipanggil saat pustakawan memproses pengembalian
+     * buku yang terlambat.
+     *
+     * Sanksi HANYA diperpanjang, tidak pernah dipendekkan: kalau anggota
+     * baru saja kena sanksi dari pengembalian lain yang diproses lebih
+     * awal, memproses buku kedua tidak boleh menggeser batas akhir ke
+     * waktu yang lebih dekat — itu namanya memberi remisi diam-diam.
+     */
+    public function applyLateReturnSuspension(): void
+    {
+        $until = now()->addHours((int) config('perpustakaan.loan.suspension_hours', 72));
+
+        if ($this->suspended_until !== null && $this->suspended_until->greaterThan($until)) {
+            return;
+        }
+
+        $this->update(['suspended_until' => $until]);
+    }
+
+    /**
+     * Label tampilan masa sanksi, siap dicetak ke view.
+     *
+     * @return array{active: bool, until: Carbon}
+     */
+    public function suspensionStatus(): array
+    {
+        return [
+            'active' => $this->isSuspended(),
+            'until' => $this->suspended_until
+                ?? now()->addHours((int) config('perpustakaan.loan.suspension_hours', 72)),
+        ];
     }
 
     /**
