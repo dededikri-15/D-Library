@@ -52,6 +52,41 @@
         }
     }
 
+    /*
+     * Judul buku dibungkus tanda kutip supaya tidak terbaca sebagai orang.
+     * Contoh nyata: "Pahlawan yang Terlupakan" sekilas mirip "pustakawan",
+     * jadi tanpa kutip kalimatnya bisa kebaca "pustakawan yang terlupakan".
+     * Indonesia pakai kutip (“...”), Inggris pakai kutip ganda ("...").
+     *
+     * `book_title` selalu judul buku (semua Loan*.php). `subject` campuran —
+     * hanya dikutip untuk tipe yang subject-nya pasti judul buku (notif buku
+     * + peminjaman). Kalau semua subject dikutip, nama orang ikut berkutip,
+     * mis. “Dede Dikri” — itu yang tidak kita mau.
+     */
+    $quote = app()->getLocale() === 'id' ? ['“', '”'] : ['"', '"'];
+
+    if (! empty($params['book_title']) && is_string($params['book_title'])) {
+        $params['book_title'] = $quote[0].$params['book_title'].$quote[1];
+    }
+
+    // Judul buku di notif jejak aksi dikirim lewat key `subject`
+    // (lihat `ActionLogged`) — tapi key yang sama dipakai SEMUA objek
+    // (nama kategori/penulis/penerbit/pengguna, ...). Hanya tipe yang
+    // subject-nya pasti judul buku yang ikut dikutip: notif buku + peminjaman.
+    $bookSubjectTypes = [
+        'book_created', 'book_updated', 'book_deleted',
+        'favorite_added', 'favorite_removed',
+        'reading_saved', 'reading_removed',
+        'loan_recorded', 'loan_renewed',
+        'return_recorded', 'return_requested_self', 'loan_record_deleted',
+    ];
+
+    if ($type !== null && in_array($type, $bookSubjectTypes, true)
+        && ! empty($params['subject']) && is_string($params['subject'])
+        && ! str_starts_with($params['subject'], $quote[0])) {
+        $params['subject'] = $quote[0].$params['subject'].$quote[1];
+    }
+
     // Sanksi punya presisi jam (72 jam), bukan hari — formatnya ikut
     // lebih tajam supaya "sampai jam berapa" terbaca, bukan hanya tanggalnya.
     if (! empty($params['suspended_until'])) {
@@ -125,7 +160,7 @@
 
         <span class="min-w-0 flex-1">
             <span class="flex items-start gap-2">
-                <span class="notification-title block truncate text-sm">{{ $title }}</span>
+                <span class="notification-title block text-sm">{{ $title }}</span>
                 <span class="notification-dot mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-tertiary"
                     aria-hidden="true"></span>
             </span>
