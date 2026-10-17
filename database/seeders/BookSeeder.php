@@ -38,7 +38,7 @@ class BookSeeder extends Seeder
             ['isbn' => '978-602-001-016-5', 'title' => 'Kimia Dasar dan Percobaan', 'category' => 'sains', 'author' => 'Andi Prasetyo', 'publisher' => 'Penerbit Sains Modern', 'year' => 2020, 'pages' => 288],
             ['isbn' => '978-602-001-017-2', 'title' => 'Biologi', 'category' => 'sains', 'author' => 'Siti Aminah', 'publisher' => 'Penerbit Sains Modern', 'year' => 2022, 'pages' => 302],
             ['isbn' => '978-602-001-018-9', 'title' => 'Astronomi untuk Pelajar', 'category' => 'sains', 'author' => 'Rina Kusuma', 'publisher' => 'Penerbit Sains Modern', 'year' => 2019, 'pages' => 174],
-            ['isbn' => '978-602-001-019-6', 'title' => 'Surat untuk Sahabat', 'category' => 'sastra', 'author' => 'Dewi Lestari', 'publisher' => 'Penerbit Sastra Kita', 'year' => 2024, 'pages' => 210],
+            ['isbn' => '978-602-001-019-6', 'title' => 'Surat untuk Masa Depan', 'category' => 'sastra', 'author' => 'Dewi Lestari', 'publisher' => 'Penerbit Sastra Kita', 'year' => 2024, 'pages' => 210],
             ['isbn' => '978-602-001-020-2', 'title' => 'Teknologi dan Masyarakat', 'category' => 'teknologi', 'author' => 'Hendra Wijaya', 'publisher' => 'Penerbit Teknologi Digital', 'year' => 2024, 'pages' => 268],
         ];
 

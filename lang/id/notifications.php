@@ -56,7 +56,7 @@ return [
         ],
         'return_requested' => [
             'title' => 'Permintaan pengembalian',
-            'body' => ':user_name mengajukan pengembalian :book_title (tenggat :due_at).',
+            'body' => 'Dari anggota :user_name untuk pustakawan: mengajukan pengembalian :book_title (tenggat :due_at).',
         ],
         'returned' => [
             'title' => 'Buku telah dikembalikan',
@@ -202,7 +202,7 @@ return [
         ],
         'card_renew_requested' => [
             'title' => 'Pengajuan perpanjangan kartu',
-            'body' => ':member_name mengajukan perpanjangan kartu perpustakaan (nomor :card_number). Periksa syaratnya lalu konfirmasi dari menu Pengajuan Kartu.',
+            'body' => 'Dari anggota :member_name untuk pustakawan: mengajukan perpanjangan kartu perpustakaan (nomor :card_number). Periksa syaratnya lalu konfirmasi dari menu Pengajuan Kartu.',
         ],
     ],
 ];

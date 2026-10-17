@@ -56,7 +56,7 @@ return [
         ],
         'return_requested' => [
             'title' => 'Return requested',
-            'body' => ':user_name requested to return :book_title (due :due_at).',
+            'body' => 'From member :user_name to librarian: requested to return :book_title (due :due_at).',
         ],
         'returned' => [
             'title' => 'Book returned',
@@ -202,7 +202,7 @@ return [
         ],
         'card_renew_requested' => [
             'title' => 'Library card renewal request',
-            'body' => ':member_name requested a library card renewal (card :card_number). Check the requirements, then confirm from the Card Requests menu.',
+            'body' => 'From member :member_name to librarian: requested a library card renewal (card :card_number). Check the requirements, then confirm from the Card Requests menu.',
         ],
     ],
 ];
