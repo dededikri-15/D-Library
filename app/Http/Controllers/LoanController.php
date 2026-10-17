@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Actions\BorrowBook;
+use App\Actions\CompleteReturn;
 use App\Actions\MarkOverdueLoans;
+use App\Actions\RenewLoan;
+use App\Actions\RequestReturn;
 use App\Exceptions\LoanNotPossibleException;
 use App\Http\Requests\LoanRequest;
 use App\Models\Book;
@@ -28,6 +31,9 @@ class LoanController extends Controller
 {
     public function __construct(
         protected BorrowBook $borrowBook,
+        protected CompleteReturn $completeReturn,
+        protected RequestReturn $requestReturn,
+        protected RenewLoan $renewLoan,
         protected MarkOverdueLoans $markOverdue,
     ) {
         //
@@ -187,12 +193,14 @@ class LoanController extends Controller
      */
     public function returnBook(Request $request, Loan $loan): RedirectResponse
     {
-        if (! $this->completeReturn($loan)) {
+        Gate::authorize('returnLoan', $loan);
+
+        if (! $this->completeReturn->handle($loan)) {
             return $this->backWithStatus(__('messages.book_already_returned'));
         }
 
         /*
-         * `completeReturn()` menulis barisnya lewat instance KUNCI yang
+         * `CompleteReturn` menulis barisnya lewat instance KUNCI yang
          * berbeda di dalam transaksi, jadi `$loan` yang ini masih membawa
          * nilai lama — `returned_at`-nya masih null. Refresh dulu, kalau
          * tidak notifikasi anggota dikirim dengan tanggal pengembalian
@@ -234,23 +242,13 @@ class LoanController extends Controller
 
     public function requestReturn(Request $request, Loan $loan): RedirectResponse
     {
-        abort_unless($loan->user_id === $request->user()->id, 403);
+        // Kepemilikan dicek lewat policy: pengajuan hanya boleh atas
+        // pinjaman sendiri, tanpa tergantung middleware tertentu.
+        Gate::authorize('requestReturn', $loan);
 
-        $result = DB::transaction(function () use ($loan) {
-            $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
-
-            if (! $lockedLoan->isActive()) {
-                return 'returned';
-            }
-
-            if ($lockedLoan->hasReturnRequest()) {
-                return 'pending';
-            }
-
-            $lockedLoan->update(['return_requested_at' => now()]);
-
-            return 'requested';
-        });
+        // Logika atomiknya di RequestReturn; controller hanya mengurus
+        // pemberitahuan dan pesan sesuai hasilnya.
+        $result = $this->requestReturn->handle($loan);
 
         // Hanya pengajuan BARU yang memberi tahu pustakawan. Pengajuan
         // kedua ('pending') sudah pernah dikabari pada kali pertama.
@@ -290,27 +288,15 @@ class LoanController extends Controller
     {
         $user = $request->user();
 
-        // Anggota hanya boleh memperpanjang pinjamannya sendiri. URL route
-        // ini bisa ditebak orang, jadi otorisasinya dicek di server —
-        // bukan disembunyikan di view.
-        if (! $user->isPustakawan() && $loan->user_id !== $user->getKey()) {
-            abort(403);
-        }
+        // Anggota hanya boleh memperpanjang pinjamannya sendiri; pustakawan
+        // boleh memperpanjang siapa pun. Aturannya di LoanPolicy — URL route
+        // bisa ditebak orang, jadi otorisasi dicek di server, bukan
+        // disembunyikan di view.
+        Gate::authorize('renew', $loan);
 
-        $result = DB::transaction(function () use ($loan) {
-            $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
-
-            if (! $lockedLoan->canRenew()) {
-                return 'ineligible';
-            }
-
-            $lockedLoan->update([
-                'due_at' => $lockedLoan->renewalDueAt(),
-                'renew_count' => $lockedLoan->renew_count + 1,
-            ]);
-
-            return 'renewed';
-        });
+        // Logika atomiknya di RenewLoan — aturan kelayakan tetap satu
+        // (`Loan::canRenew()`), otorisasi siapa yang boleh tetap di sini.
+        $result = $this->renewLoan->handle($loan);
 
         if ($result === 'ineligible') {
             return back()->with('error', __('messages.loan_not_renewable'));
@@ -341,65 +327,13 @@ class LoanController extends Controller
         ]));
     }
 
-    protected function completeReturn(Loan $loan): bool
-    {
-        return DB::transaction(function () use ($loan) {
-            $lockedLoan = Loan::query()->whereKey($loan->getKey())->lockForUpdate()->firstOrFail();
-
-            if (! $lockedLoan->isActive()) {
-                return false;
-            }
-
-            $lockedLoan->update([
-                'returned_at' => now(),
-                'status' => Loan::STATUS_RETURNED,
-            ]);
-
-            /*
-             * Sanksi 72 jam dijatuhkan DI DALAM transaksi yang sama dengan
-             * pencatatan pengembalian: keterlambatan dan larangan meminjam
-             * adalah satu peristiwa, bukan dua. Kalau dipisah, proses yang
-             * mati di tengah akan meninggalkan pengembalian "bersih" tanpa
-             * sanksi — celah yang bisa dimanfaatkan tanpa disadari siapa pun.
-             *
-             * Kunci baris anggota dulu sebelum menulis: dua pustakawan yang
-             * memproses pengembalian telat anggota yang sama pada detik yang
-             * sama akan diserialkan di sini, bukan saling menimpa.
-             */
-            if ($lockedLoan->isLateReturn()) {
-                $member = User::query()->whereKey($lockedLoan->user_id)->lockForUpdate()->first();
-                $member?->applyLateReturnSuspension();
-            }
-
-            $book = Book::query()->whereKey($lockedLoan->book_id)->lockForUpdate()->first();
-            $copy = $lockedLoan->book_copy_id
-                ? BookCopy::query()->whereKey($lockedLoan->book_copy_id)->lockForUpdate()->first()
-                : null;
-
-            // Loans lama belum tentu terhubung ke ID eksemplar.
-            $copy ??= $book?->copies()
-                ->where('status', BookCopy::STATUS_BORROWED)
-                ->lockForUpdate()
-                ->first();
-            $copy?->update(['status' => BookCopy::STATUS_AVAILABLE]);
-
-            if ($book && $book->status !== Book::STATUS_INACTIVE) {
-                $book->update([
-                    'status' => $book->availableCopies()->exists()
-                        ? Book::STATUS_AVAILABLE
-                        : Book::STATUS_BORROWED,
-                ]);
-            }
-
-            return true;
-        });
-    }
-
     /**
      * Hapus catatan peminjaman (koreksi administratif pustakawan).
      */
     public function destroy(Request $request, Loan $loan): RedirectResponse
     {
+        Gate::authorize('delete', $loan);
+
         // Penerima notifikasi ditentukan SEBELUM barisnya dihapus, supaya
         // alurnya tidak bergantung pada relasi yang barisnya sudah tidak ada.
         $borrower = $loan->user;

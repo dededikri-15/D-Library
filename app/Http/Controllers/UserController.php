@@ -7,6 +7,7 @@ use App\Models\LibraryCard;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -14,6 +15,8 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', User::class);
+
         $filters = $this->validFilters($request, [
             'q' => ['nullable', 'string', 'max:150'],
             'role' => ['nullable', Rule::in(User::roles())],
@@ -34,6 +37,8 @@ class UserController extends Controller
 
     public function create(): View
     {
+        Gate::authorize('create', User::class);
+
         return view('admin.users.create', [
             'user' => new User,
             'roles' => User::roles(),
@@ -42,6 +47,8 @@ class UserController extends Controller
 
     public function store(UserRequest $request): RedirectResponse
     {
+        Gate::authorize('create', User::class);
+
         $user = User::create($request->validated());
 
         $this->notifySelf(
@@ -56,6 +63,8 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        Gate::authorize('update', $user);
+
         /*
          * Kartu perpustakaan anggota ikut ditampilkan (dengan syarat
          * perpanjannya) supaya pustakawan bisa langsung memeriksa dan
@@ -76,6 +85,8 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $user): RedirectResponse
     {
+        Gate::authorize('update', $user);
+
         $data = $request->validated();
 
         // Jangan izinkan pustakawan mengosongkan atau mengganti passwordnya
@@ -100,6 +111,8 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
+        Gate::authorize('delete', $user);
+
         // Cegah pustakawan menghapus akunnya sendiri (bisa mengunci sistem).
         if ($user->id === $request->user()?->id) {
             return $this->backWithStatus(__('messages.cannot_delete_self'));
