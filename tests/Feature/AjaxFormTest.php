@@ -7,6 +7,7 @@ use App\Models\Favorite;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesLibraryUsers;
+use Tests\Concerns\SendsAjaxRequests;
 use Tests\TestCase;
 
 class AjaxFormTest extends TestCase

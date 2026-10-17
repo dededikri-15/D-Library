@@ -3,16 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
-use App\Models\Favorite;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesLibraryUsers;
+use Tests\TestCase;
 
 class FavoriteFormSafetyTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesLibraryUsers;
+    use RefreshDatabase;
 
     public function test_form_favorit_menanda_fallback_yang_aman(): void
     {

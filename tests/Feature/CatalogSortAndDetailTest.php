@@ -2,13 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Models\Book;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\ProvidesCatalogBook;
+use Tests\TestCase;
 
 class CatalogSortAndDetailTest extends TestCase
 {
+    use ProvidesCatalogBook;
     use RefreshDatabase;
 
     public function test_catalog_can_sort_by_title(): void

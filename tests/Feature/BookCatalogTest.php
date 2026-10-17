@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\Author;
 use App\Models\Book;
-use App\Models\Category;
-use App\Models\Publisher;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\ProvidesCatalogBook;
 use Tests\TestCase;
 
 class BookCatalogTest extends TestCase
 {
+    use ProvidesCatalogBook;
     use RefreshDatabase;
 
     /**

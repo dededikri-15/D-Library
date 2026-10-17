@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Book;
 use App\Models\Category;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesLibraryUsers;
+use Tests\TestCase;
 
 class ForceDeleteListPageTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
 
     /**

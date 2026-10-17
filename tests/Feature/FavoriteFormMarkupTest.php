@@ -4,14 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\Book;
 use App\Models\Favorite;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesLibraryUsers;
+use Tests\TestCase;
 
 class FavoriteFormMarkupTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesLibraryUsers;
+    use RefreshDatabase;
 
     /*
      * Bentuk HTML yang dikirim JS. Test ini yang menangkap "AJAX-nya jalan

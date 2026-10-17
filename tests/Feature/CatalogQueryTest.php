@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\ProvidesCatalogBook;
+use Tests\TestCase;
 
 class CatalogQueryTest extends TestCase
 {
+    use ProvidesCatalogBook;
     use RefreshDatabase;
 
     public function test_filters_combine_and_pagination_links_keep_the_query_string(): void

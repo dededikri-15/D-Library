@@ -4,14 +4,17 @@ namespace Tests\Feature;
 
 use App\Models\Book;
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CreatesLibraryUsers;
+use Tests\Concerns\ProvidesMasterDataFixtures;
+use Tests\TestCase;
 
 class ForceDeleteBehaviorTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
+    use ProvidesMasterDataFixtures;
 
     /**
      * Cascade di database tidak mengenal storage. Tanpa penghapusan berkas di

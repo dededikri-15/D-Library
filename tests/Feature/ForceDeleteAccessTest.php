@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesLibraryUsers;
+use Tests\TestCase;
 
 class ForceDeleteAccessTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
 
     public function test_daftar_menampilkan_catatan_hanya_pada_baris_yang_dipakai(): void

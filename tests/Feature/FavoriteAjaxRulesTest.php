@@ -4,16 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\Book;
 use App\Models\Favorite;
-use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesLibraryUsers;
 use Tests\Concerns\SendsAjaxRequests;
+use Tests\TestCase;
 
 class FavoriteAjaxRulesTest extends TestCase
 {
-    use RefreshDatabase;
     use CreatesLibraryUsers;
+    use RefreshDatabase;
     use SendsAjaxRequests;
 
     public function test_hapus_favorit_yang_sudah_tidak_ada_melapor_jujur(): void

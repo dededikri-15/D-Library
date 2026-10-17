@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Book;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class BookFieldValidationTest extends TestCase
 {

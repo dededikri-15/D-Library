@@ -6,12 +6,14 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\Publisher;
-use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CreatesLibraryUsers;
+use Tests\TestCase;
 
 class ForceDeleteEditPageTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
 
     public function test_foto_penulis_ikut_terhapus_kalau_penulisnya_dihapus(): void

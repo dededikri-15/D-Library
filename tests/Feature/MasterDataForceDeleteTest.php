@@ -2,18 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\Loan;
-use App\Models\Publisher;
 use App\Models\ReadingHistory;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\CreatesLibraryUsers;
+use Tests\Concerns\ProvidesMasterDataFixtures;
 use Tests\TestCase;
 
 /**
@@ -38,6 +35,7 @@ class MasterDataForceDeleteTest extends TestCase
 {
     use CreatesLibraryUsers;
     use RefreshDatabase;
+    use ProvidesMasterDataFixtures;
 
     public function test_master_data_yang_masih_dipakai_buku_bisa_dihapus(): void
     {

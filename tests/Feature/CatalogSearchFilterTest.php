@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Publisher;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\ProvidesCatalogBook;
+use Tests\TestCase;
 
 class CatalogSearchFilterTest extends TestCase
 {
+    use ProvidesCatalogBook;
     use RefreshDatabase;
 
     public function test_catalog_can_search_by_isbn_with_or_without_dashes(): void

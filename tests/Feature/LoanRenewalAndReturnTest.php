@@ -4,14 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\Loan;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\ProvidesRenewalFixtures;
+use Tests\TestCase;
 
 class LoanRenewalAndReturnTest extends TestCase
 {
-    use RefreshDatabase;
     use ProvidesRenewalFixtures;
+    use RefreshDatabase;
 
     public function test_pustakawan_bisa_memperpanjang_pinjaman_anggota(): void
     {

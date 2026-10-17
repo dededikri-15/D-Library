@@ -5,9 +5,8 @@ namespace Tests\Feature;
 use App\Models\Book;
 use App\Models\Loan;
 use App\Models\User;
-use App\Notifications\LoanReturned;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
+use Tests\Concerns\ProvidesRenewalFixtures;
 use Tests\TestCase;
 
 /**
@@ -25,8 +24,8 @@ use Tests\TestCase;
  */
 class LoanRenewalAndSuspensionTest extends TestCase
 {
-    use RefreshDatabase;
     use ProvidesRenewalFixtures;
+    use RefreshDatabase;
 
     public function test_anggota_bisa_memperpanjang_pinjaman_sendiri(): void
     {

@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class CategoryCrudTest extends TestCase
 {

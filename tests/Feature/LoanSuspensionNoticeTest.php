@@ -3,18 +3,17 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
-use App\Models\Loan;
 use App\Models\User;
 use App\Notifications\LoanReturned;
-use Illuminate\Support\Carbon;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\Concerns\ProvidesRenewalFixtures;
+use Tests\TestCase;
 
 class LoanSuspensionNoticeTest extends TestCase
 {
-    use RefreshDatabase;
     use ProvidesRenewalFixtures;
+    use RefreshDatabase;
 
     public function test_tombol_pinjam_nonaktif_selama_sanksi(): void
     {

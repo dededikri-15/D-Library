@@ -3,14 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Author;
-use App\Models\Book;
 use App\Models\Category;
 use App\Models\Publisher;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\ProvidesCatalogBook;
+use Tests\TestCase;
 
 class CatalogCardContentTest extends TestCase
 {
+    use ProvidesCatalogBook;
     use RefreshDatabase;
 
     public function test_book_card_shows_required_fields(): void

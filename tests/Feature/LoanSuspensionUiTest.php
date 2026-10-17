@@ -5,14 +5,14 @@ namespace Tests\Feature;
 use App\Models\Book;
 use App\Models\Loan;
 use App\Models\User;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\ProvidesRenewalFixtures;
+use Tests\TestCase;
 
 class LoanSuspensionUiTest extends TestCase
 {
-    use RefreshDatabase;
     use ProvidesRenewalFixtures;
+    use RefreshDatabase;
 
     public function test_sanksi_kedua_pengembalian_telat_tidak_memendekkan(): void
     {
