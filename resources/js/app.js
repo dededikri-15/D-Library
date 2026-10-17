@@ -7,45 +7,10 @@ function uiMessage(key, fallback) {
  *
  * Semua perilaku ditulis dengan atribut data- di Blade, bukan dengan
  *.querySelector per halaman. Jadi satu berkas ini cukup untuk semua view:
- * menambah elemen baru cukup dengan menulis data-toast / data-nav-toggle
+ * menambah elemen baru cukup dengan menulis data-toast / data-sidebar-toggle
  * di Blade, tanpa menyentuh JS.
  */
 
-/**
- * Menu hamburger untuk layar kecil. Ikon memakai SVG, bukan karakter Unicode
- * seperti "☰": glyph itu tampil berbeda di tiap sistem operasi dan sering
- * tidak sejajar dengan teks di sebelahnya.
- */
-function initNavToggle() {
-    const toggle = document.querySelector('[data-nav-toggle]');
-    const menu = document.querySelector('[data-nav-menu]');
-    if (!toggle || !menu) return;
-
-    const ICON_OPEN =
-        '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>';
-    const ICON_CLOSE = '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>';
-
-    const setIcon = (isOpen) => {
-        const icon = toggle.querySelector('[data-nav-icon]');
-        if (icon) icon.innerHTML = isOpen ? ICON_CLOSE : ICON_OPEN;
-    };
-
-    toggle.addEventListener('click', () => {
-        const isOpen = !menu.hidden;
-        menu.hidden = isOpen;
-        toggle.setAttribute('aria-expanded', String(!isOpen));
-        setIcon(!isOpen);
-    });
-
-    // Menu ikut tertutup saat layar kembali ke desktop.
-    const desktop = window.matchMedia('(min-width: 1024px)');
-    desktop.addEventListener('change', (event) => {
-        if (!event.matches) return;
-        menu.hidden = true;
-        toggle.setAttribute('aria-expanded', 'false');
-        setIcon(false);
-    });
-}
 
 /*
  * Dark / light mode.
@@ -2097,7 +2062,6 @@ function initPrint() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
-    initNavToggle();
     initToasts();
     // `initSubmitGuards()` SEBELUM `initAjaxForms()` — urutannya syarat, bukan
     // gaya penulisan. Dua-duanya delegated ke `document`, dan dua listener di
