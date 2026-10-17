@@ -1,0 +1,24 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Target awal level 5 (lihat audit Prioritas 2): cukup ketat untuk
+    # menangkap null, return type, dan relasi model yang salah, tanpa
+    # memaksa anotasi generik di seluruh codebase sekaligus.
+    level: 5
+
+    paths:
+        - app
+        - database
+        - routes
+        - tests
+
+    # File tampilan Blade tidak dianalisis: PHPStan tidak memahami
+    # template Blade hasil kompilasi, jadi menjalankannya di storage
+    # hanya menghasilkan noise.
+    excludePaths:
+        - storage/framework/views/*
+
+    checkModelProperties: true
+    checkOctaneCompatibility: false
+    noUnnecessaryCollectionCall: false

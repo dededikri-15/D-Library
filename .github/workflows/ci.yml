@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pgsql, pdo_pgsql, pdo_sqlite, sqlite3, fileinfo, bcmath, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependensi PHP
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Siapkan .env untuk CI
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Cek format kode (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Jalankan test
+        run: php artisan test
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependensi JS dan build aset
+        run: |
+          npm ci
+          npm run build

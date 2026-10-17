@@ -1,9 +1,11 @@
 # D-Library — Perpustakaan Digital
 
+![CI](https://github.com/dededikri-15/D-Library/actions/workflows/ci.yml/badge.svg)
+
 Aplikasi katalog dan peminjaman perpustakaan digital, dibangun dengan
-Laravel 12. Manuskrip bisa dibaca, dipinjam, dan dikembalikan, dan yang punya
-peran **Pustakawan** mengelola seluruh katalog, data penulis/penerbit, serta
-pengguna.
+Laravel 12. Anggota bisa mencari buku, meminjam, membaca PDF, dan
+menyimpan favorit; yang punya peran **Pustakawan** mengelola seluruh
+katalog, data penulis/penerbit, pengguna, dan peminjaman.
 
 Proyek ini portofolio: tujuannya menunjukkan cara membangun aplikasi Laravel
 yang benar-benar selesai dan aman, bukan sekadar kerangka.
@@ -21,6 +23,8 @@ yang benar-benar selesai dan aman, bukan sekadar kerangka.
 - [Struktur Proyek](#struktur-proyek)
 - [Skema Basis Data](#skema-basis-data)
 - [Pengujian](#pengujian)
+- [Screenshot](#screenshot)
+- [Penjadwalan (Scheduler)](#penjadwalan-scheduler)
 - [Catatan Keamanan](#catatan-keamanan)
 - [Keputusan Desain yang Menarik](#keputusan-design-yang-menarik)
 
@@ -37,6 +41,8 @@ yang benar-benar selesai dan aman, bukan sekadar kerangka.
 | Build asset | Vite 7 |
 | Pengujian | PHPUnit 11 (Feature test) |
 | Format kode | Laravel Pint |
+| Analisis statis | Larastan (PHPStan level 5) |
+| CI | GitHub Actions (`php artisan test` + Pint + Larastan + `npm run build`) |
 
 Tidak ada React, Vue, atau Angular. Tidak ada CSS framework selain Tailwind.
 Tidak ada paket npm runtime di luar toolchain build. Every bit of interactivity
@@ -116,6 +122,8 @@ tempat semua aturan ini dibaca dari:
 | --- | --- |
 | `pustakawan@perpustakaan` | Pustakawan |
 | `anggota1@perpustakaan.test` | Anggota |
+| `anggota2@perpustakaan.test` | Anggota |
+| `anggota3@perpustakaan.test` | Anggota |
 
 Kredensial ini sengaja weakened dan hanya untuk pengembangan. Jangan pernah
 membiarkannya di server yang bisa dijangkau publik.
@@ -224,9 +232,9 @@ php artisan test tests/Feature/SecurityTest.php
 composer test                           # sama, tapi config dibersihkan dulu
 ```
 
-**367 test / 1.231 assertion, semuanya lulus.** Test suite memakai SQLite
-in-memory (lihat `phpunit.xml`), bukan PostgreSQL — supaya cepat dan tidak
-menyentuh database dev. Konsekuensinya ada jebakan yang harus diingat:
+**640 test / 2.373 assertion, semuanya lulus** (hasil `php artisan test`
+terakhir). Test suite memakai SQLite in-memory (lihat `phpunit.xml`), bukan
+PostgreSQL — supaya cepat dan tidak menyentuh database dev. Konsekuensinya ada jebakan yang harus diingat:
 
 - Query PostgreSQL-only akan lolos di dev lalu gagal di test.
 - SQLite lebih permisif: query yang dia toleransi bisa tetap lempar error di
@@ -237,6 +245,51 @@ menyentuh database dev. Konsekuensinya ada jebakan yang harus diingat:
   Perbaikannya: setiap route yang mengambil parameter model memakai
   `->whereNumber()` di `routes/web.php`, jadi id non-numerik ditolak di lapisan
   routing dan tidak pernah sampai ke SQL.
+
+## Screenshot
+
+Screenshot asli aplikasi ada di `docs/screenshots/`. Cara mengambilnya ada
+di `docs/screenshots/README.md` — jangan memakai gambar palsu atau mockup.
+
+| Halaman | File |
+| --- | --- |
+| Katalog buku | `docs/screenshots/katalog.png` (segera hadir) |
+| Dashboard pustakawan | `docs/screenshots/dashboard.png` (segera hadir) |
+| Dark mode | `docs/screenshots/dark-mode.png` (segera hadir) |
+| Kartu perpustakaan | `docs/screenshots/kartu-perpustakaan.png` (segera hadir) |
+| Detail buku | `docs/screenshots/detail-buku.png` (segera hadir) |
+| Daftar peminjaman | `docs/screenshots/peminjaman.png` (segera hadir) |
+
+Keunggulan yang layak difoto: pencarian hidup tanpa reload di katalog,
+pratinjau cepat buku, pembaca PDF dalam browser, dashboard dengan grafik
+peminjaman, kartu perpustakaan digital, serta dark mode di semua halaman.
+
+## Penjadwalan (Scheduler)
+
+Dua command terjadwal di `routes/console.php`:
+
+| Command | Jadwal | Tugas |
+| --- | --- | --- |
+| `loans:mark-overdue` | Setiap jam | Tandai peminjaman lewat tempo sebagai `overdue` + kirim lonceng keterlambatan |
+| `loans:remind` | Harian 08:00 | Kirim email pengingat H-1/jatuh tempo + pemberitahuan keterlambatan |
+
+Di development, scheduler Laravel **tidak jalan otomatis**. Jalankan:
+
+```bash
+php artisan schedule:work
+```
+
+Di produksi, jalankan scheduler tiap menit lewat cron:
+
+```cron
+* * * * * cd /path/ke/proyek && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Status keterlambatan tidak bergantung penuh pada scheduler: halaman
+peminjaman dan beranda memanggil `MarkOverdueLoans` langsung sebelum
+menampilkan data. Sanksi keterlambatan (larangan meminjam 72 jam setelah
+pengembalian terlambat) dihitung dari `users.suspended_until`, jadi pulih
+otomatis tanpa job tambahan.
 
 ## Catatan Keamanan
 
