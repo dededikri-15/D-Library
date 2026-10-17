@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PublisherRequest;
 use App\Models\Publisher;
-use App\Support\Json;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PublisherController extends Controller
@@ -78,30 +76,12 @@ class PublisherController extends Controller
 
     public function storeQuick(Request $request): JsonResponse
     {
-        // Validasi inline tetap perlu `attributes` sendiri: tanpa itu pesan
-        // errornya menyebut field mentah "name", bukan "nama penerbit".
-        $validated = $request->validate(
-            [
-                'name' => [
-                    'required', 'string', 'max:150',
-                    Rule::unique('publishers', 'name'),
-                ],
-            ],
-            attributes: ['name' => 'nama penerbit'],
-        );
-
-        $publisher = Publisher::create(['name' => $validated['name']]);
-
-        $this->notifySelf(
-            $request->user(),
-            'publisher_created',
-            ['subject' => $publisher->name],
+        return $this->storeQuickRow(
+            $request,
+            fn (string $name) => Publisher::create(['name' => $name]),
+            'nama penerbit',
             route('publishers.index'),
+            uniqueInTable: 'publishers',
         );
-
-        return Json::response([
-            'id' => $publisher->id,
-            'name' => $publisher->name,
-        ]);
     }
 }

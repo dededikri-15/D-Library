@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AuthorRequest;
 use App\Models\Author;
-use App\Support\Json;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -108,27 +107,11 @@ class AuthorController extends Controller
 
     public function storeQuick(Request $request): JsonResponse
     {
-        // Validasi inline tetap perlu `attributes` sendiri: tanpa itu pesan
-        // errornya menyebut field mentah "name", bukan "nama penulis".
-        $validated = $request->validate(
-            [
-                'name' => ['required', 'string', 'max:150'],
-            ],
-            attributes: ['name' => 'nama penulis'],
-        );
-
-        $author = Author::create(['name' => $validated['name']]);
-
-        $this->notifySelf(
-            $request->user(),
-            'author_created',
-            ['subject' => $author->name],
+        return $this->storeQuickRow(
+            $request,
+            fn (string $name) => Author::create(['name' => $name]),
+            'nama penulis',
             route('authors.index'),
         );
-
-        return Json::response([
-            'id' => $author->id,
-            'name' => $author->name,
-        ]);
     }
 }

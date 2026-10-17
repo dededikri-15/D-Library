@@ -13,8 +13,8 @@ use Tests\TestCase;
 class ForceDeleteBehaviorTest extends TestCase
 {
     use CreatesLibraryUsers;
-    use RefreshDatabase;
     use ProvidesMasterDataFixtures;
+    use RefreshDatabase;
 
     /**
      * Cascade di database tidak mengenal storage. Tanpa penghapusan berkas di

@@ -34,8 +34,8 @@ use Tests\TestCase;
 class MasterDataForceDeleteTest extends TestCase
 {
     use CreatesLibraryUsers;
-    use RefreshDatabase;
     use ProvidesMasterDataFixtures;
+    use RefreshDatabase;
 
     public function test_master_data_yang_masih_dipakai_buku_bisa_dihapus(): void
     {

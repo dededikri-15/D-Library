@@ -1,5 +1,3 @@
-import './bootstrap';
-
 function uiMessage(key, fallback) {
     return document.documentElement.dataset[`ui${key}`] || fallback;
 }
@@ -1683,16 +1681,23 @@ function initSearch() {
  * AJAX/fetch helper (Task 14.7).
  *
  * Fungsi global untuk request AJAX dengan CSRF token otomatis.
+ *
+ * Header dari pemanggil DI-MERGE dengan header dasar, bukan menimpanya.
+ * Versi lama memakai `fetch(url, { ...defaults, ...options })`: begitu
+ * pemanggil ikut mengirim `headers` (mis. `Accept: application/json`),
+ * seluruh objek headers dasar — termasuk CSRF token — hilang dan server
+ * membalas 419. Menggabungkan dua objek header membuat pemanggil cukup
+ * menambah header barunya sendiri.
  */
 window.ajax = function (url, options = {}) {
-    const defaults = {
+    return fetch(url, {
+        ...options,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+            ...(options.headers || {}),
         },
-    };
-
-    return fetch(url, { ...defaults, ...options });
+    });
 };
 
 /**
@@ -1752,15 +1757,12 @@ function initQuickAdd() {
                 submitButton.textContent = uiMessage("Saving", "Saving...");
             }
 
-            fetch(form.action, {
-                method: "POST",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRF-TOKEN":
-                        document.querySelector('meta[name="csrf-token"]')
-                            ?.content || "",
-                    Accept: "application/json",
-                },
+            // `window.ajax`, bukan `fetch` mentah: header CSRF dan penanda
+            // AJAX sudah ditangani di satu tempat, jadi tidak ditulis ulang
+            // di sini (dan tidak bisa beda-beda antar fitur).
+            window.ajax(form.action, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
                 body: formData,
             })
                 .then(async (response) => {

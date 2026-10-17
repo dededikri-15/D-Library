@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Book;
 use App\Models\Category;
-use App\Support\Json;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CategoryController extends Controller
@@ -100,33 +98,13 @@ class CategoryController extends Controller
 
     public function storeQuick(Request $request): JsonResponse
     {
-        // Validasi inline tetap perlu `attributes` sendiri: tanpa itu pesan
-        // errornya menyebut field mentah "name", bukan "nama kategori".
-        $validated = $request->validate(
-            [
-                'name' => [
-                    'required', 'string', 'max:100',
-                    Rule::unique('categories', 'name'),
-                ],
-            ],
-            attributes: ['name' => 'nama kategori'],
-        );
-
-        $category = Category::create([
-            'name' => $validated['name'],
-            'slug' => Category::slugFor($validated['name']),
-        ]);
-
-        $this->notifySelf(
-            $request->user(),
-            'category_created',
-            ['subject' => $category->name],
+        return $this->storeQuickRow(
+            $request,
+            fn (string $name) => Category::create(['name' => $name, 'slug' => Category::slugFor($name)]),
+            'nama kategori',
             route('categories.index'),
+            uniqueInTable: 'categories',
+            maxNameLength: 100,
         );
-
-        return Json::response([
-            'id' => $category->id,
-            'name' => $category->name,
-        ]);
     }
 }

@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Support\Json;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -109,5 +113,57 @@ trait ManagesMasterData
             : ucfirst($label).' berhasil dihapus, termasuk '.$books->count().' buku di dalamnya.';
 
         return $this->success($indexRoute, $message);
+    }
+
+    /**
+     * Simpan cepat (quick add) satu baris master data dari dalam form buku.
+     *
+     * Kenapa dipusatkan di sini: CategoryController, AuthorController, dan
+     * PublisherController sebelumnya punya method `storeQuick` yang bentuknya
+     * sama persis — validasi `name`, buat baris, catat notifikasi, balas
+     * JSON `{id, name}` untuk dropdown quick add. Yang berbeda hanya label
+     * nama field dalam bahasa Indonesia, panjang maksimum, aturan unique,
+     * dan cara barisnya dibuat (kategori ikut mengisi slug). Perbedaan itu
+     * diserahkan lewat parameter, jadi ketiga controller tinggal memanggil
+     * dengan miliknya dan aturan mainnya tetap satu.
+     *
+     * @param  Closure(string): Model  $create  membuat baris dari nama yang sudah tervalidasi
+     */
+    protected function storeQuickRow(
+        Request $request,
+        Closure $create,
+        string $attributeLabel,
+        string $indexRoute,
+        ?string $uniqueInTable = null,
+        int $maxNameLength = 150,
+    ): JsonResponse {
+        $rules = ['required', 'string', 'max:'.$maxNameLength];
+
+        if ($uniqueInTable !== null) {
+            $rules[] = Rule::unique($uniqueInTable, 'name');
+        }
+
+        // Validasi inline tetap perlu `attributes` sendiri: tanpa itu pesan
+        // errornya menyebut field mentah "name", bukan "nama kategori".
+        $validated = $request->validate(
+            ['name' => $rules],
+            attributes: ['name' => $attributeLabel],
+        );
+
+        $row = $create($validated['name']);
+
+        $this->notifySelf(
+            $request->user(),
+            // 'Category' -> 'category_created' — kunci notifikasi yang sama
+            // persis dengan yang dipakai ketiga controller sebelumnya.
+            Str::snake(class_basename($row)).'_created',
+            ['subject' => $row->name],
+            $indexRoute,
+        );
+
+        return Json::response([
+            'id' => $row->id,
+            'name' => $row->name,
+        ]);
     }
 }
