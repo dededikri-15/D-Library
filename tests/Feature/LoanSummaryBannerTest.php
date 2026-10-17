@@ -3,18 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Loan;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 class LoanSummaryBannerTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function staff(): User
-    {
-        return User::factory()->pustakawan()->create();
-    }
 
     public function test_overdue_banner_appears_when_a_loan_is_late(): void
     {

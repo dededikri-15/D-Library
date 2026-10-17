@@ -9,10 +9,12 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 class BookFileUploadTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -43,11 +45,6 @@ class BookFileUploadTest extends TestCase
             'publisher_id' => $book->publisher_id,
             'status' => Book::STATUS_AVAILABLE,
         ], $overrides);
-    }
-
-    protected function staff(): User
-    {
-        return User::factory()->pustakawan()->create();
     }
 
     /* ------------------------------------------------------------------

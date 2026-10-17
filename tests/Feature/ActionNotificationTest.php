@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 /**
@@ -32,17 +33,8 @@ use Tests\TestCase;
  */
 class ActionNotificationTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function member(): User
-    {
-        return User::factory()->anggota()->create();
-    }
-
-    private function librarian(): User
-    {
-        return User::factory()->pustakawan()->create();
-    }
 
     /**
      * Pastikan user menerima ActionLogged dengan kode tipe tertentu.

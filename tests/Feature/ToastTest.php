@@ -6,16 +6,13 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 class ToastTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function member(): User
-    {
-        return User::factory()->create(['role' => User::ROLE_ANGGOTA]);
-    }
 
     private function contentFor(User $user, string $route, array $session = []): string
     {

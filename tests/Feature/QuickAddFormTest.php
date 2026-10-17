@@ -10,6 +10,7 @@ use DOMElement;
 use DOMXPath;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 /**
@@ -41,12 +42,8 @@ use Tests\TestCase;
  */
 class QuickAddFormTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function librarian(): User
-    {
-        return User::factory()->pustakawan()->create();
-    }
 
     /**
      * Tag `<form>` yang muncul di markup mentah saat form lain belum ditutup.

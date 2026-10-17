@@ -41,42 +41,12 @@
     {{-- Statistik umum (untuk tamu & anggota) --}}
     <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="{{ __('home.collection_summary') }}">
         @foreach ([
-            ['label' => __('home.available_books'), 'value' => $totalBooks, 'tone' => 'available', 'text' => 'text-available'],
-            ['label' => __('home.currently_borrowed'), 'value' => $currentlyBorrowed, 'tone' => 'borrowed', 'text' => 'text-borrowed'],
-            ['label' => __('home.categories'), 'value' => $totalCategories, 'tone' => 'tertiary', 'text' => 'text-tertiary'],
-            ['label' => __('home.registered_members'), 'value' => $totalMembers, 'tone' => 'primary', 'text' => 'text-primary'],
+            ['label' => __('home.available_books'), 'value' => $totalBooks, 'tone' => 'available'],
+            ['label' => __('home.currently_borrowed'), 'value' => $currentlyBorrowed, 'tone' => 'borrowed'],
+            ['label' => __('home.categories'), 'value' => $totalCategories, 'tone' => 'tertiary'],
+            ['label' => __('home.registered_members'), 'value' => $totalMembers, 'tone' => 'primary'],
         ] as $stat)
-            @php
-                $iconPath = match ($stat['tone']) {
-                    'available' => 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
-                    'borrowed' => 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
-                    'tertiary' => 'M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z',
-                    default => 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z',
-                };
-            @endphp
-
-            <div class="stat-card">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                        <p class="text-label font-medium tracking-wide text-secondary uppercase">{{ $stat['label'] }}</p>
-                        <p class="mt-2 text-3xl font-bold tabular-nums {{ $stat['text'] }}">
-                            {{ number_format($stat['value'], 0, ',', '.') }}
-                        </p>
-                    </div>
-
-                    <span @class([
-                        'stat-icon shrink-0',
-                        'bg-available/10 text-available dark:bg-available/15' => $stat['tone'] === 'available',
-                        'bg-borrowed/10 text-borrowed dark:bg-borrowed/15' => $stat['tone'] === 'borrowed',
-                        'bg-tertiary/10 text-tertiary dark:bg-tertiary/15' => $stat['tone'] === 'tertiary',
-                        'bg-secondary/10 text-secondary dark:bg-secondary/15' => $stat['tone'] === 'primary',
-                    ])>
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $iconPath }}"/>
-                        </svg>
-                    </span>
-                </div>
-            </div>
+            <x-stat-card :label="$stat['label']" :value="$stat['value']" :tone="$stat['tone']" />
         @endforeach
     </section>
 
@@ -107,13 +77,7 @@
                 @endforeach
             </div>
 
-            <div class="card mt-8 p-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="font-semibold text-primary">{{ __('dashboard.currently_borrowed_books') }}</h2>
-                    <a href="{{ route('books.index') }}" class="text-sm font-medium text-tertiary hover:underline">
-                        {{ __('dashboard.find_books') }} &rarr;
-                    </a>
-                </div>
+            <x-panel class="mt-8" :title="__('dashboard.currently_borrowed_books')" :href="route('books.index')" :link-label="__('dashboard.find_books')">
 
                 @forelse ($activeLoans as $loan)
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-secondary/10 pb-3 last:border-0">
@@ -134,15 +98,9 @@
                         <a href="{{ route('books.index') }}" class="btn btn-primary btn-sm">{{ __('dashboard.browse_catalog') }}</a>
                     </x-empty-state>
                 @endforelse
-            </div>
+            </x-panel>
 
-            <div class="card mt-4 p-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="font-semibold text-primary">{{ __('dashboard.loan_history') }}</h2>
-                    <a href="{{ route('loans.mine') }}" class="text-sm font-medium text-tertiary hover:underline">
-                        {{ __('dashboard.see_all') }} &rarr;
-                    </a>
-                </div>
+            <x-panel class="mt-4" :title="__('dashboard.loan_history')" :href="route('loans.mine')" :link-label="__('dashboard.see_all')">
 
                 @forelse ($recentLoansMember as $loan)
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-secondary/10 pb-3 last:border-0">
@@ -157,15 +115,9 @@
                 @empty
                     <p class="mt-4 text-sm text-secondary">Belum ada riwayat peminjaman.</p>
                 @endforelse
-            </div>
+            </x-panel>
 
-            <div class="card mt-4 p-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="font-semibold text-primary">{{ __('dashboard.reading_history') }}</h2>
-                    <a href="{{ route('reading-histories.index') }}" class="text-sm font-medium text-tertiary hover:underline">
-                        {{ __('dashboard.see_all') }} &rarr;
-                    </a>
-                </div>
+            <x-panel class="mt-4" :title="__('dashboard.reading_history')" :href="route('reading-histories.index')" :link-label="__('dashboard.see_all')">
 
                 @forelse ($readingHistory as $history)
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-secondary/10 pb-3 last:border-0">
@@ -182,7 +134,7 @@
                 @empty
                     <x-empty-state class="mt-4 border-0" :title="__('dashboard.no_reading_history')" :description="__('dashboard.open_digital_book')" />
                 @endforelse
-            </div>
+            </x-panel>
         @endif
 
         {{-- Dasbor khusus pustakawan --}}
@@ -318,11 +270,10 @@
     {{-- Buku terbaru (umum) --}}
     <section class="mt-14">
         <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <p class="section-eyebrow">{{ __('home.collection') }}</p>
-                <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.latest_books') }}</h2>
-                <p class="mt-1.5 text-sm text-secondary">{{ __('home.latest_description') }}</p>
-            </div>
+            <x-section-heading
+                :eyebrow="__('home.collection')"
+                :title="__('home.latest_books')"
+                :description="__('home.latest_description')" />
             <a href="{{ route('books.index') }}" class="link-accent text-sm">
                 {{ __('home.see_all') }} &rarr;
             </a>
@@ -342,13 +293,10 @@
     {{-- Populer (umum) --}}
     @if ($popularBooks->isNotEmpty() && $popularBooks->first()->loans_count > 0)
         <section class="mt-14">
-            <div class="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <p class="section-eyebrow">{{ __('home.reader_favorites') }}</p>
-                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.popular_books') }}</h2>
-                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.popular_description') }}</p>
-                </div>
-            </div>
+            <x-section-heading
+                :eyebrow="__('home.reader_favorites')"
+                :title="__('home.popular_books')"
+                :description="__('home.popular_description')" />
 
             <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($popularBooks as $book)
@@ -362,11 +310,10 @@
     @if ($categories->isNotEmpty())
         <section class="mt-14">
             <div class="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <p class="section-eyebrow">{{ __('home.topics') }}</p>
-                    <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">{{ __('home.explore_categories') }}</h2>
-                    <p class="mt-1.5 text-sm text-secondary">{{ __('home.categories_description') }}</p>
-                </div>
+                <x-section-heading
+                    :eyebrow="__('home.topics')"
+                    :title="__('home.explore_categories')"
+                    :description="__('home.categories_description')" />
                 <a href="{{ route('categories.public') }}" class="link-accent text-sm">
                     {{ __('home.all_categories') }} &rarr;
                 </a>

@@ -33,13 +33,8 @@
          dari sanalah orang cepat tahu "berapa yang masih harus saya
          kembalikan". --}}
     <div class="mt-6 grid gap-4 sm:grid-cols-3">
-        @foreach ([['label' => __('loans.active_count'), 'value' => $activeCount, 'tone' => ''], ['label' => __('loans.overdue_count'), 'value' => $overdueCount, 'tone' => $overdueCount > 0 ? 'text-overdue' : ''], ['label' => __('loans.returned_count'), 'value' => $returnedCount, 'tone' => '']] as $stat)
-            <div class="stat-card">
-                <p class="text-label font-medium tracking-wide text-secondary uppercase">{{ $stat['label'] }}</p>
-                <p class="mt-2 text-3xl font-bold tabular-nums text-primary {{ $stat['tone'] }}">
-                    {{ number_format($stat['value'], 0, ',', '.') }}
-                </p>
-            </div>
+        @foreach ([['label' => __('loans.active_count'), 'value' => $activeCount, 'tone' => 'primary'], ['label' => __('loans.overdue_count'), 'value' => $overdueCount, 'tone' => $overdueCount > 0 ? 'overdue' : 'primary'], ['label' => __('loans.returned_count'), 'value' => $returnedCount, 'tone' => 'primary']] as $stat)
+            <x-stat-card :label="$stat['label']" :value="$stat['value']" :tone="$stat['tone']" :icon="false" />
         @endforeach
     </div>
 

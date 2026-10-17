@@ -6,16 +6,13 @@ use App\Models\Book;
 use App\Models\Favorite;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 class AjaxFormTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function member(): User
-    {
-        return User::factory()->create(['role' => User::ROLE_ANGGOTA]);
-    }
 
     /**
      * Permintaan seperti yang dikirim `window.ajax()`: header AJAX + mau JSON.

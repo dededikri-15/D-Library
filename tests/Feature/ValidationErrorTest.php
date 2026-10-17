@@ -9,6 +9,7 @@ use App\Models\Publisher;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 /**
@@ -28,6 +29,7 @@ use Tests\TestCase;
  */
 class ValidationErrorTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
 
     /**
@@ -250,11 +252,6 @@ class ValidationErrorTest extends TestCase
             ],
             ...$overrides,
         ];
-    }
-
-    private function librarian(): User
-    {
-        return User::factory()->pustakawan()->create();
     }
 
     private function actingAsRole(string $role): self

@@ -16,6 +16,7 @@ use App\Notifications\LoanReturnRequested;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 /**
@@ -34,17 +35,8 @@ use Tests\TestCase;
  */
 class LoanNotificationTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function member(): User
-    {
-        return User::factory()->anggota()->create();
-    }
-
-    private function librarian(): User
-    {
-        return User::factory()->pustakawan()->create();
-    }
 
     private function loanFor(User $member, array $attributes = []): Loan
     {

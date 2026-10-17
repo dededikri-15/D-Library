@@ -248,8 +248,7 @@
     {{-- Buku terkait --}}
     @if ($related->isNotEmpty())
         <section class="mt-16">
-            <p class="section-eyebrow">Rekomendasi</p>
-            <h2 class="mt-2 text-h1 font-bold tracking-tight text-primary">Buku Lainnya</h2>
+            <x-section-heading eyebrow="Rekomendasi" title="Buku Lainnya" />
 
             <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($related as $item)

@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 /**
@@ -35,12 +36,8 @@ use Tests\TestCase;
  */
 class MasterDataForceDeleteTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function librarian(): User
-    {
-        return User::factory()->pustakawan()->create();
-    }
 
     /**
      * Tiga jenis master data, plus kolom di `books` yang menunjuk ke sana.

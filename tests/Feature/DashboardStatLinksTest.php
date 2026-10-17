@@ -6,6 +6,7 @@ use App\Models\Book;
 use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesLibraryUsers;
 use Tests\TestCase;
 
 /**
@@ -23,12 +24,8 @@ use Tests\TestCase;
  */
 class DashboardStatLinksTest extends TestCase
 {
+    use CreatesLibraryUsers;
     use RefreshDatabase;
-
-    private function librarian(): User
-    {
-        return User::factory()->pustakawan()->create();
-    }
 
     /**
      * @return array<string, array{0: string, 1: string}>

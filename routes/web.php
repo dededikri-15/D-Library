@@ -5,7 +5,9 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\BookCatalogController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BookReaderController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
@@ -149,7 +151,7 @@ Route::middleware(['auth', 'role:pustakawan'])->group(function () {
 |
 */
 
-Route::get('/buku', [BookController::class, 'index'])->name('books.index');
+Route::get('/buku', [BookCatalogController::class, 'index'])->name('books.index');
 
 /*
  * Pencarian hidup untuk pratinjau hasil (Task 14.6).
@@ -166,11 +168,11 @@ Route::get('/buku', [BookController::class, 'index'])->name('books.index');
      * sebagai "pencarian sedang dinonaktifkan sementara", bukan "terjadi
      * kesalahan" — inilah yang akan dilihat user kalau kuota habis.
  */
-Route::get('/buku/pencarian', [BookController::class, 'search'])
+Route::get('/buku/pencarian', [BookCatalogController::class, 'search'])
     ->middleware('throttle:search')
     ->name('books.search');
 
-Route::get('/buku/{book}', [BookController::class, 'show'])->whereNumber('book')->name('books.show');
+Route::get('/buku/{book}', [BookCatalogController::class, 'show'])->whereNumber('book')->name('books.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -203,8 +205,8 @@ Route::get('/kategori-buku', [CategoryController::class, 'publicIndex'])->name('
 */
 
 Route::middleware('auth')->group(function () {
-    Route::get('/buku/{book}/baca', [BookController::class, 'read'])->whereNumber('book')->name('books.read');
-    Route::get('/buku/{book}/berkas', [BookController::class, 'file'])
+    Route::get('/buku/{book}/baca', [BookReaderController::class, 'read'])->whereNumber('book')->name('books.read');
+    Route::get('/buku/{book}/berkas', [BookReaderController::class, 'file'])
         ->whereNumber('book')
         ->middleware('throttle:file-read')
         ->name('books.file');
