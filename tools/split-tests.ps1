@@ -78,6 +78,12 @@ function Split-Test {
         'loanFor' = 'Tests\Concerns\ProvidesLoanFixture'
         'bookPayload' = 'Tests\Concerns\ProvidesBookUploadFixtures'
         'bookWithPdf' = 'Tests\Concerns\ProvidesBookUploadFixtures'
+        'makeBook' = 'Tests\Concerns\ProvidesCatalogBook'
+        'asAjax' = 'Tests\Concerns\SendsAjaxRequests'
+        'memberLoan' = 'Tests\Concerns\ProvidesRenewalFixtures'
+        'overdueLoan' = 'Tests\Concerns\ProvidesRenewalFixtures'
+        'masterDataTypes' = 'Tests\Concerns\ProvidesMasterDataFixtures'
+        'model' = 'Tests\Concerns\ProvidesMasterDataFixtures'
     }
     $traitShort = @{
         'Tests\Concerns\CreatesLibraryUsers' = 'CreatesLibraryUsers'
@@ -88,6 +94,10 @@ function Split-Test {
         'Tests\Concerns\ProvidesProfilePayload' = 'ProvidesProfilePayload'
         'Tests\Concerns\ProvidesLoanFixture' = 'ProvidesLoanFixture'
         'Tests\Concerns\ProvidesBookUploadFixtures' = 'ProvidesBookUploadFixtures'
+        'Tests\Concerns\ProvidesCatalogBook' = 'ProvidesCatalogBook'
+        'Tests\Concerns\SendsAjaxRequests' = 'SendsAjaxRequests'
+        'Tests\Concerns\ProvidesRenewalFixtures' = 'ProvidesRenewalFixtures'
+        'Tests\Concerns\ProvidesMasterDataFixtures' = 'ProvidesMasterDataFixtures'
     }
 
     $neededTraits = {
