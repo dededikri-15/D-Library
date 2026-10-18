@@ -208,7 +208,7 @@ class LoanController extends Controller
          */
         $loan->refresh();
         $loan->user?->refresh();
-        $loan->user?->notify(new LoanReturned($loan));
+        $loan->user?->notify(new LoanReturned($loan, $request->user()?->name));
 
         // Jejak pelaku (pustakawan): route ini hanya untuk staf, jadi pelaku
         // selalu user login — bukan anggota peminjam.
@@ -369,7 +369,7 @@ class LoanController extends Controller
          * Tanpa kabar ini, dia baru mengetahuinya pada kunjungan berikutnya
          * dan akan mengira datanya rusak.
          */
-        $borrower?->notify(new LoanRejected($loan, LoanRejected::REASON_ADMIN_DELETED));
+        $borrower?->notify(new LoanRejected($loan, LoanRejected::REASON_ADMIN_DELETED, $request->user()?->name));
 
         // Jejak pelaku (pustakawan): anggota sudah dikabari "dibatalkan",
         // pencatat penghapusannya sendiri baru melihat pesan flash.
@@ -396,7 +396,7 @@ class LoanController extends Controller
     private function announceNewLoan(Loan $loan, ?User $actor, bool $recordedByStaff): void
     {
         $loan->user?->notify($recordedByStaff
-            ? new LoanApproved($loan)
+            ? new LoanApproved($loan, $actor?->name)
             : new LoanBorrowed($loan));
 
         $this->notifyLibrarians(new LoanCreated($loan), except: $actor);

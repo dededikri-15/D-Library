@@ -40,42 +40,42 @@ return [
     'types' => [
         'borrowed' => [
             'title' => 'Berhasil meminjam buku',
-            'body' => 'Anda meminjam :book_title. Kembalikan sebelum :due_at.',
+            'body' => 'Anda meminjam buku :book_title. Kembalikan sebelum :due_at.',
         ],
         'loan_created' => [
             'title' => 'Peminjaman baru tercatat',
-            'body' => ':user_name meminjam :book_title pada :borrowed_at, tenggat :due_at.',
+            'body' => ':user_name meminjam buku :book_title pada :borrowed_at, tenggat :due_at.',
         ],
         'approved' => [
             'title' => 'Peminjaman disetujui',
-            'body' => 'Peminjaman :book_title tercatat pada :borrowed_at. Kembalikan sebelum :due_at.',
+            'body' => 'Peminjaman buku :book_title Anda disetujui pustakawan :staff_name. Kembalikan sebelum :due_at.',
         ],
         'rejected' => [
             'title' => 'Peminjaman dibatalkan',
-            'body' => 'Peminjaman :book_title dibatalkan. Alasan: :reason.',
+            'body' => 'Peminjaman buku :book_title Anda dibatalkan oleh pustakawan :staff_name. Alasan: :reason.',
         ],
         'return_requested' => [
             'title' => 'Permintaan pengembalian',
-            'body' => 'Dari anggota :user_name untuk pustakawan: mengajukan pengembalian :book_title (tenggat :due_at).',
+            'body' => 'Anggota :user_name mengajukan pengembalian buku :book_title kepada pustakawan (tenggat :due_at).',
         ],
         'returned' => [
             'title' => 'Buku telah dikembalikan',
-            'body' => ':book_title dikembalikan pada :returned_at.',
+            'body' => 'Buku :book_title yang Anda kembalikan telah dikonfirmasi pustakawan :staff_name pada :returned_at.',
             'suspension_notice' => 'Karena terlambat, sanksi larangan meminjam berlaku sampai :suspended_until.',
         ],
         'due_soon' => [
             'title' => 'Tenggat mendekat',
-            'body' => ':book_title harus dikembalikan pada :due_at.',
+            'body' => 'Buku :book_title yang Anda pinjam harus dikembalikan pada :due_at.',
             'renewals' => 'Sisa perpanjangan: :renewals_left.',
         ],
         'overdue_member' => [
             'title' => 'Peminjaman terlambat',
-            'body' => ':book_title terlambat dikembalikan :overdue_days hari (tenggat :due_at).',
+            'body' => 'Buku :book_title yang Anda pinjam terlambat dikembalikan :overdue_days hari (tenggat :due_at).',
             'suspension_notice' => 'Pengembalian terlambat dikenakan sanksi larangan meminjam :hours jam.',
         ],
         'overdue_staff' => [
             'title' => 'Keterlambatan pengembalian',
-            'body' => ':user_name terlambat mengembalikan :book_title sejak :due_at — :overdue_days hari.',
+            'body' => ':user_name terlambat mengembalikan buku :book_title sejak :due_at — :overdue_days hari.',
             'suspension_notice' => 'Sanksi larangan meminjam :hours jam dijatuhkan saat pengembalian diproses.',
         ],
 
@@ -202,7 +202,7 @@ return [
         ],
         'card_renew_requested' => [
             'title' => 'Pengajuan perpanjangan kartu',
-            'body' => 'Dari anggota :member_name untuk pustakawan: mengajukan perpanjangan kartu perpustakaan (nomor :card_number). Periksa syaratnya lalu konfirmasi dari menu Pengajuan Kartu.',
+            'body' => 'Anggota :member_name mengajukan perpanjangan kartu perpustakaan kepada pustakawan (nomor :card_number). Periksa syaratnya lalu konfirmasi dari menu Pengajuan Kartu.',
         ],
     ],
 ];

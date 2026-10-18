@@ -35,6 +35,21 @@
 
     $params = $data;
 
+    // Nilai bawaan untuk placeholder baru: notifikasi LAMA yang tersimpan
+    // sebelum perbaikan ini tidak membawa nama, jadi kalau kosong biarkan
+    // kalimatnya tetap terbaca sebagai peran umum, bukan ":staff_name" mentah.
+    $isIndonesian = app()->getLocale() === 'id';
+    $fallbackStaff = $isIndonesian ? 'pustakawan' : 'the librarian';
+    $fallbackUser = $isIndonesian ? 'anggota' : 'the member';
+
+    if (empty($params['staff_name']) || $params['staff_name'] === '-') {
+        $params['staff_name'] = $fallbackStaff;
+    }
+
+    if (empty($params['user_name']) || $params['user_name'] === '-') {
+        $params['user_name'] = $fallbackUser;
+    }
+
     // Null tidak pernah ikut sebagai pengganti placeholder: dirapikan jadi
     // string kosong supaya pesan tetap terbaca dan tidak ada str_replace
     // yang menerima null.

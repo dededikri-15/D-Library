@@ -20,7 +20,7 @@ class LoanReturned extends Notification
 {
     use Queueable;
 
-    public function __construct(public Loan $loan)
+    public function __construct(public Loan $loan, public ?string $staffName = null)
     {
         //
     }
@@ -46,6 +46,7 @@ class LoanReturned extends Notification
             'loan_id' => $loan->getKey(),
             'book_id' => $book?->getKey(),
             'book_title' => $book?->title ?? __('loans.book_deleted'),
+            'staff_name' => $this->staffName ?? '-',
             'returned_at' => $loan->returned_at?->toIso8601String(),
             /*
              * Diisi hanya kalau pengembalian ini terlambat — `suspended_until`

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
+use App\Notifications\LoanApproved;
+use App\Notifications\LoanRejected;
 use App\Notifications\LoanReturned;
 use App\Notifications\LoanReturnRequested;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,25 +20,26 @@ class NotificationBookTitleQuoteTest extends TestCase
 
     /**
      * Regresi tampilan: judul "Pahlawan yang Terlupakan" sekilas mirip kata
-     * "pustakawan" — tanpa tanda kutip, kalimat "Pahlawan yang Terlupakan
-     * dikembalikan pada ..." bisa kebaca "pustakawan yang terlupakan".
-     * Judul buku di badan notif wajib dibungkus kutip (“...” di id).
+     * "pustakawan" — kalimatnya sekarang diawali kata "Buku" supaya tidak
+     * terbaca sebagai orang. Judul buku di badan notif wajib dibungkus
+     * kutip (“...” di id).
      */
-    public function test_judul_buku_di_notif_dibungkus_tanda_kutip(): void
+    public function test_judul_buku_di_notif_diawali_kata_buku_dan_dikutip(): void
     {
         $member = $this->member();
+        $staff = $this->librarian();
         $loan = $this->loanFor($member, [
             'book_id' => Book::factory()->create([
                 'title' => 'Pahlawan yang Terlupakan',
                 'status' => Book::STATUS_BORROWED,
             ]),
         ]);
-        $member->notify(new LoanReturned($loan->fresh('book')));
+        $member->notify(new LoanReturned($loan->fresh('book'), $staff->name));
 
         $this->actingAs($member)
             ->get(route('notifications.index'))
             ->assertOk()
-            ->assertSee('“Pahlawan yang Terlupakan” dikembalikan pada', false);
+            ->assertSee('Buku “Pahlawan yang Terlupakan” yang Anda kembalikan', false);
     }
 
     /**
@@ -59,7 +62,68 @@ class NotificationBookTitleQuoteTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('Dari anggota Dede Dikri untuk pustakawan:', $html);
+        $this->assertStringContainsString('Anggota Dede Dikri mengajukan pengembalian buku', $html);
         $this->assertStringNotContainsString('“Dede Dikri”', $html);
+    }
+
+    /**
+     * Notif pengembalian menyebut nama pustakawan yang mengonfirmasi,
+     * bukan cuma judul buku seperti sebelumnya.
+     */
+    public function test_notif_pengembalian_menyebut_nama_pustakawan(): void
+    {
+        $member = $this->member();
+        $staff = $this->librarian();
+        $staff->update(['name' => 'Sinta Pustaka']);
+        $loan = $this->loanFor($member);
+
+        $member->notify(new LoanReturned($loan->fresh('book'), $staff->name));
+
+        $html = $this->actingAs($member)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('telah dikonfirmasi pustakawan Sinta Pustaka', $html);
+    }
+
+    /**
+     * Notif persetujuan menyebut nama pustakawan yang mencatat.
+     */
+    public function test_notif_persetujuan_menyebut_nama_pustakawan(): void
+    {
+        $member = $this->member();
+        $staff = $this->librarian();
+        $staff->update(['name' => 'Sinta Pustaka']);
+        $loan = $this->loanFor($member);
+
+        $member->notify(new LoanApproved($loan->fresh('book'), $staff->name));
+
+        $html = $this->actingAs($member)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('disetujui pustakawan Sinta Pustaka', $html);
+    }
+
+    /**
+     * Notif pembatalan menyebut nama pustakawan yang membatalkan.
+     */
+    public function test_notif_pembatalan_menyebut_nama_pustakawan(): void
+    {
+        $member = $this->member();
+        $staff = $this->librarian();
+        $staff->update(['name' => 'Sinta Pustaka']);
+        $loan = $this->loanFor($member);
+
+        $member->notify(new LoanRejected($loan->fresh('book'), 'admin_deleted', $staff->name));
+
+        $html = $this->actingAs($member)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('dibatalkan oleh pustakawan Sinta Pustaka', $html);
     }
 }

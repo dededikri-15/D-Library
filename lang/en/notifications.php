@@ -40,42 +40,42 @@ return [
     'types' => [
         'borrowed' => [
             'title' => 'Book borrowed',
-            'body' => 'You borrowed :book_title. Return it before :due_at.',
+            'body' => 'You borrowed the book :book_title. Return it before :due_at.',
         ],
         'loan_created' => [
             'title' => 'New loan recorded',
-            'body' => ':user_name borrowed :book_title on :borrowed_at, due :due_at.',
+            'body' => ':user_name borrowed the book :book_title on :borrowed_at, due :due_at.',
         ],
         'approved' => [
             'title' => 'Loan approved',
-            'body' => 'Your loan of :book_title was recorded on :borrowed_at. Return it before :due_at.',
+            'body' => 'Your loan of the book :book_title was approved by librarian :staff_name. Return it before :due_at.',
         ],
         'rejected' => [
             'title' => 'Loan cancelled',
-            'body' => 'Your loan of :book_title was cancelled. Reason: :reason.',
+            'body' => 'Your loan of the book :book_title was cancelled by librarian :staff_name. Reason: :reason.',
         ],
         'return_requested' => [
             'title' => 'Return requested',
-            'body' => 'From member :user_name to librarian: requested to return :book_title (due :due_at).',
+            'body' => 'Member :user_name requested to return the book :book_title to the librarian (due :due_at).',
         ],
         'returned' => [
             'title' => 'Book returned',
-            'body' => ':book_title was returned on :returned_at.',
+            'body' => 'The book :book_title you returned was confirmed by librarian :staff_name on :returned_at.',
             'suspension_notice' => 'Because it was late, a borrowing suspension applies until :suspended_until.',
         ],
         'due_soon' => [
             'title' => 'Due date approaching',
-            'body' => ':book_title is due on :due_at.',
+            'body' => 'The book :book_title you borrowed is due on :due_at.',
             'renewals' => 'Renewals remaining: :renewals_left.',
         ],
         'overdue_member' => [
             'title' => 'Loan overdue',
-            'body' => ':book_title is :overdue_days days overdue (was due :due_at).',
+            'body' => 'The book :book_title you borrowed is :overdue_days days overdue (was due :due_at).',
             'suspension_notice' => 'Late returns incur a :hours-hour borrowing suspension.',
         ],
         'overdue_staff' => [
             'title' => 'Overdue return',
-            'body' => ':user_name is :overdue_days days late returning :book_title (was due :due_at).',
+            'body' => ':user_name is :overdue_days days late returning the book :book_title (was due :due_at).',
             'suspension_notice' => 'A :hours-hour borrowing suspension applies once the return is processed.',
         ],
 
@@ -202,7 +202,7 @@ return [
         ],
         'card_renew_requested' => [
             'title' => 'Library card renewal request',
-            'body' => 'From member :member_name to librarian: requested a library card renewal (card :card_number). Check the requirements, then confirm from the Card Requests menu.',
+            'body' => 'Member :member_name requested a library card renewal to the librarian (card :card_number). Check the requirements, then confirm from the Card Requests menu.',
         ],
     ],
 ];

@@ -28,7 +28,7 @@ class LoanRejected extends Notification
      */
     public const REASON_ADMIN_DELETED = 'admin_deleted';
 
-    public function __construct(public Loan $loan, public ?string $reason = null)
+    public function __construct(public Loan $loan, public ?string $reason = null, public ?string $staffName = null)
     {
         //
     }
@@ -54,6 +54,7 @@ class LoanRejected extends Notification
             'loan_id' => $loan->getKey(),
             'book_id' => $book?->getKey(),
             'book_title' => $book?->title ?? __('loans.book_deleted'),
+            'staff_name' => $this->staffName ?? '-',
             'reason' => $this->reason,
             'due_at' => $loan->due_at?->toIso8601String(),
             'url' => route('loans.mine'),

@@ -19,7 +19,7 @@ class LoanApproved extends Notification
 {
     use Queueable;
 
-    public function __construct(public Loan $loan)
+    public function __construct(public Loan $loan, public ?string $staffName = null)
     {
         //
     }
@@ -45,6 +45,7 @@ class LoanApproved extends Notification
             'loan_id' => $loan->getKey(),
             'book_id' => $book?->getKey(),
             'book_title' => $book?->title ?? __('loans.book_deleted'),
+            'staff_name' => $this->staffName ?? '-',
             'borrowed_at' => $loan->borrowed_at?->toIso8601String(),
             'due_at' => $loan->due_at?->toIso8601String(),
             'url' => route('loans.mine'),
