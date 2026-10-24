@@ -73,6 +73,11 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('password', function (Request $request) {
+            return Limit::perMinute((int) config('perpustakaan.security.password_per_minute', 3))
+                ->by($request->ip());
+        });
+
         /*
          * Batasi setiap parameter id supaya hanya angka yang lolos ke Route Model
          * Binding.

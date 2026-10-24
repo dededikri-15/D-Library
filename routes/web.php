@@ -43,7 +43,9 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])
         ->name('password.request');
+    // throttle:password mencegah email bombing (permintaan reset berlebihan).
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
+        ->middleware('throttle:password')
         ->name('password.email');
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
         ->name('password.reset');

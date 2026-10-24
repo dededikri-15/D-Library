@@ -135,6 +135,8 @@ return [
         // Mencegah satu orang mengetik nonstop di pencarian hidup katalog dan
         // membebani database dengan query `like` dari karakter demi karakter.
         'search_per_minute' => (int) env('PERPUSTAKAAN_SEARCH_PER_MINUTE', 60),
+        // Mencegah email bombing lewat form lupa sandi (permintaan reset per IP).
+        'password_per_minute' => (int) env('PERPUSTAKAAN_PASSWORD_PER_MINUTE', 3),
     ],
 
     /*
