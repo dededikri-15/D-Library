@@ -24,6 +24,7 @@ class AuthorRequest extends FormRequest
                 'image',
                 'mimes:'.implode(',', (array) config('perpustakaan.uploads.cover_mimes')),
                 'max:'.(int) config('perpustakaan.uploads.cover_max_kb'),
+                'dimensions:max_width='.config('perpustakaan.uploads.cover_max_width').',max_height='.config('perpustakaan.uploads.cover_max_height'),
             ],
             'remove_photo' => ['nullable', 'boolean'],
         ];
@@ -38,6 +39,7 @@ class AuthorRequest extends FormRequest
             'photo.image' => 'Foto harus berupa gambar.',
             'photo.mimes' => 'Foto harus berformat JPG, PNG, atau WebP.',
             'photo.max' => 'Ukuran foto maksimal :max kilobyte.',
+            'photo.dimensions' => 'Foto terlalu besar. Maksimal :width x :height piksel.',
         ];
     }
 

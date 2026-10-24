@@ -63,6 +63,7 @@ class BookRequest extends FormRequest
                 'image',
                 'mimes:'.implode(',', (array) config('perpustakaan.uploads.cover_mimes')),
                 'max:'.(int) config('perpustakaan.uploads.cover_max_kb'),
+                'dimensions:max_width='.config('perpustakaan.uploads.cover_max_width').',max_height='.config('perpustakaan.uploads.cover_max_height'),
             ],
             'file' => [
                 'nullable',
@@ -88,6 +89,7 @@ class BookRequest extends FormRequest
             'cover.image' => 'Cover harus berupa gambar.',
             'cover.mimes' => 'Cover harus berformat JPG, PNG, atau WebP.',
             'cover.max' => 'Ukuran cover maksimal :max kilobyte.',
+            'cover.dimensions' => 'Cover terlalu besar. Maksimal :width x :height piksel.',
             'file.mimes' => 'File buku harus berformat PDF.',
             'file.mimetypes' => 'File buku harus benar-benar berformat PDF.',
             'file.max' => 'Ukuran file buku maksimal :max kilobyte.',

@@ -9,5 +9,6 @@
         'rows' => $authors,
         'searchAction' => route('authors.index'),
         'subtitleField' => 'biography',
+        'photoField' => 'photo',
     ])
 @endsection

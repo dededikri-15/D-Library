@@ -49,6 +49,7 @@ class ProfileRequest extends FormRequest
                 'image',
                 'mimes:'.implode(',', (array) config('perpustakaan.uploads.avatar_mimes')),
                 'max:'.(int) config('perpustakaan.uploads.avatar_max_kb'),
+                'dimensions:max_width='.config('perpustakaan.uploads.avatar_max_width').',max_height='.config('perpustakaan.uploads.avatar_max_height'),
             ],
             'remove_avatar' => ['nullable', 'boolean'],
         ];
@@ -63,6 +64,7 @@ class ProfileRequest extends FormRequest
             'avatar.image' => 'Foto profil harus berupa gambar.',
             'avatar.mimes' => 'Foto profil harus berformat JPG, PNG, atau WebP.',
             'avatar.max' => 'Ukuran foto profil maksimal :max kilobyte.',
+            'avatar.dimensions' => 'Foto profil terlalu besar. Maksimal :width x :height piksel.',
         ];
     }
 

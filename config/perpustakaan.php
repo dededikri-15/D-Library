@@ -94,7 +94,9 @@ return [
         'book_file_disk' => env('PERPUSTAKAAN_BOOK_FILE_DISK', 'local'),
 
         'cover_mimes' => ['jpg', 'jpeg', 'png', 'webp'],
-        'cover_max_kb' => (int) env('PERPUSTAKAAN_COVER_MAX_KB', 2048),
+        'cover_max_kb' => (int) env('PERPUSTAKAAN_COVER_MAX_KB', 512),
+        'cover_max_width' => (int) env('PERPUSTAKAAN_COVER_MAX_WIDTH', 1200),
+        'cover_max_height' => (int) env('PERPUSTAKAAN_COVER_MAX_HEIGHT', 1200),
 
         'book_file_mimes' => ['pdf'],
         'book_file_max_kb' => (int) env('PERPUSTAKAAN_BOOK_FILE_MAX_KB', 20480),
@@ -106,7 +108,9 @@ return [
          */
         'avatar_disk' => env('PERPUSTAKAAN_AVATAR_DISK', 'public'),
         'avatar_mimes' => ['jpg', 'jpeg', 'png', 'webp'],
-        'avatar_max_kb' => (int) env('PERPUSTAKAAN_AVATAR_MAX_KB', 2048),
+        'avatar_max_kb' => (int) env('PERPUSTAKAAN_AVATAR_MAX_KB', 256),
+        'avatar_max_width' => (int) env('PERPUSTAKAAN_AVATAR_MAX_WIDTH', 400),
+        'avatar_max_height' => (int) env('PERPUSTAKAAN_AVATAR_MAX_HEIGHT', 400),
     ],
 
     /*

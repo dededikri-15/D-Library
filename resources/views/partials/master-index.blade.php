@@ -1,5 +1,7 @@
 @php
     $canManage = auth()->check() && auth()->user()->isStaff();
+    $photoField = $photoField ?? null;
+    $colspan = ($canManage ? 4 : 2) + ($photoField ? 1 : 0);
 @endphp
 
 {{--
@@ -33,6 +35,9 @@
     <table class="table">
         <thead>
             <tr>
+                @if ($photoField)
+                    <th class="w-20 text-center">{{ __('master.photo') }}</th>
+                @endif
                 <th>{{ __('master.name') }}</th>
                 <th class="w-28 text-right">{{ __('master.books_count') }}</th>
                 @if ($canManage)
@@ -51,6 +56,19 @@
         <tbody>
             @forelse ($rows as $row)
                 <tr>
+                    @if ($photoField)
+                        <td class="text-center">
+                            @if ($row->{$photoField})
+                                <img src="{{ Storage::url($row->{$photoField}) }}"
+                                     alt="{{ $row->name }}"
+                                     class="w-10 h-10 rounded-full object-cover border border-hairline">
+                            @else
+                                <div class="w-10 h-10 rounded-full bg-surface/50 border border-hairline flex items-center justify-center text-secondary text-xs">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                            @endif
+                        </td>
+                    @endif
                     <td>
                         <span class="font-medium text-primary">{{ $row->name }}</span>
                         @if (! empty($row->{$subtitleField}))
@@ -109,7 +127,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $canManage ? 4 : 2 }}" class="p-0">
+                    <td colspan="{{ $colspan }}" class="p-0">
                         <x-empty-state class="border-0"
                                        :title="__('master.empty_entity', ['entity' => strtolower($title)])"
                                        :description="$canManage ? __('master.empty_add', ['entity' => strtolower($title)]) : __('master.empty')" />
