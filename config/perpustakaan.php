@@ -76,6 +76,20 @@ return [
     'registration' => [
         'enabled' => (bool) env('PERPUSTAKAAN_REGISTRATION_ENABLED', true),
         'default_role' => 'anggota',
+        /*
+        |--------------------------------------------------------------------------
+        | librarian_registration
+        |--------------------------------------------------------------------------
+        |
+        | Konfigurasi khusus untuk mendaftar sebagai pustakawan. Fitur ini hanya
+        | aktif ketika registrasi umum ditutup dan butuh akun staff pertama.
+        |
+        */
+
+        'librarian_registration' => [
+            'enabled' => (bool) env('PERPUSTAKAAN_LIBRARIAN_REGISTRATION_ENABLED', false),
+            'secret' => env('LIBRARIAN_REGISTRATION_SECRET', ''),
+        ],
     ],
 
     /*
@@ -137,6 +151,21 @@ return [
         'search_per_minute' => (int) env('PERPUSTAKAAN_SEARCH_PER_MINUTE', 60),
         // Mencegah email bombing lewat form lupa sandi (permintaan reset per IP).
         'password_per_minute' => (int) env('PERPUSTAKAAN_PASSWORD_PER_MINUTE', 3),
+
+        /*
+        |--------------------------------------------------------------------------
+        | CAPTCHA Configuration
+        |--------------------------------------------------------------------------
+        |
+        | Konfigurasi Cloudflare Turnstile untuk verifikasi di sisi server.
+        |
+        */
+
+        'captcha' => [
+            'enabled' => (bool) env('PERPUSTAKAAN_CAPTCHA_ENABLED', false),
+            'site_key' => env('TURNSTILE_SITE_KEY', ''),
+            'secret_key' => env('TURNSTILE_SECRET_KEY', ''),
+        ],
     ],
 
     /*

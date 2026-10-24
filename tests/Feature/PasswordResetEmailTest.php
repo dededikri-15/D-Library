@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -16,35 +16,32 @@ class PasswordResetEmailTest extends TestCase
 
     public function test_forgot_password_sends_reset_link_notification(): void
     {
-        Mail::fake();
+        Notification::fake();
 
         $user = User::factory()->anggota()->create(['email' => 'member@d-library.test']);
 
         $response = $this->post(route('password.email'), ['email' => 'member@d-library.test']);
         $response->assertRedirect()->assertSessionHas('status');
 
-        Mail::assertSent(ResetPasswordNotification::class);
-        Mail::assertSent(function (ResetPasswordNotification $mailable) use ($user) {
-            return $mailable->user->is($user);
+        Notification::assertSentTo($user, function ($notification) {
+            return $notification instanceof ResetPasswordNotification;
         });
     }
 
     public function test_forgot_password_does_not_reveal_unknown_email(): void
     {
-        Mail::fake();
+        Notification::fake();
 
         // Email yang tidak terdaftar: tidak ada notifikasi yang dikirim
         // (mencegah email enumeration)
         $this->post(route('password.email'), ['email' => 'tidak-terdaftar@d-library.test'])
             ->assertRedirect();
 
-        Mail::assertNothingSent();
+        Notification::assertNothingSent();
     }
 
     public function test_reset_password_with_valid_token(): void
     {
-        Mail::fake();
-
         $user = User::factory()->anggota()->create([
             'email' => 'member@d-library.test',
             'password' => Hash::make('lama123456'),
@@ -74,7 +71,7 @@ class PasswordResetEmailTest extends TestCase
 
     public function test_forgot_password_is_rate_limited(): void
     {
-        Mail::fake();
+        Notification::fake();
 
         $user = User::factory()->anggota()->create(['email' => 'member@d-library.test']);
 

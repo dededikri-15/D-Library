@@ -332,6 +332,10 @@
     .btn-lg {
         @apply rounded-lg px-6 py-3 text-base;
     }
+/* Gradient login button */
+    .btn-gradient-primary {
+        @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/10 hover:from-indigo-500 hover:to-purple-500 focus-visible:ring-2 focus:ring-indigo-500/30 focus:ring-offset-2 transition-all duration-200 ease-in-out;
+    }
 
     /*
     | Indikator halaman aktif + garis bawah yang tumbuh saat hover.

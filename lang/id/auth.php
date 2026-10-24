@@ -1,6 +1,11 @@
 <?php
 
+
 return [
+'captcha' => 'Verifikasi CAPTCHA',
+     'captcha_validator_required' => 'Validasi CAPTCHA wajib diisi.',
+'captcha_invalid' => 'Validasi CAPTCHA gagal, coba lagi.',
+     'verify_captcha' => 'Verifikasi',
     'login_title' => 'Masuk',
     'login_description' => 'Gunakan akun yang sudah terdaftar untuk mengakses layanan.',
     'email' => 'Email',

@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -68,5 +69,18 @@ class AuthenticatedSessionController extends Controller
         return is_string($target)
             && str_starts_with($target, '/')
             && ! str_starts_with($target, '//');
+    }
+
+    /**
+     * Validasi token CAPTCHA di environment test.
+     * Di environment testing, kita tidak bisa melakukan HTTP request ke Cloudflare,
+     * jadi kita validasi token memiliki format yang sesuai.
+     */
+    protected function isValidTestToken(?string $token): bool
+    {
+        // Token harus ada, bukan empty, dan memiliki panjang minimum
+        // Token Cloudflare valid biasanya adalah string hex length ~32 karakter
+        // Untuk test, kita hanya memastikan token bukan string kosong kosong
+        return ! empty(trim($token)) && strlen($token) >= 10;
     }
 }

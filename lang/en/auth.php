@@ -1,6 +1,11 @@
 <?php
 
-return [
+
+     return [
+'captcha' => 'Verifikasi CAPTCHA',
+     'captcha_validator_required' => 'Validasi CAPTCHA wajib diisi.',
+     'captcha_invalid' => 'Validasi CAPTCHA gagal, coba lagi.',
+     'verify_captcha' => 'Verifikasi',
     'login_title' => 'Log in',
     'login_description' => 'Use your registered account to access the library.',
     'email' => 'Email',

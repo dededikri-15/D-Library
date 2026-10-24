@@ -34,8 +34,7 @@ class RateLimitSecurityTest extends TestCase
         }
 
         // Percobaan berikutnya harus ditolak meski kredensialnya benar.
-        $this->post('/login', ['email' => $user->email, 'password' => 'password'])
-            ->assertSessionHasErrors('email');
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertSessionHasErrors('email');
 
         $this->assertGuest();
     }
