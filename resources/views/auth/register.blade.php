@@ -58,6 +58,13 @@
                 <a href="{{ route('login') }}" class="font-medium text-tertiary hover:underline">{{ __('auth.login') }}</a>
             </p>
 
+            <div class="mt-6 rounded-lg border border-tertiary/20 bg-tertiary/5 p-4">
+                <h2 class="font-semibold text-primary">{{ __('auth.librarian_register_title') }}</h2>
+                <p class="mt-1 text-sm text-secondary">{{ __('auth.librarian_register_notice') }}</p>
+                <a href="{{ route('register.librarian') }}" class="mt-3 inline-block text-sm font-medium text-tertiary hover:underline">
+                    {{ __('auth.librarian_register_link') }}
+                </a>
+            </div>
         </div>
     </div>
 @endsection

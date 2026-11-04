@@ -50,9 +50,14 @@ class CreateLibrarianCommandTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'pustakawan@example.test']);
     }
 
-    public function test_public_librarian_registration_page_does_not_exist(): void
+    public function test_librarian_registration_requires_a_signed_in_librarian(): void
     {
-        $this->get('/register/pustakawan')->assertNotFound();
-        $this->post('/register/pustakawan')->assertNotFound();
+        $this->get('/register/pustakawan')->assertRedirect(route('login'));
+        $this->post('/register/pustakawan')->assertRedirect(route('login'));
+
+        $member = User::factory()->anggota()->create();
+
+        $this->actingAs($member)->get('/register/pustakawan')->assertForbidden();
+        $this->actingAs($member)->post('/register/pustakawan')->assertForbidden();
     }
 }

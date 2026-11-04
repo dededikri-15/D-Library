@@ -4,6 +4,7 @@ return [
     'index_title' => 'Kelola Pengguna',
     'index_description' => 'Tambah akun staff, ubah role, atau hapus pengguna.',
     'add_user' => 'Tambah pengguna',
+    'register_librarian' => 'Daftar pustakawan',
     'search_name' => 'Cari nama',
     'filter_role' => 'Filter role',
     'all_roles' => 'Semua role',

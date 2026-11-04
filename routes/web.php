@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LibrarianRegisteredUserController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthorController;
@@ -71,6 +72,11 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 
 Route::middleware(['auth', 'role:pustakawan'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('/register/pustakawan', [LibrarianRegisteredUserController::class, 'create'])
+        ->name('register.librarian');
+    Route::post('/register/pustakawan', [LibrarianRegisteredUserController::class, 'store'])
+        ->middleware('throttle:register')
+        ->name('register.librarian.store');
 
     // Master data (PRD §6)
     Route::resource('kategori', CategoryController::class)

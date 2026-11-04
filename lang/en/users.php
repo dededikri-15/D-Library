@@ -4,6 +4,7 @@ return [
     'index_title' => 'Manage Users',
     'index_description' => 'Add staff accounts, change roles, or remove users.',
     'add_user' => 'Add user',
+    'register_librarian' => 'Register librarian',
     'search_name' => 'Search name',
     'filter_role' => 'Filter by role',
     'all_roles' => 'All roles',

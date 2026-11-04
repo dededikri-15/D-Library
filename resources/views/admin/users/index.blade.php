@@ -8,7 +8,10 @@
             <h1 class="text-h1 font-semibold text-primary">{{ __('users.index_title') }}</h1>
             <p class="mt-1 text-sm text-secondary">{{ __('users.index_description') }}</p>
         </div>
-        <a href="{{ route('users.create') }}" class="btn btn-primary">{{ __('users.add_user') }}</a>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('register.librarian') }}" class="btn btn-secondary">{{ __('users.register_librarian') }}</a>
+            <a href="{{ route('users.create') }}" class="btn btn-primary">{{ __('users.add_user') }}</a>
+        </div>
     </div>
 
     <form method="GET" class="card mt-6 grid gap-4 p-5 sm:grid-cols-3 lg:grid-cols-4">
