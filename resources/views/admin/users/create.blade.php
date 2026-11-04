@@ -5,6 +5,9 @@
 @section('content')
     <h1 class="text-h1 font-semibold text-primary">{{ __('users.create_title') }}</h1>
     <p class="mt-1 text-sm text-secondary">{{ __('users.create_description') }}</p>
+    <p class="mt-3 rounded-lg border border-tertiary/20 bg-tertiary/5 px-3 py-2 text-sm text-secondary">
+        Pendaftaran umum hanya untuk <strong>anggota</strong>. Untuk membuat akun <strong>pustakawan</strong>, pilih role pada form ini lalu simpan melalui daftar pengguna.
+    </p>
 
     <form method="POST" action="{{ route('users.store') }}" data-submit-once
           class="card mt-6 max-w-xl space-y-5 p-6">

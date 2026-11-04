@@ -22,16 +22,33 @@ class UserController extends Controller
             'role' => ['nullable', Rule::in(User::roles())],
         ]);
 
-        $users = User::query()
-            ->when($filters['role'] ?? null, fn ($query, $role) => $query->where('role', $role))
+        $baseQuery = User::query()
             ->when($filters['q'] ?? null, fn ($query, $q) => $this->applySearch($query, 'name', $q))
-            ->orderBy('name')
+            ->orderBy('name');
+
+        $users = (clone $baseQuery)
+            ->when($filters['role'] ?? null, fn ($query, $role) => $query->where('role', $role))
             ->paginate(config('perpustakaan.pagination.per_page'))
             ->withQueryString();
 
+        $selectedRole = $filters['role'] ?? null;
+
+        $memberUsers = (clone $baseQuery)
+            ->where('role', User::ROLE_ANGGOTA)
+            ->when($selectedRole !== null && $selectedRole !== User::ROLE_ANGGOTA, fn ($query) => $query->whereRaw('1 = 0'))
+            ->get();
+
+        $librarianUsers = (clone $baseQuery)
+            ->where('role', User::ROLE_PUSTAKAWAN)
+            ->when($selectedRole !== null && $selectedRole !== User::ROLE_PUSTAKAWAN, fn ($query) => $query->whereRaw('1 = 0'))
+            ->get();
+
         return view('admin.users.index', [
             'users' => $users,
+            'members' => $memberUsers,
+            'librarians' => $librarianUsers,
             'roles' => User::roles(),
+            'selectedRole' => $selectedRole,
         ]);
     }
 
