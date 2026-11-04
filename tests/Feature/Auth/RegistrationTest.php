@@ -121,11 +121,19 @@ class RegistrationTest extends TestCase
     {
         // Tanpa `enctype`, field `avatar` hilang sebelum sampai ke PHP: user
         // mengira gagal mengunggah, padahal berkasnya tidak pernah terkirim.
-        $this->get('/register')
+        $response = $this->get('/register')
             ->assertOk()
             ->assertSee('enctype="multipart/form-data"', false)
             ->assertSee('name="avatar"', false)
-            ->assertSee('name="gender"', false);
+            ->assertSee('name="gender"', false)
+            ->assertSee('<form method="POST" action="'.route('register').'"', false)
+            ->assertSee('<button type="submit"', false)
+            ->assertSee(route('librarian.register'), false);
+
+        $this->assertMatchesRegularExpression(
+            '/<input type="file" id="avatar" name="avatar" accept="image\/\*"\s+class="[^"]*">/s',
+            $response->getContent(),
+        );
     }
 
     public function test_registration_succeeds_without_avatar(): void

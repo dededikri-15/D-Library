@@ -38,8 +38,10 @@
                 <div>
                     <label for="avatar" class="field-label">{{ __('auth.photo_profile') }}</label>
                     <input type="file" id="avatar" name="avatar" accept="image/*"
-                           class="field-input file:mr-3 file:rounded-sm file:border-0 file:bg-tertiary/10 file:px-3 file:py-1.5 file:text-label file:font-medium file:text-tertiary
-                                  @class(['border-overdue' => $errors->has('avatar')])>
+                           @class([
+                               'field-input file:mr-3 file:rounded-sm file:border-0 file:bg-tertiary/10 file:px-3 file:py-1.5 file:text-label file:font-medium file:text-tertiary',
+                               'border-overdue' => $errors->has('avatar'),
+                           ])>
 
                     <p class="mt-1 text-label text-secondary">{{ __('auth.photo_profile_hint') }}</p>
 
@@ -54,6 +56,13 @@
             <p class="mt-6 text-center text-sm text-secondary">
                 {{ __('auth.has_account') }}
                 <a href="{{ route('login') }}" class="font-medium text-tertiary hover:underline">{{ __('auth.login') }}</a>
+            </p>
+
+            <p class="mt-3 text-center text-sm text-secondary">
+                {{ __('auth.librarian_register_member_prompt') }}
+                <a href="{{ route('librarian.register') }}" class="font-medium text-tertiary hover:underline">
+                    {{ __('auth.librarian_register_link') }}
+                </a>
             </p>
         </div>
     </div>

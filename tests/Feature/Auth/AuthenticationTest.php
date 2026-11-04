@@ -12,7 +12,13 @@ class AuthenticationTest extends TestCase
 
     public function test_login_screen_can_be_rendered(): void
     {
-        $this->get('/login')->assertOk();
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('<form method="POST" action="'.route('login').'"', false)
+            ->assertSee('name="email"', false)
+            ->assertSee('name="password"', false)
+            ->assertSee('<button type="submit"', false)
+            ->assertSee(route('register'), false);
     }
 
     public function test_pustakawan_can_login_and_is_redirected_to_dashboard(): void

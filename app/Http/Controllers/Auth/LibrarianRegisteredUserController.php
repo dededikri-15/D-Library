@@ -6,51 +6,52 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LibrarianRegisterRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use Illuminate\Validation\Rules\Password;
 
 class LibrarianRegisteredUserController extends Controller
 {
-    public function create(): View|RedirectResponse
+    public function create(): View
     {
-        // Hanya aktif ketika belum ada pustakawan sama sekali
-        $hasLibrarian = User::role(User::ROLE_PUSTAKAWAN)->exists();
+        $hasLibrarian = User::pustakawan()->exists();
+        $secretConfigured = filled(config('perpustakaan.registration.librarian_registration.secret'));
+        $registrationEnabled = config('perpustakaan.registration.librarian_registration.enabled', false)
+            && $secretConfigured
+            && ! $hasLibrarian;
 
-        if ($hasLibrarian) {
-            // Sudah ada akun pustakawan, redirect ke login dengan pesan
-            return redirect()->route('login')
-                ->with('error', 'Registrasi pustakawan saat ini tidak aktif. Sudah ada akun staff.');
-        }
-
-        // Tampilkan form registrasi pustakawan
         return view('auth.librarian_register', [
             'hasLibrarian' => $hasLibrarian,
+            'secretConfigured' => $secretConfigured,
+            'registrationEnabled' => $registrationEnabled,
         ]);
     }
 
     public function store(LibrarianRegisterRequest $request): RedirectResponse
     {
-        $data = $request->safe()->only(['name', 'email', 'password', 'secret']);
+        $data = $request->safe()->only(['name', 'email', 'password']);
+        $data['email'] = Str::lower($data['email']);
 
-        // Normalisasi email ke lowercase
-        $data['email'] = Str::lower($data['email'] ?? '');
+        $user = Cache::lock('registration:librarian-bootstrap', 30)->block(10, function () use ($data) {
+            return DB::transaction(function () use ($data) {
+                if (User::pustakawan()->exists()) {
+                    throw ValidationException::withMessages([
+                        'secret' => __('auth.librarian_registration_closed'),
+                    ]);
+                }
 
-        // Buat user dengan role PUSTAKAWAN dari konstanta model
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => User::ROLE_PUSTAKAWAN,
-            'email_verified_at' => now(), // Verifikasi email langsung untuk setup
-        ]);
+                return User::create([
+                    ...$data,
+                    'role' => User::ROLE_PUSTAKAWAN,
+                    'email_verified_at' => now(),
+                ]);
+            });
+        });
 
-        // Login otomatis setelah registrasi
         Auth::login($user);
-
-        // Regenerasi session ID
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

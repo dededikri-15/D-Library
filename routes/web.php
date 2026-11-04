@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LibrarianRegisteredUserController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthorController;
@@ -35,6 +36,12 @@ Route::middleware('guest')->group(function () {
     // throttle:register mencegah pembuatan akun massal lewat form publik.
     Route::post('/register', [RegisteredUserController::class, 'store'])
         ->middleware('throttle:register');
+
+    Route::get('/register/pustakawan', [LibrarianRegisteredUserController::class, 'create'])
+        ->name('librarian.register');
+    Route::post('/register/pustakawan', [LibrarianRegisteredUserController::class, 'store'])
+        ->middleware('throttle:register')
+        ->name('librarian.register.store');
 
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     // Pengaman luar per IP. Batas per email+IP ada di dalam LoginRequest.

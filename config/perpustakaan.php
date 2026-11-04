@@ -81,8 +81,9 @@ return [
         | librarian_registration
         |--------------------------------------------------------------------------
         |
-        | Konfigurasi khusus untuk mendaftar sebagai pustakawan. Fitur ini hanya
-        | aktif ketika registrasi umum ditutup dan butuh akun staff pertama.
+        | Konfigurasi khusus untuk pendaftaran pustakawan pertama. Setelah
+        | pustakawan pertama dibuat, akun staff berikutnya dibuat lewat menu
+        | Kelola Pengguna.
         |
         */
 

@@ -1,101 +1,58 @@
 @extends('layouts.app')
 
+@section('title', __('auth.librarian_register_title').' - '.config('app.name'))
+
 @section('content')
-<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="full-width-wrapper">
-        <div class="max-w-md w-full space-y-8 bg-white rounded-lg p-8 sm:p-10 lg:p-12">
-            <div>
-                <h2 class="mt-6 text-3xl font-bold text-gray-900 sm:text-4xl">
-                    {{ $hasLibrarian ? 'Setup Pustakawan' : 'Daftar sebagai Pustakawan' }}
-                </h2>
-            </div>
+    <div class="mx-auto max-w-md">
+        <div class="card p-8">
+            <h1 class="text-h1 font-semibold text-primary">{{ __('auth.librarian_register_title') }}</h1>
+            <p class="mt-2 text-sm text-secondary">{{ __('auth.librarian_register_description') }}</p>
 
             @if ($hasLibrarian)
-                <p class="mt-4 text-sm text-gray-600">
-                    Sudah ada akun pustakawan di sistem. Fitur registrasi pustakawan
-                    sekarang tidak aktif.
-                </p>
+                <x-alert variant="info" class="mt-6">
+                    {{ __('auth.librarian_registration_has_librarian') }}
+                </x-alert>
             @elseif (! $registrationEnabled)
-                <p class="mt-4 text-sm text-gray-600">
-                    Registrasi saat ini tidak aktif. Hubungi administrator untuk
-                    mendapatkan akses.
-                </p>
-            @else
-                <p class="mt-4 text-sm text-gray-600">
-                    Buat akun pustakawan pertama. Anda memerlukan <strong>kode rahasia</strong>
-                    untuk melanjutkan.
-                </p>
-            @endif
-        </div>
-
-        <div class="mt-6 max-w-md w-full">
-            @if ($hasLibrarian || ! $registrationEnabled)
-                <!-- Tidak ada form -->
-            @else
-                <div>
-                    @if (session('status'))
-                        <div class="bg-green-100 border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
-                            {{ session('status') }}
-                        </div>
+                <x-alert variant="info" class="mt-6">
+                    {{ __('auth.librarian_registration_disabled') }}
+                    @if (! $secretConfigured)
+                        {{ __('auth.librarian_registration_setup_required') }}
                     @endif
+                </x-alert>
+            @else
+                <form method="POST" action="{{ route('librarian.register.store') }}"
+                      class="mt-8 space-y-5" data-submit-once>
+                    @csrf
 
-                    <form method="POST" action="{{ route('librarian.register.store') }}" class="space-y-4">
-                        @csrf
+                    <x-form.input name="name" :label="__('auth.full_name')" required autocomplete="name" />
+                    <x-form.input name="email" :label="__('auth.email')" type="email" required autocomplete="username" />
+                    <x-form.input name="password" :label="__('auth.password')" type="password" required
+                                  autocomplete="new-password" :hint="__('auth.password_hint')" />
+                    <x-form.input name="password_confirmation" :label="__('auth.confirm_password')" type="password" required
+                                  autocomplete="new-password" />
 
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Lengkap
-                            </label>
-                            <input type="text" name="name" id="name" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Masukkan nama lengkap"
-                                value="{{ old('name') }}">
-                        </div>
+                    <div>
+                        <label for="secret" class="field-label">{{ __('auth.librarian_secret') }} *</label>
+                        <input id="secret" name="secret" type="password" required autocomplete="off"
+                               class="field-input @if ($errors->has('secret')) border-overdue @endif">
+                        @error('secret')
+                            <p class="mt-1 text-label text-overdue">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-label text-secondary">{{ __('auth.librarian_secret_hint') }}</p>
+                    </div>
 
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                Email
-                            </label>
-                            <input type="email" name="email" id="email" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="misal@perpustakaan.test"
-                                value="{{ old('email') }}"
-                                autocomplete="email">
-                        </div>
-
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                                Kata Sandi
-                            </label>
-                            <input type="password" name="password" id="password" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Minimal 8 karakter"
-                                autocomplete="new-password">
-                        </div>
-
-                        <div>
-                            <label for="secret" class="block text-sm font-medium text-gray-700 mb-1">
-                                Kode Rahasia
-                            </label>
-                            <input type="text" name="secret" id="secret" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Masukkan kode rahasia"
-                                autocomplete="off">
-                            <p class="mt-2 text-xs text-gray-500">
-                                Kode rahasia untuk mendaftar sebagai pustakawan pertama.
-                            </p>
-                        </div>
-
-                        <div>
-                            <button type="submit"
-                                class="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                                Daftar sebagai Pustakawan
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        {{ __('auth.librarian_register_button') }}
+                    </button>
+                </form>
             @endif
+
+            <p class="mt-6 text-center text-sm text-secondary">
+                {{ __('auth.librarian_register_member_prompt') }}
+                <a href="{{ route('register') }}" class="font-medium text-tertiary hover:underline">
+                    {{ __('auth.register_title') }}
+                </a>
+            </p>
         </div>
     </div>
-</div>
 @endsection
