@@ -128,7 +128,7 @@ class RegistrationTest extends TestCase
             ->assertSee('name="gender"', false)
             ->assertSee('<form method="POST" action="'.route('register').'"', false)
             ->assertSee('<button type="submit"', false)
-            ->assertSee(route('librarian.register'), false);
+            ->assertDontSee('/register/pustakawan');
 
         $this->assertMatchesRegularExpression(
             '/<input type="file" id="avatar" name="avatar" accept="image\/\*"\s+class="[^"]*">/s',

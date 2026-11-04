@@ -76,21 +76,6 @@ return [
     'registration' => [
         'enabled' => (bool) env('PERPUSTAKAAN_REGISTRATION_ENABLED', true),
         'default_role' => 'anggota',
-        /*
-        |--------------------------------------------------------------------------
-        | librarian_registration
-        |--------------------------------------------------------------------------
-        |
-        | Konfigurasi khusus untuk pendaftaran pustakawan pertama. Setelah
-        | pustakawan pertama dibuat, akun staff berikutnya dibuat lewat menu
-        | Kelola Pengguna.
-        |
-        */
-
-        'librarian_registration' => [
-            'enabled' => (bool) env('PERPUSTAKAAN_LIBRARIAN_REGISTRATION_ENABLED', false),
-            'secret' => env('LIBRARIAN_REGISTRATION_SECRET', ''),
-        ],
     ],
 
     /*
